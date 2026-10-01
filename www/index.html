@@ -377,7 +377,15 @@
 		require('../resources/app/index.js');
 		require('../resources/app/factory.js');
 	} catch (e) {
-		console.log("Running in Browser Mode (require not available)");
+		if (typeof require !== 'function') {
+			console.log("Running in Browser Mode (require not available)");
+		} else if (e.code === 'MODULE_NOT_FOUND') {
+			// MPR: en desarrollo (npm start desde el repositorio) los .js están en la raíz
+			require('../index.js');
+			require('../factory.js');
+		} else {
+			console.error(e);  // error real dentro de index.js: no ocultarlo
+		}
 	}
 </script>
 </html>

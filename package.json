@@ -1,112 +1,24 @@
 {
- "name": "mpr_blockly",
- "version": "1.0.0",
- "description": "Blockly and Arduino coding standalone software for Otto DIY robots",
- "author": "Otto DIY and Builder community",
- "license": "GPL-2.0",
- "main": "electronApp.js",
- "keywords": [
-  "blockly",
-  "BLOCKLY",
-  "arduino",
-  "ARDUINO",
-  "esp32",
-  "ESP32",
-  "esp8266",
-  "ESP8266",
-  "electron",
-  "ELECTRON",
-  "OttoDIY",
-  "serialport",
-  "SERIALPORT",
-  "electron-builder",
-  "electron-updater",
-  "PYTHON",
-  "python",
-  "PYFLAKES",
-  "pyflakes",
-  "ampy",
-  "AMPY",
-  "microbit",
-  "MICROBIT"
- ],
- "scripts": {
-  "postinstall": "electron-builder install-app-deps",
-  "start": "electron .",
-  "build:win32": "electron-builder --win --ia32",
-  "build:win64": "electron-builder --win --x64",
-  "publish:win32": "electron-builder --win --ia32 -p always",
-  "rebuild": "electron-rebuild -f -w serialport"
- },
- "build": {
-  "appId": "com.electron.ottoblockly",
-  "asar": false,
-  "directories": {
-   "buildResources": "./build",
-   "output": "./dist"
+  "name": "mpr-blockly",
+  "productName": "MPR Blockly",
+  "version": "1.1.0",
+  "description": "MPR Blockly (Mi Primer Robot): programación por bloques para robots Otto DIY, basado en Otto Blockly",
+  "author": "Programa Mi Primer Robot / Otto DIY and Builder community",
+  "license": "GPL-2.0",
+  "main": "electronApp.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Admin-Proteinlab/blockly_mpr.git"
   },
-  "nsis": {
-   "installerIcon": "build/install.ico",
-   "uninstallerIcon": "build/app.ico",
-   "oneClick": false,
-   "perMachine": true,
-   "deleteAppDataOnUninstall": true,
-   "allowToChangeInstallationDirectory": true,
-   "runAfterFinish": true,
-   "include": "build/ottoblockly.nsh"
+  "scripts": {
+    "start": "electron .",
+    "installer": "python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe"
   },
-  "win": {
-   "target": [
-    "portable",
-    "nsis",
-    "zip"
-   ],
-   "icon": "build/app.ico"
+  "devDependencies": {
+    "electron": "4.1.1"
   },
-  "fileAssociations": {
-   "ext": "bloc",
-   "name": "BLOC file",
-   "role": "Editor",
-   "icon": "build/file.ico"
-  },
-  "extraFiles": [
-   "www",
-   "compilation",
-   "driversUSB",
-   "README.md",
-   "LICENSE.md",
-   "config.json"
-  ],
-  "extraResources": [
-   "dev-app-update.yml",
-   "app-update.yml"
-  ],
-  "publish": [
-   {
-    "provider": "github",
-    "repo": "blockly",
-    "owner": "OttoDIY",
-    "releaseType": "release"
-   }
-  ]
- },
- "repository": {
-  "type": "git",
-  "url": "https://github.com/Admin-Proteinlab/blockly_mpr.git"
- },
- "bugs": {
-  "url": "https://github.com/Admin-Proteinlab/blockly_mpr/issues"
- },
- "devDependencies": {
-  "electron": "13.6.6",
-  "electron-builder": "21.2.0",
-  "electron-installer-dmg": "3.0.0",
-  "electron-rebuild": "^2.3.5"
- },
- "dependencies": {
-  "ajv": "6.12.3",
-  "child_process": "1.0.2",
-  "electron-updater": "4.0.6",
-  "serialport": "^9.2.8"
- }
+  "dependencies": {
+    "electron-updater": "4.0.6",
+    "serialport": "7.1.4"
+  }
 }

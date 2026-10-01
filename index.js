@@ -5,6 +5,14 @@ var fs = require('fs')
 var path = require('path')
 var appVersion = window.require('electron').remote.app.getVersion()
 
+// MPR: trabajar siempre desde la carpeta de instalación. Las rutas de compilación
+// (./compilation/arduino, config.json) son relativas al directorio actual, que
+// puede ser otro si la app se abre con doble clic sobre un archivo .bloc.
+var mpr_app_root = path.join(__dirname, '..', '..')
+if (fs.existsSync(path.join(mpr_app_root, 'compilation', 'arduino'))) {
+	try { process.chdir(mpr_app_root) } catch (e) { console.log(e) }
+}
+
 var arduino_basepath = process.platform == 'win32' ? arduino_basepath = './compilation/arduino' : path.join(__dirname, '../../compilation/arduino')
 var arduino_ide_cmd = process.platform == 'win32' ? 'arduino-cli.exe' : arduino_ide_cmd = path.join(__dirname, '../../compilation/arduino/arduino-cli')
 
