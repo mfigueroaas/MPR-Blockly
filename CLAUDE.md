@@ -17,6 +17,15 @@ OttoDIY/blockly. Ver `LEEME_MPR.md` para el contexto completo.
 - Respetar el fin de línea de cada archivo (hay archivos CRLF y LF). No reescribir
   archivos completos solo por formato.
 
+## Probar cambios (rápido, sin instalador nuevo)
+Con MPR Blockly instalado en `C:\MPRBlockly`:
+```
+python tools/probar.py          # copia www, librerías y .js cambiados a la instalación
+```
+Luego F5 en la app (o reabrirla si cambió `electronApp.js`). El script pide permiso de
+administrador si hace falta. Usar `--simular` para ver qué copiaría.
+Hacer commits pequeños, uno por cambio, con mensaje en español.
+
 ## Generar el instalador (Windows)
 ```
 winget install 7zip.7zip NSIS.NSIS        # una vez

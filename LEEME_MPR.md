@@ -40,6 +40,12 @@ core arduino:avr 1.8.3, avr-gcc, avrdude) y pone encima el código de este repos
 
 La versión se cambia en `package.json` (`"version"`).
 
+## Probar cambios en la app instalada (lo más rápido)
+
+`python tools/probar.py` copia a `C:\MPRBlockly` solo los archivos que cambiaron
+(interfaz, bloques, textos, ejemplos, librería Otto). Después basta con F5 en la app.
+El instalador nuevo solo hace falta para repartir la versión a otros PCs.
+
 ## Probar cambios de la interfaz sin instalar
 
 `npm install` (recompila serialport para Electron 4.1.1; requiere Visual Studio Build
