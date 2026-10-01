@@ -1,0 +1,63 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <toolbox>toolbox_arduino_all</toolbox>
+  <block type="base_setup_loop" id="bbu,Ycm|oN%wsL77H?Kr" x="64" y="65">
+    <statement name="DO">
+      <block type="otto_configuration" id="*R:Gh2CUp6oXKA=16V)z">
+        <field name="PIN_YL">2</field>
+        <field name="PIN_YR">3</field>
+        <field name="PIN_RL">4</field>
+        <field name="PIN_RR">5</field>
+        <field name="PIN_Buzzer">13</field>
+      </block>
+    </statement>
+    <statement name="LOOP">
+      <block type="otto_home" id="y7k5NwyY1)o2$THBKTF,">
+        <next>
+          <block type="otto_move" id="eTel6FJe@e7ZQ8$}!tml">
+            <field name="otto_move_sens">BENDRIGHT</field>
+            <field name="otto_move_speed">2000</field>
+            <next>
+              <block type="controls_repeat_ext" id="P./=f764D{l7M0[lnSfa">
+                <value name="TIMES">
+                  <shadow type="math_number" id="S!-YxYs;]?,r5rMA:Il%">
+                    <field name="NUM">5</field>
+                  </shadow>
+                </value>
+                <statement name="DO">
+                  <block type="otto_move" id="[xECwLv=%0~SWmL@@[rw">
+                    <field name="otto_move_sens">SHAKELEFT</field>
+                    <field name="otto_move_speed">2000</field>
+                  </block>
+                </statement>
+                <next>
+                  <block type="base_delay" id="@%!yMuwJCH0H{6Q|j#s%">
+                    <field name="unite">s</field>
+                    <value name="DELAY_TIME">
+                      <shadow type="math_number" id="U5tx!mWi:lo%TRUK:]L]">
+                        <field name="NUM">1</field>
+                      </shadow>
+                    </value>
+                    <next>
+                      <block type="controls_repeat_ext" id="Ui(57LwJf$|*vT%tIayj">
+                        <value name="TIMES">
+                          <shadow type="math_number" id="F]KnPU`ph67#)c=1imaB">
+                            <field name="NUM">4</field>
+                          </shadow>
+                        </value>
+                        <statement name="DO">
+                          <block type="otto_sound" id=")::.G1`E2#Fc*3y-u%Oj">
+                            <field name="otto_sound"> S_cuddly </field>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
