@@ -49,6 +49,9 @@ Blockly.Arduino['otto_configuration'] = function(block) {
     + '#define RightFoot '+ PIN_RR +' // right foot pin, servo[3]\n'
     + '#define Buzzer '+ PIN_Buzzer +' //buzzer pin \n';
 
+  // Los bloques de sonido (audio.js) usan "buzzer" en minúscula; misma clave que buzzer_init para no duplicarlo
+  Blockly.Arduino.definitions_['setup_buzzer'] = 'const int buzzer = '+ PIN_Buzzer +';';
+
   Blockly.Arduino.setups_['otto_init']='Otto.init(LeftLeg, RightLeg, LeftFoot, RightFoot, true, Buzzer);\n'
   + 'Otto.home();\n';
   var code = '';
