@@ -23,11 +23,10 @@ Code.LANGUAGE_NAME = {
 };
 Code.LANGUAGE_RTL = ['ar', 'fa', 'he'];
 Code.getLang = function() {
-  var lang = window.localStorage.lang;
-  if (lang === undefined) {
-    lang = 'es'
-	window.localStorage.lang = lang;
-  }
+  // MPR: la app es solo en español. Se fuerza 'es' aunque el PC tenga guardado
+  // otro idioma en localStorage (el selector de idioma está oculto).
+  var lang = 'es';
+  window.localStorage.lang = lang;
   return lang
 };
 Code.isRtl = function() {

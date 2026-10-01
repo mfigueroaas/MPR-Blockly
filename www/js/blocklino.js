@@ -172,6 +172,11 @@ BlocklyDuino.backupBlocks = function() {
 };
 BlocklyDuino.loadConfig = function() {
 	var card = window.localStorage.card;
+	// MPR: si quedó guardada una placa que ya no está en el menú (solo AVR), volver a la predeterminada
+	if (card !== undefined && $("#boards option[value='" + card + "']").length == 0) {
+		window.localStorage.removeItem('card');
+		card = undefined;
+	}
 	var content=window.localStorage.content;
 	var prog = window.localStorage.prog;
 	if (card===undefined) {

@@ -14,7 +14,7 @@ window.addEventListener('load', function load(event) {
 	var portserie = document.getElementById('portserie')
 	var messageDiv = document.getElementById('messageDIV')
 	localStorage.setItem("verif",false)
-	document.getElementById('versionapp').textContent = " Otto Blockly V" + appVersion
+	document.getElementById('versionapp').textContent = " MPR Blockly V" + appVersion
 	function uploadOK(){
 		messageDiv.style.color = '#009000'
 		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK code uploaded' + quitDiv
