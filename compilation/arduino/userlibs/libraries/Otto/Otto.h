@@ -38,7 +38,7 @@
 
 
 #if OTTO_DBG
-  #define OTTO_DBG_BEGIN()    do { if (!Serial) Serial.begin(OTTO_DBG_BAUD); } while(0)
+  #define OTTO_DBG_BEGIN()    do { Serial.begin(OTTO_DBG_BAUD); } while(0)  // MPR fix: en Uno/Nano 'Serial' siempre es true
   #define OTTO_DBG_PRINT(x)   do { Serial.print(x); } while(0)
   #define OTTO_DBG_PRINTLN(x) do { Serial.println(x); } while(0)
 #else
@@ -53,7 +53,14 @@
 #endif
 
 #ifndef OTTO_DIFF_LIMIT_DEFAULT
-  #define OTTO_DIFF_LIMIT_DEFAULT 3   // degrees per refresh
+  // Limite de velocidad de los servos. Oscillator::write() lo interpreta en
+  // GRADOS POR SEGUNDO, con un minimo de 1 grado por escritura.
+  // MPR: se mantiene el valor del parche (3), que en la practica deja el
+  // limitador en 1 grado por escritura: movimiento muy suave y pasos algo mas
+  // cortos (walk() ~19 grados a T=1500 y ~25 a T=2000, de 30 pedidos).
+  // Para pasos de amplitud completa con las mismas velocidades del menu usar 120
+  // (o 240, el valor de OttoDIYLib). Probar en el robot antes de cambiarlo.
+  #define OTTO_DIFF_LIMIT_DEFAULT 3
 #endif
 
 

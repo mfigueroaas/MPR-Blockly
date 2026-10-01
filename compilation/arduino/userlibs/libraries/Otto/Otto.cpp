@@ -103,15 +103,25 @@ void Otto::_moveServos(int time, int  servo_target[]) {
 
   final_time =  millis() + time;
   if(time>10){
-    for (int i = 0; i < 4; i++) increment[i] = (servo_target[i] - servo[i].getPosition()) / (time / 10.0);
+    // MPR fix: la trayectoria se calcula desde la posicion inicial (double) y no
+    // desde getPosition() (int). Antes, "pos + 4*increment" se truncaba a int:
+    // los movimientos lentos hacia angulos mayores no avanzaban y hacia angulos
+    // menores se pasaban del objetivo.
+    double start[4];
+    int steps = time / 10;
+    for (int i = 0; i < 4; i++) {
+      start[i] = servo[i].getPosition();
+      increment[i] = (servo_target[i] - start[i]) / (time / 10.0);
+    }
 
+    static uint8_t rr = 0; // round-robin: un servo por tick (~10 ms) para bajar picos de corriente
     for (int iteration = 1; millis() < final_time; iteration++) {
       partial_time = millis() + 10;
-      static uint8_t rr = 0; // round-robin index 0..3
-      // Update only one servo this tick; multiply step by 4 to keep total duration
+      int k = iteration < steps ? iteration : steps;   // no pasarse del objetivo
+      int pos = (int)round(start[rr] + k * increment[rr]);
       OTTO_VIS_PRINT("t="); OTTO_VIS_PRINT(millis()); OTTO_VIS_PRINT(" rr="); OTTO_VIS_PRINT(rr); OTTO_VIS_PRINT(" pos->");
-      OTTO_VIS_PRINTLN(servo[rr].getPosition() + (4 * increment[rr]));
-      servo[rr].SetPosition(servo[rr].getPosition() + (4 * increment[rr]));
+      OTTO_VIS_PRINTLN(pos);
+      servo[rr].SetPosition(pos);
       rr = (rr + 1) & 0x03;
       while (millis() < partial_time); // pause ~10ms
     }
@@ -215,7 +225,7 @@ void Otto::home(){
   if(isOttoResting==false){ //Go to rest position only if necessary
 
     int homes[4]={90, 90, 90, 90}; //All the servos at rest position
-    _moveServos(1000,homes);   //Move the servos in half a second
+    _moveServos(1000,homes);   //Move the servos in one second (MPR: antes 500 ms)
 
     detachServos();
     isOttoResting=true;
