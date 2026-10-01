@@ -16,9 +16,9 @@ ManifestDPIAware true
 
 Name "${APPNAME} ${VERSION}"
 OutFile "${OUTFILE}"
-; Carpeta en la raíz de C: (como C:\OttoBlockly): la app compila escribiendo dentro
-; de su carpeta, y en "Archivos de programa" un alumno sin permisos de administrador
-; no podría compilar. Además se da permiso de modificación al grupo Usuarios.
+; Carpeta en la raíz de C: (como C:\OttoBlockly). La app escribe al compilar en
+; compilation\arduino y en config.json; solo esas rutas quedan modificables por el
+; grupo Usuarios (ver permisos más abajo).
 InstallDir "C:\MPRBlockly"
 InstallDirRegKey HKLM "${REGKEY}" "InstallLocation"
 RequestExecutionLevel admin
@@ -40,8 +40,9 @@ VIAddVersionKey /LANG=1034 "LegalCopyright" "GPL-2.0 - basado en Otto Blockly (O
 !define MUI_UNICON "${STAGE}\mpr.ico"
 !define MUI_ABORTWARNING
 !define MUI_WELCOMEPAGE_TEXT "Este asistente instalará ${APPNAME} ${VERSION}.$\r$\n$\r$\nIncluye todo lo necesario para programar y cargar código en placas Arduino AVR (Nano, Uno, Mega...) sin conexión a internet.$\r$\n$\r$\nCierra MPR Blockly si está abierto antes de continuar."
-!define MUI_FINISHPAGE_RUN "$INSTDIR\${APPEXE}"
+!define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "Abrir ${APPNAME}"
+!define MUI_FINISHPAGE_RUN_FUNCTION RunAppNotElevated
 !define MUI_FINISHPAGE_SHOWREADME ""
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "Instalar driver USB CH340 (placas Nano compatibles)"
@@ -72,6 +73,12 @@ Function .onInit
   !insertmacro CloseRunningApp
 FunctionEnd
 
+Function RunAppNotElevated
+  ; El instalador corre como administrador; abrir la app a través de explorer.exe
+  ; la inicia con los permisos normales del usuario.
+  Exec '"$WINDIR\explorer.exe" "$INSTDIR\${APPEXE}"'
+FunctionEnd
+
 Function InstallCH340
   ; Driver CH340/CH341 incluido en Otto Blockly (driversUSB\CH341.zip, extraído al armar).
   ; Windows 10/11 suele instalarlo solo por Windows Update; pnputil no reemplaza un
@@ -88,6 +95,7 @@ Function InstallCH340
     ${EndIf}
     ${If} $0 != 0
     ${AndIf} $0 != 259
+    ${AndIf} $0 != 3010
       ExecShell "open" "$INSTDIR\resources\app\driversUSB\CH341"
     ${EndIf}
   ${Else}
@@ -109,9 +117,14 @@ Section "MPR Blockly" SecMain
 
   File /r "${STAGE}\*.*"
 
-  ; Permiso de modificación para el grupo Usuarios (S-1-5-32-545): la compilación
-  ; escribe en compilation\arduino y la app guarda config.json en su carpeta.
-  nsExec::ExecToLog 'icacls "$INSTDIR" /grant *S-1-5-32-545:(OI)(CI)M /T /C /Q'
+  ; Permisos: la carpeta raíz de C: deja que cualquier usuario modifique lo que hay
+  ; en sus subcarpetas. Se quita esa herencia: SYSTEM y Administradores con control
+  ; total, Usuarios solo lectura/ejecución, y modificación únicamente donde la app
+  ; escribe (compilation\arduino: sketch e inventario de arduino-cli; config.json).
+  nsExec::ExecToLog 'icacls "$INSTDIR" /inheritance:r /grant:r *S-1-5-18:(OI)(CI)F *S-1-5-32-544:(OI)(CI)F *S-1-5-32-545:(OI)(CI)RX /C /Q'
+  nsExec::ExecToLog 'icacls "$INSTDIR\*" /reset /T /C /Q'
+  nsExec::ExecToLog 'icacls "$INSTDIR\compilation\arduino" /grant *S-1-5-32-545:(OI)(CI)M /T /C /Q'
+  nsExec::ExecToLog 'icacls "$INSTDIR\config.json" /grant *S-1-5-32-545:M /C /Q'
 
   ; Accesos directos
   CreateDirectory "$SMPROGRAMS\${APPNAME}"
@@ -159,5 +172,9 @@ Section "Uninstall"
     DeleteRegKey HKCR ".bloc"
   ${EndIf}
   DeleteRegKey HKCR "MPRBlockly.bloc"
-  RMDir /r "$INSTDIR"
+  ; Solo se borra lo que instaló este instalador (lista generada al armar); si el
+  ; usuario guardó otros archivos en la carpeta, la carpeta se conserva.
+  !include "${UNLIST}"
+  Delete "$INSTDIR\Desinstalar.exe"
+  RMDir "$INSTDIR"
 SectionEnd

@@ -16,7 +16,10 @@ Otto con placas Arduino AVR (Nano, Uno, Mega…), sin conexión a internet.
 - Solo español y solo placas AVR.
 - Instalador propio: carpeta `C:\MPRBlockly`, accesos directos, asociación de
   archivos `.bloc`, desinstalador y driver CH340 opcional. No reemplaza ni choca con
-  una instalación de Otto Blockly.
+  una instalación de Otto Blockly. Requiere Windows de 64 bits (arduino-cli es de
+  64 bits, igual que en Otto Blockly 1.5.0).
+- Alumnos sin permisos de administrador pueden compilar y subir: solo
+  `compilation\arduino` y `config.json` son modificables por el grupo Usuarios.
 - Actualizador automático desactivado (apuntaba a Otto Blockly oficial).
 
 El historial de git explica cada cambio (`git log`).
@@ -32,13 +35,15 @@ core arduino:avr 1.8.3, avr-gcc, avrdude) y pone encima el código de este repos
 2. Instalar herramientas (una vez): `winget install 7zip.7zip NSIS.NSIS` (Node.js y
    Python ya deben estar instalados).
 3. Ejecutar: `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`
-4. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe`
+4. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe` (la carpeta de trabajo es
+   `C:\mprb`, corta a propósito por el límite de 260 caracteres de Windows).
 
 La versión se cambia en `package.json` (`"version"`).
 
 ## Probar cambios de la interfaz sin instalar
 
-`npm install` y luego `npm start` abre la app desde el repositorio (Electron 4.1.1).
+`npm install` (recompila serialport para Electron 4.1.1; requiere Visual Studio Build
+Tools) y luego `npm start` abre la app desde el repositorio.
 Para compilar y subir código hace falta la carpeta `compilation/arduino` con
 arduino-cli y el core AVR; lo más simple es probar con el instalador.
 

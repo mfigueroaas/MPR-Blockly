@@ -379,7 +379,7 @@
 	} catch (e) {
 		if (typeof require !== 'function') {
 			console.log("Running in Browser Mode (require not available)");
-		} else if (e.code === 'MODULE_NOT_FOUND') {
+		} else if (e.code === 'MODULE_NOT_FOUND' && /resources[\\\/]app[\\\/]index\.js/.test(e.message)) {
 			// MPR: en desarrollo (npm start desde el repositorio) los .js están en la raíz
 			require('../index.js');
 			require('../factory.js');

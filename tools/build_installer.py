@@ -76,7 +76,10 @@ def sha256(path):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--official", required=True, help="ottoblockly.Setup.1.5.0.exe")
-    ap.add_argument("--work", default=os.path.join(REPO, "build_tmp"), help="carpeta de trabajo")
+    # En Windows se usa una carpeta corta: hay rutas de librerías de ~215 caracteres y
+    # el límite clásico de Windows es 260.
+    default_work = r"C:\mprb" if os.name == "nt" else os.path.join(REPO, "build_tmp")
+    ap.add_argument("--work", default=default_work, help="carpeta de trabajo (ruta corta)")
     ap.add_argument("--out", default=os.path.join(REPO, "dist"), help="carpeta de salida")
     ap.add_argument("--skip-exe-resources", action="store_true", help="no cambiar ícono/versión del .exe")
     args = ap.parse_args()
@@ -84,7 +87,7 @@ def main():
     pkg = json.load(open(os.path.join(REPO, "package.json"), encoding="utf-8"))
     version = pkg["version"]
 
-    sevenzip = find_tool(["7z", "7z.exe", "7za"], [r"C:\Program Files\7-Zip\7z.exe", r"C:\Program Files (x86)\7-Zip\7z.exe"])
+    sevenzip = find_tool(["7z", "7z.exe"], [r"C:\Program Files\7-Zip\7z.exe", r"C:\Program Files (x86)\7-Zip\7z.exe"])
     makensis = find_tool(["makensis", "makensis.exe"], [r"C:\Program Files (x86)\NSIS\makensis.exe", r"C:\Program Files\NSIS\makensis.exe"])
     npx = find_tool(["npx", "npx.cmd"], [r"C:\Program Files\nodejs\npx.cmd"])
     if not sevenzip or not makensis:
@@ -163,8 +166,18 @@ def main():
         os.replace(exe + ".tmp", exe)
 
     print("[5/6] Generando instalador NSIS (puede tardar varios minutos)")
+    # Lista de desinstalación: solo lo que se instala (no se borra nada más de la carpeta)
+    unlist = os.path.join(work, "uninstall_list.nsh")
+    with open(unlist, "w", encoding="utf-8") as f:
+        for name in sorted(os.listdir(stage)):
+            if os.path.isdir(os.path.join(stage, name)):
+                f.write('  RMDir /r "$INSTDIR\\%s"\n' % name)
+            else:
+                f.write('  Delete "$INSTDIR\\%s"\n' % name)
+        f.write('  Delete "$INSTDIR\\config.json"\n')
     outfile = os.path.join(os.path.abspath(args.out), "MPR_Blockly_Setup_%s.exe" % version)
     run([makensis, "-V2", "-DSTAGE=" + stage, "-DVERSION=" + version, "-DOUTFILE=" + outfile,
+         "-DUNLIST=" + unlist,
          os.path.join(REPO, "build", "installer.nsi")])
 
     print("[6/6] Listo")

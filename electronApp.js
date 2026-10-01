@@ -31,6 +31,14 @@ var promptAnswer
 // sistema. Antes navegaban la propia ventana de la app a un sitio web con acceso
 // a Node.js y sin forma de volver.
 function protectNavigation(win) {
+	// MPR: F5 (recargar) y F8 (consola) solo cuando la ventana de la app tiene el foco.
+	// Antes se registraban con globalShortcut y F5 dejaba de funcionar en otros
+	// programas (por ejemplo, PowerPoint) mientras la app estaba abierta.
+	win.webContents.on('before-input-event', function (event, input) {
+		if (input.type !== 'keyDown') return
+		if (input.key === 'F5') { event.preventDefault(); refresh(win) }
+		if (input.key === 'F8') { event.preventDefault(); open_console(win) }
+	})
 	win.webContents.on('will-navigate', function (event, url) {
 		if (url.indexOf('file://') !== 0) {
 			event.preventDefault()
@@ -42,16 +50,22 @@ function protectNavigation(win) {
 		if (url.indexOf('file://') !== 0) shell.openExternal(url)
 	})
 }
+var INDEX_URL = "file://" + path.join(APP_ROOT, 'www/index.html')
+// MPR: al abrir un .bloc con doble clic, Windows pasa la ruta como argumento.
+// Se busca entre los argumentos (antes se tomaba argv[1] aunque fuera una opción)
+// y se codifica para que rutas con #, & o % no se corten.
+function fileFromArgv(argv) {
+	for (var i = argv.length - 1; i >= 1; i--) {
+		if (/\.(bloc|xml|ino|py)$/i.test(argv[i]) && fs.existsSync(argv[i])) return argv[i]
+	}
+	return ''
+}
+function indexUrlFor(file) {
+	return file ? INDEX_URL + '?url=' + encodeURIComponent(file) : INDEX_URL
+}
 function createWindow () {
 	mainWindow = new BrowserWindow({width: 1240, height: 700, icon: APP_ICON, title: 'MPR Blockly', frame: false, movable: true})
-	var indexUrl = "file://" + path.join(APP_ROOT, 'www/index.html')
-	// Al abrir un .bloc con doble clic, Windows pasa la ruta como primer argumento
-	var fileArg = process.argv.length >= 2 ? process.argv[process.argv.length - 1] : ''
-	if (process.platform == 'win32' && /\.(bloc|xml|ino|py)$/i.test(fileArg)) {
-		mainWindow.loadURL(indexUrl + '?url=' + fileArg)
-	} else {
-		mainWindow.loadURL(indexUrl)
-	}
+	mainWindow.loadURL(indexUrlFor(fileFromArgv(process.argv)))
 	mainWindow.setMenu(null)
 	protectNavigation(mainWindow)
 	mainWindow.on('closed', function () {
@@ -105,23 +119,23 @@ var gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
 	app.quit()
 } else {
-	app.on('second-instance', function () {
+	app.on('second-instance', function (event, argv) {
 		if (mainWindow) {
 			if (mainWindow.isMinimized()) mainWindow.restore()
 			mainWindow.focus()
+			// doble clic en otro .bloc con la app abierta: abrirlo en la ventana actual
+			var file = fileFromArgv(argv)
+			if (file) mainWindow.loadURL(indexUrlFor(file))
 		}
 	})
 	app.on('ready',  function () {
 		createWindow()
-		globalShortcut.register('F8', open_console)
-		globalShortcut.register('F5', refresh)
 	})
 }
 app.on('activate', function () {
 	if (mainWindow === null) createWindow()
 })
 app.on('window-all-closed', function () {
-	globalShortcut.unregisterAll()
 	if (process.platform !== 'darwin') app.quit()
 })
 ipcMain.on("version", function () {

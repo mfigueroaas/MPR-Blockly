@@ -25,5 +25,5 @@
 		</div>
 	</div>
 </body>
-<script>require('../resources/app/repl.js')</script>
+<script>try { require('../resources/app/repl.js') } catch (e) { if (e.code === 'MODULE_NOT_FOUND') require('../repl.js'); else throw e }</script>
 </html>

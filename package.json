@@ -12,10 +12,13 @@
   },
   "scripts": {
     "start": "electron .",
-    "installer": "python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe"
+    "installer": "python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe",
+    "rebuild": "electron-rebuild -f -w serialport -v 4.1.1",
+    "postinstall": "electron-rebuild -f -w serialport -v 4.1.1"
   },
   "devDependencies": {
-    "electron": "4.1.1"
+    "electron": "4.1.1",
+    "electron-rebuild": "1.11.0"
   },
   "dependencies": {
     "electron-updater": "4.0.6",

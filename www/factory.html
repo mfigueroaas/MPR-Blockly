@@ -86,5 +86,5 @@
 		</category>
 	</xml>
 </body>
-<script>require('../resources/app/factory.js')</script>
+<script>try { require('../resources/app/factory.js') } catch (e) { if (e.code === 'MODULE_NOT_FOUND') require('../factory.js'); else throw e }</script>
 </html>

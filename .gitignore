@@ -21,3 +21,4 @@
 /build_tmp/
 /dist/
 ottoblockly.Setup*.exe
+__pycache__/

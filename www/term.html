@@ -58,5 +58,5 @@
 		</div>
 	</div>
 </body>
-<script>require('../resources/app/term.js')</script>
+<script>try { require('../resources/app/term.js') } catch (e) { if (e.code === 'MODULE_NOT_FOUND') require('../term.js'); else throw e }</script>
 </html>
