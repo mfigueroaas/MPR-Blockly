@@ -12,22 +12,23 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
-### 2026-10-02 — Sensores: solo ultrasonido, con interruptor para el resto
+### 2026-10-02 — Sensores: solo ultrasonido; el resto oculto (se activa en el código)
 - **Pedido:** en la categoría "Sensores" dejar solo el bloque de configuración del ultrasonido y el de lectura de distancia;
-  los demás ocultos, sin borrarlos, con un on/off para mostrarlos.
+  los demás ocultos, sin borrarlos. La opción de mostrarlos NO debe ser accesible desde la interfaz, solo desde el código.
 - **Contexto:** la categoría "Sensores" visible es `CAT_ultrason` (la que usa `defaultCategories1`), no `CAT_SENSORS`.
   Los generadores del ultrasonido (`ultrasonic_sensor`, `ultrasonic_distance` en `blocs&generateurs/sensors.js`) ya
-  producen exactamente el código esperado (`ultrasound_distance_simple()`); no se tocaron.
+  producen el código esperado (`ultrasound_distance_simple()`); no se tocaron.
 - **Archivos:**
   - `www/toolbox/toolbox_arduino_all.xml`: `CAT_ultrason` queda con 2 bloques; los demás (botón, táctil, sonido, DHT,
-    potenciómetro, joystick, encoder rotatorio) pasaron a la nueva categoría `CAT_SENSORES_EXTRA` (nada se borró).
+    potenciómetro, joystick, encoder rotatorio) pasaron a la categoría `CAT_SENSORES_EXTRA` (nada se borró).
   - `www/lang/Arduino_es.js`: nombre "Sensores extra".
-  - `www/js/blocklino.js`: `buildToolbox` agrega `CAT_SENSORES_EXTRA` tras `CAT_ultrason` si `localStorage.sensoresExtra == '1'`;
-    nuevas funciones `toggleSensoresExtra` y `actualizarBotonSensoresExtra`.
-  - `www/index.html`: botón `btn_sensores_extra` ("Sensores extra: NO/SÍ") junto al de ejemplos.
-- **Notas:** el estado se guarda por PC (localStorage), por defecto apagado. Las demás subcategorías de
-  `CAT_SENSORS` (VL53L0X, etc.) no están en la lista por defecto y no se tocaron.
-- **Commit:** ver `git log`. **Probado en la app:** pendiente.
+  - `www/js/blocklino.js`: `buildToolbox` agrega `CAT_SENSORES_EXTRA` tras `CAT_ultrason` solo si
+    `BlocklyDuino.mostrarSensoresExtra` es `true`.
+- **Cómo volver a mostrar los sensores extra:** en `www/js/blocklino.js`, línea 6, cambiar
+  `BlocklyDuino.mostrarSensoresExtra = false;` por `= true;`. Luego `python tools/probar.py` y F5
+  (o regenerar el instalador). Aparece la categoría "Sensores extra" bajo "Sensores".
+- **Historial:** primero se hizo con un botón en la interfaz (commit `fceb323`); se retiró por pedido del usuario.
+- **Probado en la app:** pendiente.
 
 ### 2026-10-01 — Placa predeterminada: Nano
 - **Pedido:** que Nano (bootloader nuevo) quede seleccionada por defecto.
