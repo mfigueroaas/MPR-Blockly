@@ -2,7 +2,7 @@
 
 var BlocklyDuino = {};
 BlocklyDuino.selectedToolbox = "toolbox_arduino_all";
-BlocklyDuino.selectedCard = "nano";
+BlocklyDuino.selectedCard = "nanooptiboot";
 BlocklyDuino.content = "on";
 BlocklyDuino.workspace = null;
 

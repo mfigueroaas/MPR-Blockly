@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-01 — Placa predeterminada: Nano
+- **Pedido:** que Nano (bootloader nuevo) quede seleccionada por defecto.
+- **Archivo:** `www/js/blocklino.js` línea 5: `BlocklyDuino.selectedCard = "nanooptiboot"` (antes `"nano"`, o sea Nano Old).
+- **Notas:** solo aplica cuando no hay placa guardada (primera vez o si la guardada ya no existe en el menú).
+  Un PC que ya tenga guardada "Nano Old" la conserva; se cambia a mano en el selector.
+- **Commit:** ver `git log`. **Probado en la app:** pendiente.
+
 ### 2026-10-01 — Selector de placa: solo Nano y Nano Old
 - **Pedido:** que solo aparezcan Nano y Nano Old; las demás placas no se usan.
 - **Archivo:** `www/index.html` (dos listas: selector de la barra superior y ventana de información de la placa).
@@ -29,9 +36,7 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** además del `#define Buzzer`, ahora agrega `const int buzzer = <pin>;` con la clave
   `definitions_['setup_buzzer']`, la misma que usa `buzzer_init`, para que no se duplique si se usan ambos bloques.
   No se tocó `audio.js`.
-- **Resultado:** el código generado compila (verificado por el usuario).
-- **Pendiente:** el usuario reportó que quizá no suena. No es del código: revisar pin real del buzzer,
-  que sea pasivo, polaridad, y probar `Otto._tone(261, 125, 1);`.
+- **Resultado:** compila y el buzzer suena (verificado por el usuario).
 - **Commit:** `9c32612`.
 
 ### 2026-10-01 — Preparación del entorno
