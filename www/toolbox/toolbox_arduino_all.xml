@@ -42,7 +42,7 @@
 			</block>
 			<block type="otto9_smooth"></block>
 			<block type="otto_gesture"></block>
-			<block type="otto9_app"></block>
+			<!-- OCULTO: <block type="otto9_app"></block> -->
 			<block type="otto_movelegs">
 				<value name="PIN_YL"><shadow type="inout_angle_maths"><field name="NUM">90</field></shadow></value>
 				<value name="PIN_YR"><shadow type="inout_angle_maths">	<field name="NUM">90</field>	</shadow></value>
@@ -60,7 +60,7 @@
 				<value name="LF"><shadow type="math_number">	<field name="NUM">0</field>	</shadow></value>
 				<value name="RF"><shadow type="math_number">	<field name="NUM">0</field>	</shadow></value>
 			</block>
-			<block type="otto_eeprom"></block>
+			<!-- OCULTO: <block type="otto_eeprom"></block> -->
 		<!--</category>
 		
 		<category name="CAT_OTTO_ARMS" colour="#4759F5">
