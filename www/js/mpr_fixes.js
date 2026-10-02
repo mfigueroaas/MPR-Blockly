@@ -62,6 +62,10 @@
       }
     }
     Blockly.WidgetDiv.position(xy.x, xy.y, windowSize, scrollOffset, this.sourceBlock_.RTL);
+    // El contenedor mide lo mismo que la lista (antes medía toda la ventana y
+    // alargaba la página); y el scroll de la lista no pasa a la ventana.
+    Blockly.WidgetDiv.DIV.style.height = menuDom.offsetHeight + 'px';
+    menuDom.style.overscrollBehavior = 'contain';
     menu.setAllowAutoFocus(true);
     menuDom.focus();
     var checked = menuDom.querySelector('.goog-option-selected');

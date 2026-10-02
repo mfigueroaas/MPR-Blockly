@@ -340,3 +340,6 @@ vertical-align: middle;
 .blocklyWidgetDiv, .blocklyWidgetDiv *, .blocklyDropDownDiv, .blocklyDropDownDiv * {
   -webkit-app-region: no-drag;
 }
+
+/* La app ocupa la ventana completa y la página nunca debe desplazarse */
+html, body { overflow: hidden; }
