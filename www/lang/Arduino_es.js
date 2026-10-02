@@ -620,6 +620,10 @@ Blockly.Msg.OTTO9_BUZZER="Buzzer";
 Blockly.Msg.OTTO_HOME_TOOLTIP = "Otto va al origen";
 Blockly.Msg.OTTO_HOME_TEXT = "Configuracion";
 Blockly.Msg.OTTO_BIPED_TEXT = " Otto";
+Blockly.Msg.MPR_MAP = "convertir";
+Blockly.Msg.MPR_MAP_FROM = "de";
+Blockly.Msg.MPR_MAP_TO = "a";
+Blockly.Msg.MPR_MAP_TOOLTIP = "Convierte un valor de un rango a otro. Por ejemplo, de 0-1023 (lectura de un sensor) a 0-10.";
 
 ////////////ESCORNABOT Robot////////// ONLY TRANSLATE THE LEFT PART INSIDE ["THIS YES" ,NOT]
 Blockly.Msg.ESCORNABOT_MODE_TEXT="Iniciar Escornabot";

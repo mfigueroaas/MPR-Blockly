@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-02 — Matemática: bloque "map" traducido
+- **Pedido:** traducir al español el bloque `math_map` (decía "map / from / - / to / -").
+- **Archivos:** `www/blocs&generateurs/blockly_blocs.js` (el bloque ahora usa textos de idioma, con el inglés original como respaldo) y
+  `www/lang/Arduino_es.js` (`MPR_MAP`="convertir", `MPR_MAP_FROM`="de", `MPR_MAP_TO`="a", `MPR_MAP_TOOLTIP`). Se corrigió además el
+  tooltip, que mostraba por error el del motor paso a paso.
+- **Resultado:** "convertir [valor] de [0] - [1023] a [0] - [10]". El código generado no cambió: `map(valor,0,1023,0,10);`.
+  Para cambiar las palabras, editar esas cuatro líneas de `Arduino_es.js`.
+- **Probado en la app:** pendiente.
+
 ### 2026-10-02 — Bloque de configuración de Otto: título en español
 - **Problema:** el bloque `otto_configuration` (categoría Otto) mostraba "Configuracionundefined": su título es
   `OTTO_HOME_TEXT` + `OTTO_BIPED_TEXT`, y `OTTO_BIPED_TEXT` solo existía en inglés ("biped").
