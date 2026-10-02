@@ -56,6 +56,7 @@ Blockly.Msg.CAT_actionneur = "⚙️ Motor";
 Blockly.Msg.CAT_ARDUINO_moteur="⚙️ Motor paso";
 Blockly.Msg.CAT_ultrason = "👂 Sensores";
 Blockly.Msg.CAT_SENSORS = "👂 Sensores";
+Blockly.Msg.CAT_SENSORES_EXTRA = "👂 Sensores extra";
 Blockly.Msg.CAT_numerique = "0️⃣ Digital";
 Blockly.Msg.CAT_analogique = "🔢 Análogo";
 Blockly.Msg.CAT_GYRO = "⚖️ Giroscopio";

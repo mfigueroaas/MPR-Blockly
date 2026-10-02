@@ -415,6 +415,8 @@ BlocklyDuino.bindFunctions = function() {
 	$('#select_all').on("click", BlocklyDuino.checkAll);
 	$('#btn_valid_config').on("click", BlocklyDuino.changeToolbox);
 	$('#btn_example').on("click", BlocklyDuino.buildExamples);
+	$('#btn_sensores_extra').on("click", BlocklyDuino.toggleSensoresExtra);
+	BlocklyDuino.actualizarBotonSensoresExtra();
 	if(typeof process === 'undefined') {
 		$('#btn_factory').on("click", function() {
 			window.open("factory.html","_blank", null);
@@ -505,11 +507,27 @@ BlocklyDuino.buildToolbox = function() {
 		if ($('#'+xmlids[i]).length) {
 			xmlValue += $('#'+xmlids[i])[0].outerHTML;
 		}
+		// MPR: bloques de sensores adicionales, ocultos salvo que se active el interruptor
+		if (xmlids[i] == 'CAT_ultrason' && window.localStorage.sensoresExtra == '1' && $('#CAT_SENSORES_EXTRA').length) {
+			xmlValue += $('#CAT_SENSORES_EXTRA')[0].outerHTML;
+		}
 	}
 	xmlValue += '</xml>';
 	return xmlValue;
 };
 
+
+// MPR: interruptor para mostrar u ocultar los bloques de la categoría "Sensores extra"
+BlocklyDuino.actualizarBotonSensoresExtra = function() {
+	var on = window.localStorage.sensoresExtra == '1';
+	$('#btn_sensores_extra').text('Sensores extra: ' + (on ? 'SÍ' : 'NO')).toggleClass('active', on);
+};
+
+BlocklyDuino.toggleSensoresExtra = function() {
+	window.localStorage.sensoresExtra = (window.localStorage.sensoresExtra == '1') ? '0' : '1';
+	BlocklyDuino.actualizarBotonSensoresExtra();
+	Blockly.getMainWorkspace().updateToolbox(BlocklyDuino.buildToolbox());
+};
 
 BlocklyDuino.buildToolboxLevel1 = function() {
 	var loadIds = [];

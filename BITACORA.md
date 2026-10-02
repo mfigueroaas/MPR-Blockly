@@ -12,6 +12,23 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-02 — Sensores: solo ultrasonido, con interruptor para el resto
+- **Pedido:** en la categoría "Sensores" dejar solo el bloque de configuración del ultrasonido y el de lectura de distancia;
+  los demás ocultos, sin borrarlos, con un on/off para mostrarlos.
+- **Contexto:** la categoría "Sensores" visible es `CAT_ultrason` (la que usa `defaultCategories1`), no `CAT_SENSORS`.
+  Los generadores del ultrasonido (`ultrasonic_sensor`, `ultrasonic_distance` en `blocs&generateurs/sensors.js`) ya
+  producen exactamente el código esperado (`ultrasound_distance_simple()`); no se tocaron.
+- **Archivos:**
+  - `www/toolbox/toolbox_arduino_all.xml`: `CAT_ultrason` queda con 2 bloques; los demás (botón, táctil, sonido, DHT,
+    potenciómetro, joystick, encoder rotatorio) pasaron a la nueva categoría `CAT_SENSORES_EXTRA` (nada se borró).
+  - `www/lang/Arduino_es.js`: nombre "Sensores extra".
+  - `www/js/blocklino.js`: `buildToolbox` agrega `CAT_SENSORES_EXTRA` tras `CAT_ultrason` si `localStorage.sensoresExtra == '1'`;
+    nuevas funciones `toggleSensoresExtra` y `actualizarBotonSensoresExtra`.
+  - `www/index.html`: botón `btn_sensores_extra` ("Sensores extra: NO/SÍ") junto al de ejemplos.
+- **Notas:** el estado se guarda por PC (localStorage), por defecto apagado. Las demás subcategorías de
+  `CAT_SENSORS` (VL53L0X, etc.) no están en la lista por defecto y no se tocaron.
+- **Commit:** ver `git log`. **Probado en la app:** pendiente.
+
 ### 2026-10-01 — Placa predeterminada: Nano
 - **Pedido:** que Nano (bootloader nuevo) quede seleccionada por defecto.
 - **Archivo:** `www/js/blocklino.js` línea 5: `BlocklyDuino.selectedCard = "nanooptiboot"` (antes `"nano"`, o sea Nano Old).
