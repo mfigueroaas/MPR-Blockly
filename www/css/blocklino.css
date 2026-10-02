@@ -335,10 +335,3 @@ vertical-align: middle;
 	font-weight: 600;
 	margin: 10px 0 5px 0;
 }
-
-/* MPR: listas desplegables largas (p. ej. canciones RTTTL): altura limitada con barra de desplazamiento */
-.blocklyWidgetDiv .goog-menu {
-	max-height: 50vh !important;
-	overflow-y: auto !important;
-	overflow-x: hidden !important;
-}

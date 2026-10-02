@@ -12,12 +12,20 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
-### 2026-10-02 — Listas desplegables largas con barra de desplazamiento
-- **Problema:** la lista de canciones del bloque "Tocar RTTTL" (Zumbador) era tan larga que se salía de la ventana
-  y no se podían elegir todas.
-- **Archivo:** `www/css/blocklino.css` (al final): `.blocklyWidgetDiv .goog-menu` con `max-height: 50vh` y `overflow-y: auto`.
-  Blockly ya traía `overflow-y: auto`, pero con `max-height: 100%` no limitaba nada.
-- **Alcance:** afecta a todas las listas desplegables de bloques. Para cambiar el alto, editar `50vh` (mitad de la ventana).
+### 2026-10-02 — Listas desplegables largas: alto según espacio disponible y pegadas al campo
+- **Problema:** la lista de canciones del bloque "Tocar RTTTL" (Zumbador) era tan larga que se salía de la ventana.
+  Un primer arreglo solo con CSS (`max-height`, commit `2a69846`) dejaba la lista pegada al borde superior y lejos del bloque:
+  `Blockly.FieldDropdown.prototype.showEditor_` (en `blockly.min.js`) calcula la posición con el alto completo
+  de la lista (`scrollHeight`, ~760 px), no con el alto limitado.
+- **Archivos:**
+  - `www/js/mpr_fixes.js` (nuevo): reemplaza `showEditor_` limitando el alto al espacio libre arriba o abajo del campo
+    (se abre hacia donde más cabe), con barra de desplazamiento, y deja la opción actual a la vista. `blockly.min.js` NO se modifica.
+  - `www/index.html`: carga `js/mpr_fixes.js` justo después de `js/blockly.min.js`.
+  - `www/css/blocklino.css`: se quitó el CSS del primer intento (quedó idéntico al original).
+- **Alcance:** afecta a todas las listas desplegables de bloques. Es un reemplazo de una función de Blockly: si algún día se
+  actualiza Blockly, revisar `mpr_fixes.js`. Para desactivarlo, quitar su línea `<script>` de `index.html`.
+- **Cómo verificar:** bloque RTTTL abajo en la pantalla → la lista termina justo encima del campo; arriba → se abre hacia abajo;
+  con la rueda del mouse se llega a la última canción y se puede elegir.
 - **Probado en la app:** pendiente.
 
 ### 2026-10-02 — Bloques de sonido de Otto movidos a "Zumbador"
