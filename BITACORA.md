@@ -12,6 +12,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-02 — Bloques de sonido de Otto movidos a "Zumbador"
+- **Pedido:** los bloques de sonido de la categoría Otto deben estar en la categoría "Zumbador".
+- **Archivo:** `www/toolbox/toolbox_arduino_all.xml`. Se movieron de `CAT_OTTO` al inicio de `CAT_BUZZER` (nombre "Zumbador"):
+  `otto_sound` (`Otto.sing`), `otto_tone` (`Otto._tone`), `otto_tonehz` (`Otto._tone` con Hz/duración/silencio) y
+  `otto_bendtone` (`Otto.bendTones`). Solo cambió su lugar en el menú; los bloques y generadores no se tocaron.
+- **Para devolverlos a Otto:** cortar esas 4 líneas `<block ...>` de `CAT_BUZZER` y pegarlas en `CAT_OTTO`.
+- **Probado en la app:** pendiente.
+
 ### 2026-10-02 — Categoría Otto: quitar "App code" y "Guardar Trims en EEPROM"
 - **Pedido:** eliminar de la categoría Otto los bloques "App code" y "Guardar Trims en EEPROM".
 - **Archivo:** `www/toolbox/toolbox_arduino_all.xml`, dentro de `CAT_OTTO`: las líneas de `otto9_app` y `otto_eeprom`
