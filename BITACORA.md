@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-02 — Categoría "Texto" oculta
+- **Pedido:** ocultar toda la categoría "Texto"; no es necesaria.
+- **Archivo:** `www/toolbox/toolbox_arduino_all.xml`, línea 3 (`defaultCategories1`, la lista de categorías que se muestran):
+  se quitó `CAT_TEXT`. La definición de la categoría y sus bloques siguen intactos en el archivo.
+- **Cómo volver a mostrarla:** en esa misma línea, agregar `CAT_TEXT,` entre `CAT_MATH,` y `CAT_FUNCTIONS`
+  (queda `...CAT_LOGIC,CAT_MATH,CAT_TEXT,CAT_FUNCTIONS,CAT_VARIABLES`). Luego `python tools/probar.py` y F5.
+- **Nota:** el orden de esa lista es el orden del menú; cualquier categoría se oculta o muestra igual.
+- **Probado en la app:** pendiente.
+
 ### 2026-10-02 — Sensores: solo ultrasonido; el resto oculto (se activa en el código)
 - **Pedido:** en la categoría "Sensores" dejar solo el bloque de configuración del ultrasonido y el de lectura de distancia;
   los demás ocultos, sin borrarlos. La opción de mostrarlos NO debe ser accesible desde la interfaz, solo desde el código.
