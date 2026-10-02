@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-02 — Instalador 1.2.0
+- Versión subida a 1.2.0 en `package.json`. Instalados 7‑Zip y NSIS con `winget`.
+- Generado con `python tools/build_installer.py --official C:\Users\Ultrabook\Downloads\ottoblockly.Setup.1.5.0.exe`:
+  `dist\MPR_Blockly_Setup_1.2.0.exe`, 138 MB, SHA‑256 `e54bbe5cddc798a0879926154472b35fb9cb1617006fe80d594cb0d0cdbd54e3`.
+- Incluye todos los cambios anteriores de esta bitácora. Drivers: solo CH340 se instala (casilla marcada); FTDI y CP210x quedan copiados pero sin instalar (decisión del usuario: por ahora no hacen falta).
+- **Probado en otros PCs:** pendiente.
+
 ### 2026-10-02 — Revertida la traducción del bloque "map"
 - **Pedido:** revertir el cambio del bloque `math_map` (texto "convertir… de… a…"). Se hizo con `git revert` de los commits
   `36243d3` y `3fbdfd4`; el bloque volvió a su texto original en inglés ("map / from / - / to / -") y a su tooltip anterior.

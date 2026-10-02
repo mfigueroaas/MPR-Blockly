@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Producto** | MPR Blockly (programa *Mi Primer Robot*, Crecer en Renca) |
-| **Versión de la app** | 1.1.1 (`package.json`) |
+| **Versión de la app** | 1.2.0 (`package.json`) |
 | **Tipo** | Aplicación de escritorio Windows (Electron) para programar robots Otto DIY por bloques |
 | **Base** | [OttoDIY/blockly](https://github.com/OttoDIY/blockly), master `fdb2026` del 2026‑08‑14 |
 | **Repositorio previsto** | `https://github.com/Admin-Proteinlab/blockly_mpr` (aún no publicado desde esta máquina) |
@@ -273,16 +273,16 @@ Bloques `ultrasonic_sensor` (configuración, pines 8 y 9 por defecto) y `ultraso
 | `UNIR_ARCHIVOS.bat`, `UNIR_INSTALADOR_1.1.1.bat` | Reúnen archivos grandes entregados por partes (`.parteNN`) y verifican SHA‑256 (1.1.1: `148ce62d9434b2bca4f3ca6ac26918915f1d63f05710097afa083ac1ac991b87`; 1.1.0: `b4afe355df2b045928cd156d096184adcbe29d07193c39b6f55b87df2a49467c`) |
 | `MPR_cambios_vs_OttoBlockly.patch` | Resumen legible de los cambios reales del parche frente a upstream |
 
-**Importante:** los bundles y los instaladores 1.1.0/1.1.1 **no contienen** los cambios de octubre de 2026 de esta sesión. Para repartirlos hay que subir la versión y generar un instalador nuevo (o regenerar un bundle con `git bundle create`).
+**Importante:** los bundles y los instaladores 1.1.0/1.1.1 **no contienen** los cambios de octubre de 2026. Esos cambios están en el instalador 1.2.0 (`dist\`). Los bundles no se han regenerado (`git bundle create` si se necesitan).
 
 ### 7.4 Versiones
 | Versión | Contenido |
 |---|---|
 | 1.1.0 | Primera versión empaquetada (parche + base actual + instalador) |
 | 1.1.1 | Driver CH340 marcado por defecto en el instalador; sin otros cambios de la app |
-| (siguiente) | Incluirá los cambios de octubre 2026 listados en la sección 8; subir `version` en `package.json` y `VERSION` se pasa al `.nsi` |
+| 1.2.0 | Incluye los cambios de octubre 2026 de la sección 8. Generado el 2026-10-02: `dist\MPR_Blockly_Setup_1.2.0.exe`, 138 MB, SHA‑256 `e54bbe5cddc798a0879926154472b35fb9cb1617006fe80d594cb0d0cdbd54e3`. Pendiente de pruebas en otros PCs |
 
-Aviso: el código en `package.json` sigue en 1.1.1, aunque el repositorio ya tiene commits posteriores. No se generó instalador con ellos.
+La versión de `package.json` se pasa al `.nsi` (`-DVERSION`) al generar el instalador.
 
 ---
 
@@ -326,7 +326,7 @@ Después de cualquiera: `python tools/probar.py` y F5.
 
 ## 10. Pendientes, riesgos y puntos a vigilar
 
-1. **Cambios de octubre sin instalador:** no están en ningún `.exe` ni bundle entregado (ver 7.3).
+1. **Instalador 1.2.0 sin validar:** falta probarlo en otros PCs, idealmente sin internet (instalar, abrir, compilar y subir a un Nano). Los bundles de git no incluyen los cambios de octubre.
 2. **Verificaciones pendientes** de los cambios marcados "sin confirmar" en la sección 8, en especial las listas desplegables (`mpr_fixes.js`).
 3. **`overflow: hidden` en `html, body`:** se agregó para que la ventana no se desplace; comprobar que ninguna pantalla (modales, ayudas, `factory.html`, `term.html`) necesite desplazarse.
 4. **Estados guardados en `localStorage`** (`card`, `toolbox`, `prog`, `toolboxids`, `content`): los cambios en listas de placas o categorías pueden requerir borrarlos en PCs que ya usaron la app. La placa predeterminada solo se nota en instalaciones sin placa guardada.
