@@ -12,6 +12,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-02 — Listas desplegables largas con barra de desplazamiento
+- **Problema:** la lista de canciones del bloque "Tocar RTTTL" (Zumbador) era tan larga que se salía de la ventana
+  y no se podían elegir todas.
+- **Archivo:** `www/css/blocklino.css` (al final): `.blocklyWidgetDiv .goog-menu` con `max-height: 50vh` y `overflow-y: auto`.
+  Blockly ya traía `overflow-y: auto`, pero con `max-height: 100%` no limitaba nada.
+- **Alcance:** afecta a todas las listas desplegables de bloques. Para cambiar el alto, editar `50vh` (mitad de la ventana).
+- **Probado en la app:** pendiente.
+
 ### 2026-10-02 — Bloques de sonido de Otto movidos a "Zumbador"
 - **Pedido:** los bloques de sonido de la categoría Otto deben estar en la categoría "Zumbador".
 - **Archivo:** `www/toolbox/toolbox_arduino_all.xml`. Se movieron de `CAT_OTTO` al inicio de `CAT_BUZZER` (nombre "Zumbador"):
