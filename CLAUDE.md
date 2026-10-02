@@ -43,3 +43,6 @@ https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 (SHA‑256 en el script).
 
 ## Bitácora
 Cada cambio se registra en `BITACORA.md` (pedido, archivos, qué se hizo, commit, si se probó). Actualizarla en el mismo commit del cambio.
+
+## Documentación
+Visión completa del proyecto en `DOCUMENTACION_TECNICA.md` (arquitectura, versiones, mecanismos, instalador). Si un cambio altera algo de ahí, actualizarla junto con `BITACORA.md`.
