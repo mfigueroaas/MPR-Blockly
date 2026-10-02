@@ -36,14 +36,19 @@
     menu.render(Blockly.WidgetDiv.DIV);
     var menuDom = menu.getElement();
     Blockly.addClass_(menuDom, 'blocklyDropdownMenu');
-    var top = scrollOffset.y, bottom = scrollOffset.y + windowSize.height;
-    var spaceBelow = bottom - (xy.y + borderBBox.height) - MARGEN;
-    var spaceAbove = (xy.y - top) - MARGEN;
-    var fullHeight = menuDom.scrollHeight;
-    var below = fullHeight <= spaceBelow || spaceBelow >= spaceAbove;
+    // Siempre hacia abajo, con el alto que quepa y barra de desplazamiento. Solo si
+    // quedan menos de 90 px (bloque pegado abajo) se abre hacia arriba, sin tapar
+    // la barra de título.
+    var ALTO_MINIMO = 90;
+    var bottom = scrollOffset.y + windowSize.height - MARGEN;
+    var spaceBelow = bottom - (xy.y + borderBBox.height);
+    var titleBar = document.getElementById('toptitle');
+    var topLimit = scrollOffset.y + (titleBar ? titleBar.getBoundingClientRect().bottom : 0) + MARGEN;
+    var spaceAbove = xy.y - topLimit;
+    var below = spaceBelow >= ALTO_MINIMO || spaceBelow >= spaceAbove;
     menuDom.style.overflowY = 'auto';
     menuDom.style.overflowX = 'hidden';
-    menuDom.style.maxHeight = Math.max(80, below ? spaceBelow : spaceAbove) + 'px';
+    menuDom.style.maxHeight = Math.max(ALTO_MINIMO, below ? spaceBelow : spaceAbove) + 'px';
     var menuSize = goog.style.getSize(menuDom);
     menuSize.height = menuDom.offsetHeight;   // alto real ya limitado
     xy.y = below ? xy.y + borderBBox.height : xy.y - (menuSize.height + 2);

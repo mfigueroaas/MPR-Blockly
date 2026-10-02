@@ -335,3 +335,8 @@ vertical-align: middle;
 	font-weight: 600;
 	margin: 10px 0 5px 0;
 }
+
+/* Las listas de Blockly deben recibir clics aunque queden sobre la barra de título */
+.blocklyWidgetDiv, .blocklyWidgetDiv *, .blocklyDropDownDiv, .blocklyDropDownDiv * {
+  -webkit-app-region: no-drag;
+}
