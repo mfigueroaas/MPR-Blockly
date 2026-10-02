@@ -40,3 +40,6 @@ https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 (SHA‑256 en el script).
 - Si se cambia la librería Otto o un generador de bloques: compilar un ejemplo con
   `compilation\arduino\arduino-cli.exe compile --fqbn arduino:avr:nano:cpu=atmega328old sketch\sketch.ino`
   desde la carpeta instalada (`C:\MPRBlockly\compilation\arduino`).
+
+## Bitácora
+Cada cambio se registra en `BITACORA.md` (pedido, archivos, qué se hizo, commit, si se probó). Actualizarla en el mismo commit del cambio.
