@@ -304,6 +304,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 10 | Bloque de configuración Otto: título "Configuracion Otto" | `Arduino_es.js` (`OTTO_BIPED_TEXT`) | Sin confirmar |
 | — | Traducción del bloque `map` | — | **Revertida** a pedido del usuario |
 | 11 | Otto: oculto el bloque "Dance smooth criminal" (`otto9_smooth`) | toolbox XML | Sin confirmar (visto en entorno de prueba) |
+| 12 | Estructura: bloque "Declaración" con ícono #️⃣ en vez del engranaje | `Arduino_es.js` (`Blockly.Msg.def`) | Sin confirmar (visto en entorno de prueba) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 

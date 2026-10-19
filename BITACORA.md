@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-18 — Estructura: bloque "Declaración" con ícono de hashtag
+- **Pedido:** en la categoría Estructura, el bloque "Declaración" tenía un ícono de engranaje (igual que "Configuración");
+  cambiarlo por un hashtag.
+- **Archivo:** `www/lang/Arduino_es.js`: `Blockly.Msg.def = "#️⃣ Declaración";` (antes `"⚙️ Declaración"`). Es el texto del
+  bloque `base_define`; nada más cambió. "Configuración" conserva el engranaje.
+- **Nota:** se probaron `#️⃣`, `#` y `＃` en el Electron 4.1.1 de la app: `#️⃣` se ve como un ícono azul con "#", del mismo
+  estilo que los íconos de las categorías; `#` y `＃` se ven como texto.
+- **Probado:** en el entorno de prueba (Electron 4.1.1) se ve bien. En la app instalada: pendiente.
+
 ### 2026-10-18 — Otto: ocultar el bloque "Dance smooth criminal"
 - **Pedido:** eliminar el bloque de baile "Dance smooth criminal" (categoría Otto).
 - **Archivo:** `www/toolbox/toolbox_arduino_all.xml`, dentro de `CAT_OTTO`: la línea de `otto9_smooth` quedó comentada
