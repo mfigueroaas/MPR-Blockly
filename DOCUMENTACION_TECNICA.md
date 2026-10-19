@@ -127,6 +127,7 @@ El instalador MPR **no recompila nada de esto**: reutiliza los binarios ya compi
 | `www/js/blocklino.js` | Controlador de la UI (toolbox, placas, carga de configuración) |
 | `www/js/boards.js` | Perfiles de placas |
 | `www/js/mpr_fixes.js` | Sobrescribe `Blockly.FieldDropdown.prototype.showEditor_` (listas desplegables largas) |
+| `www/js/mpr_buscar.js` | Búsqueda de bloques del botón de la lupa (objeto `MPRBuscar`) |
 | `www/blocs&generateurs/` | Definición de bloques y generadores de código, un archivo por familia |
 | `www/lang/` | Textos. Se usa `Arduino_es.js` y `msg_es.js`; `code.js` fija el idioma a `es` |
 | `www/toolbox/toolbox_arduino_all.xml` | Categorías y bloques del menú (el que usa Nano) |
@@ -177,6 +178,13 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 
 ### 4.4 Interruptores en el código
 - `BlocklyDuino.mostrarSensoresExtra` (`www/js/blocklino.js`, línea 6): `false` oculta la categoría "Sensores extra". Poner `true` la muestra bajo "Sensores". No hay botón en la interfaz a propósito.
+
+### 4.5 Búsqueda de bloques (lupa)
+- `www/js/mpr_buscar.js` (objeto `MPRBuscar`), cargado después de `blocklino.js`. El botón `#btn_buscar` muestra u oculta la caja `#buscar_bloques`, que se ubica por JS a la izquierda de `#btn_group`. El antiguo botón del monitor serie (`btn_term`) está comentado en `index.html`.
+- **Índice:** recorre `BlocklyDuino.workspace.options.languageTree` (el menú cargado, o sea solo las categorías visibles), crea cada bloque en un `Blockly.Workspace` sin pantalla y con eventos desactivados, y guarda sus textos, las opciones de sus listas (`FieldDropdown.getOptions_()`; las listas de variables se ignoran) y la ayuda. Se rehace si cambia el menú. Variables y Funciones (categorías `custom`) se leen en cada búsqueda.
+- **Coincidencias:** texto normalizado (minúsculas, sin tildes ni símbolos); todas las palabras deben aparecer; puntaje: texto del bloque > opción de una lista > nombre de la categoría > ayuda. Si coincide una opción, el bloque se muestra con esa opción elegida (hasta 4 variantes por bloque, 40 resultados en total). Sinónimos en `MPRBuscar.SINONIMOS`.
+- **Resultados:** `toolbox_.flyout_.show(lista)` con etiquetas (`<label>`) y bloques; antes se desmarca la categoría elegida (`clearSelection`). `Blockly.hideChaff` se envuelve para que un clic en el área de trabajo cierre el panel de resultados.
+- `blockly.min.js` no se modifica. Si se actualiza Blockly, revisar `getOptions_`, `toolbox_.flyout_`, `tree_.getSelectedItem` y `hideChaff`.
 
 ---
 
@@ -305,6 +313,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | — | Traducción del bloque `map` | — | **Revertida** a pedido del usuario |
 | 11 | Otto: oculto el bloque "Dance smooth criminal" (`otto9_smooth`) | toolbox XML | Sin confirmar (visto en entorno de prueba) |
 | 12 | Estructura: bloque "Declaración" con ícono #️⃣ en vez del engranaje | `Arduino_es.js` (`Blockly.Msg.def`) | Sin confirmar (visto en entorno de prueba) |
+| 13 | Lupa: búsqueda de bloques (el monitor serie quedó oculto) | `mpr_buscar.js` (nuevo), `index.html`, `blocklino.css`, `msg_es.js`, `code.js` | Sin confirmar (probado en entorno de prueba) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 
@@ -320,6 +329,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Casting en Matemática | Igual: quitar el comentario `OCULTO` de las 4 líneas `conversion_*` al final de `CAT_MATH` |
 | Otras placas (Uno, Mega, Leonardo, Micro, MRTduino, ZUM BT‑328) | Volver a agregar sus `<option>` en las **dos** listas de `index.html` (sus perfiles siguen en `boards.js`); para compilar, el core AVR ya está incluido |
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |
+| Monitor serie (lo abría la lupa) | En `www/index.html` quitar el comentario `OCULTO` de `btn_term` (y comentar `btn_buscar` si no se quiere la búsqueda) |
 | Más velocidad / pasos más amplios del robot | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h` (120 o 240); **probar en el robot** |
 
 Después de cualquiera: `python tools/probar.py` y F5.

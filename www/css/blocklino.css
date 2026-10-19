@@ -343,3 +343,35 @@ vertical-align: middle;
 
 /* La app ocupa la ventana completa y la página nunca debe desplazarse */
 html, body { overflow: hidden; }
+
+/* MPR: búsqueda de bloques (lupa). La caja se ubica a la izquierda de los botones (js/mpr_buscar.js) */
+#buscar_bloques {
+	position: absolute;
+	top: 9px;
+	z-index: 10;
+	width: 240px;
+	height: 42px;
+	padding: 0 10px 0 14px;
+	border: none;
+	border-radius: 10px;
+	box-shadow: 0 0 0 3px #FF5700;
+	outline: none;
+	background-color: #ffffff;
+	color: #2d2d64;
+	font-family: 'Poppins', sans-serif;
+	font-size: 17px;
+	font-weight: bold;
+}
+#buscar_bloques::placeholder {
+	color: #8c94b8;
+	font-weight: normal;
+}
+#btn_buscar.activo {
+	background-color: #ff6600;
+	border-color: #ff6600;
+}
+/* Títulos del panel de resultados (y de cualquier etiqueta en un panel de bloques) */
+.blocklyFlyoutLabelText {
+	fill: #2d2d64;
+	font-weight: bold;
+}
