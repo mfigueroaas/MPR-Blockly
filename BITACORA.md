@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-18 — Velocidad "Muy rápido" en los bloques de Otto
+- **Pedido:** que Otto pueda moverse más rápido de lo que permite el menú actual (parte del análisis de los servos).
+- **Archivo:** `www/lang/Arduino_es.js`, `OTTO9_MOVE_SPEED_CHOICE` (lo usan Mover, Bailar y Hacer): se agregó
+  `["Muy rápido","1000"]` (T=1000 ms, la velocidad "Normal" del Otto original). Normal (2000), Lento (3500) y Rápido (1500)
+  no cambiaron: los proyectos `.bloc` guardados siguen igual.
+- **Nota:** solo tiene sentido con la librería nueva (limitador 240 grados/s, entrada anterior). Con el limitador
+  antiguo (3), a T=1000 el paso quedaba en ~12 de 30 grados.
+- **Probado en el robot:** pendiente.
+
 ### 2026-10-18 — Librería Otto: movimiento más rápido y sin saltos (limitador en grados/s real)
 - **Pedido:** analizar cómo se mueven los servos (el código los limita para que "no se pisen"), revisar el oscilador y
   las instrucciones que mandan a 90 grados sin importar dónde está el servo, y ver si Otto puede moverse mejor y más

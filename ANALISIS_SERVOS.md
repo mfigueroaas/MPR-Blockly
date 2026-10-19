@@ -49,6 +49,7 @@ dividía la velocidad por cuatro. Con un límite real en grados por segundo deja
 | `Oscillator::write()` | Límite en grados/s con redondeo; si pasó más de `OSCILLATOR_MAX_DT_MS` (50 ms) desde la orden anterior se cuenta como una pausa y el primer paso es como un solo pulso de 20 ms (5 grados). Cálculo en `long`. |
 | `Oscillator::next_sample()`, `SetT()` | Muestra cada 20 ms exactos (`>=`) y `_numberSamples` con decimales: cada ciclo dura lo pedido. |
 | `Otto::_moveSingle()` | Fuera de rango se limita a 0–180 en vez de mandar a 90. |
+| `Arduino_es.js` (menú de velocidades) | Se agregó **"Muy rápido" = 1000 ms** (la velocidad "Normal" del Otto original). Normal, Lento y Rápido no cambiaron (los proyectos guardados siguen igual). |
 
 No se cambiaron: las trayectorias de los movimientos (amplitudes, desfases), `home()` (1 s, luego desconecta),
 el round-robin, ni los bloques. Para volver al limitador anterior basta poner `OTTO_DIFF_LIMIT_DEFAULT` en 3.
@@ -66,7 +67,7 @@ izq./der.); "salto" = mayor cambio de orden en un pulso de 20 ms.
 | Caminar | 3500 (Lento) | 14,0 s / 30-30-20-20 / 1 | 14,0 s / 30-30-20-20 / 5 |
 | Caminar | 2000 (Normal) | 8,0 s / **24**-24-20-20 / 1 | 8,0 s / **30**-30-20-20 / 5 |
 | Caminar | 1500 (Rápido) | 6,0 s / **18,5**-18,5-18-18 / 1 | 6,0 s / **30**-30-20-20 / 5 |
-| Caminar | 1000 | 4,0 s / **12,5**-12,5-12,5-12,5 / 1 | 4,0 s / **30**-30-20-20 / 5 |
+| Caminar | 1000 (Muy rápido) | 4,0 s / **12,5**-12,5-12,5-12,5 / 1 | 4,0 s / **30**-30-20-20 / 5 |
 | Girar | 1000 | 4,0 s / 12,5-10-12,5-12,5 / 1 | 4,0 s / 30-10-20-20 / 5 |
 | Moonwalk grande (h=40) | 1000 | 4,0 s / pies **13** / 1 | 4,0 s / pies **40** / 5 |
 | Inclinar | 2000 | **4,1 s** | **2,9 s** (lo diseñado) |
@@ -85,12 +86,12 @@ La simulación no reemplaza la prueba en el robot: no modela el peso, el roce ni
 ## 4. Cómo probar en el robot
 
 1. `python tools/probar.py` (copia la librería a `C:\MPRBlockly`) y abrir la app.
-2. Subir los ejemplos "Caminar", "Meneito" y "Equilibrio", y un programa con "Mover Adelante" en Normal y
-   Rápido, "Inclinar", "Agitar pata" y "Bailar".
+2. Subir los ejemplos "Caminar", "Meneito" y "Equilibrio", y un programa con "Mover Adelante" en Normal, Rápido
+   y Muy rápido, "Inclinar", "Agitar pata" y "Bailar".
 3. Revisar: al encender, los servos se acomodan uno por uno; los pasos son más largos y el robot avanza más por
    paso; el robot no se cae; la placa **no se reinicia** (si se reinicia, el robot vuelve a acomodar los servos uno
    por uno en medio del programa). Probar con pilas nuevas y con pilas usadas.
-4. Si se reinicia o se cae: bajar `OTTO_DIFF_LIMIT_DEFAULT` a 150–180 en `Otto.h`;
+4. Si se reinicia o se cae: bajar `OTTO_DIFF_LIMIT_DEFAULT` a 150–180 en `Otto.h` (o usar menos "Muy rápido");
    si el problema es solo al encender, subir `OTTO_ATTACH_DELAY_MS`. Para volver al comportamiento anterior: 3.
 
 ## 5. Otros hallazgos (no se cambiaron)
