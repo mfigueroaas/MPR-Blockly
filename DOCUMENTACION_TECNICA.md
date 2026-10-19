@@ -318,6 +318,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 13 | Lupa: búsqueda de bloques (el monitor serie quedó oculto) | `mpr_buscar.js` (nuevo), `index.html`, `blocklino.css`, `msg_es.js`, `code.js` | Sin confirmar (probado en entorno de prueba) |
 | 14 | Librería Otto: limitador 240 grados/s, arranque escalonado, reconexión sin salto, oscilador a 20 ms exactos | `Otto.h/.cpp`, `Oscillator.h/.cpp` | **Pendiente en el robot** (verificado en simulación y compilación) |
 | 15 | Menú de velocidades: nueva opción "Muy rápido" (1000 ms) | `Arduino_es.js` (`OTTO9_MOVE_SPEED_CHOICE`) | **Pendiente en el robot** |
+| 16 | Verificar/Subir: `arduino-cli.exe` con ruta completa (falla si Windows tiene `NoDefaultCurrentDirectoryInExePath`) | `index.js` | Error reproducido y corregido fuera de la app; en la app pendiente |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 

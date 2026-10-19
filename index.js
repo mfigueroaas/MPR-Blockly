@@ -14,7 +14,9 @@ if (fs.existsSync(path.join(mpr_app_root, 'compilation', 'arduino'))) {
 }
 
 var arduino_basepath = process.platform == 'win32' ? arduino_basepath = './compilation/arduino' : path.join(__dirname, '../../compilation/arduino')
-var arduino_ide_cmd = process.platform == 'win32' ? 'arduino-cli.exe' : arduino_ide_cmd = path.join(__dirname, '../../compilation/arduino/arduino-cli')
+// MPR: en Windows se usa la ruta completa de arduino-cli.exe. Con solo el nombre, cmd.exe lo busca en la
+// carpeta actual y no lo encuentra si el PC tiene NoDefaultCurrentDirectoryInExePath (opción de seguridad).
+var arduino_ide_cmd = process.platform == 'win32' ? '"' + path.resolve(arduino_basepath, 'arduino-cli.exe') + '"' : arduino_ide_cmd = path.join(__dirname, '../../compilation/arduino/arduino-cli')
 
 window.addEventListener('load', function load(event) {
 	var quitDiv = '<button type="button" class="close" data-dismiss="modal" aria-label="Close">&#215;</button>'

@@ -12,6 +12,17 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-18 — Verificar/Subir: arduino-cli.exe con ruta completa
+- **Problema:** al subir un programa apareció `"arduino-cli.exe" no se reconoce como un comando interno o externo`.
+  Causa: la app se abrió desde una sesión con la variable de Windows `NoDefaultCurrentDirectoryInExePath=1` (opción de
+  seguridad que impide ejecutar programas desde la carpeta actual) y `index.js` llamaba a `arduino-cli.exe` solo por su
+  nombre, contando con que estuviera en la carpeta actual (`compilation/arduino`). Abriendo la app desde su acceso directo
+  no pasa, pero en un PC que tenga esa opción activada fallaría igual.
+- **Archivo:** `index.js`: en Windows se usa la ruta completa y entre comillas
+  (`path.resolve(arduino_basepath, 'arduino-cli.exe')`). Verificar y Subir usan esa misma variable.
+- **Verificado:** con la variable activa, el comando antiguo da el mismo error y el nuevo funciona (`arduino-cli version`).
+- **Probado en la app:** pendiente (`python tools/probar.py` copia `resources/app/index.js`; luego F5 o reabrir la app).
+
 ### 2026-10-18 — Velocidad "Muy rápido" en los bloques de Otto
 - **Pedido:** que Otto pueda moverse más rápido de lo que permite el menú actual (parte del análisis de los servos).
 - **Archivo:** `www/lang/Arduino_es.js`, `OTTO9_MOVE_SPEED_CHOICE` (lo usan Mover, Bailar y Hacer): se agregó
