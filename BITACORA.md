@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-18 — Otto: ocultar el bloque "Dance smooth criminal"
+- **Pedido:** eliminar el bloque de baile "Dance smooth criminal" (categoría Otto).
+- **Archivo:** `www/toolbox/toolbox_arduino_all.xml`, dentro de `CAT_OTTO`: la línea de `otto9_smooth` quedó comentada
+  (`<!-- OCULTO: ... -->`), igual que "App code". Su definición y generador (`blocs&generateurs/otto.js`) no se
+  borraron, así un proyecto `.bloc` antiguo que lo use sigue abriendo. Ningún ejemplo lo usa.
+- **Para volver a mostrarlo:** en esa línea, quitar `<!-- OCULTO: ` y ` -->`.
+- **Probado:** en un entorno de prueba con el Electron 4.1.1 de la app (copia en carpeta temporal) el bloque ya no
+  aparece en Otto. En la app instalada: pendiente (`python tools/probar.py` y F5).
+
 ### 2026-10-02 — Instalador 1.2.0
 - Versión subida a 1.2.0 en `package.json`. Instalados 7‑Zip y NSIS con `winget`.
 - Generado con `python tools/build_installer.py --official C:\Users\Ultrabook\Downloads\ottoblockly.Setup.1.5.0.exe`:

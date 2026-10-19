@@ -189,7 +189,7 @@ Logos Crecer en Renca / Innova / La Fábrica / Renca en el pie de página, color
 
 ### 5.2 Menú de bloques actual (visible)
 Arduino (estructura), **Otto**, matriz 16x8 y OLED (según lo que realmente muestre el XML), **Zumbador**, **Sensores** (solo ultrasonido), Tiempo, Lógica, **Matemática** (sin casting), Funciones, Variables.
-Ocultos (sin borrar): categoría **Texto**; bloques Otto `App code` (`otto9_app`) y `Guardar Trims en EEPROM` (`otto_eeprom`); casting en Matemática; "Sensores extra".
+Ocultos (sin borrar): categoría **Texto**; bloques Otto `App code` (`otto9_app`), `Guardar Trims en EEPROM` (`otto_eeprom`) y `Dance smooth criminal` (`otto9_smooth`); casting en Matemática; "Sensores extra".
 
 ### 5.3 Bloques de Otto
 - `otto_configuration` (en `www/blocs&generateurs/ottoesp.js`): título **"Configuracion Otto"**, pines por defecto: pierna izq. 2, der. 3, pie izq. 4, der. 5, buzzer 13. Genera `#define LeftLeg/RightLeg/LeftFoot/RightFoot/Buzzer`, `Otto.init(...)` y `Otto.home()`.
@@ -303,6 +303,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 9 | Matemática: casting oculto (Byte, unsigned Int, Int, Float) | toolbox XML | Sin confirmar |
 | 10 | Bloque de configuración Otto: título "Configuracion Otto" | `Arduino_es.js` (`OTTO_BIPED_TEXT`) | Sin confirmar |
 | — | Traducción del bloque `map` | — | **Revertida** a pedido del usuario |
+| 11 | Otto: oculto el bloque "Dance smooth criminal" (`otto9_smooth`) | toolbox XML | Sin confirmar (visto en entorno de prueba) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 
@@ -314,7 +315,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 |---|---|
 | Sensores extra (botón, DHT, joystick, encoder…) | `www/js/blocklino.js` línea 6: `BlocklyDuino.mostrarSensoresExtra = true;` |
 | Categoría Texto | En `defaultCategories1` (línea 3 del toolbox XML) agregar `CAT_TEXT,` entre `CAT_MATH,` y `CAT_FUNCTIONS` |
-| `App code` / `Guardar Trims en EEPROM` | Quitar `<!-- OCULTO: ` y ` -->` en esas dos líneas de `CAT_OTTO` |
+| `App code` / `Guardar Trims en EEPROM` / `Dance smooth criminal` | Quitar `<!-- OCULTO: ` y ` -->` en esas líneas de `CAT_OTTO` |
 | Casting en Matemática | Igual: quitar el comentario `OCULTO` de las 4 líneas `conversion_*` al final de `CAT_MATH` |
 | Otras placas (Uno, Mega, Leonardo, Micro, MRTduino, ZUM BT‑328) | Volver a agregar sus `<option>` en las **dos** listas de `index.html` (sus perfiles siguen en `boards.js`); para compilar, el core AVR ya está incluido |
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |

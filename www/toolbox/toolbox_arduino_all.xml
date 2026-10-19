@@ -26,7 +26,7 @@
 			<block type="otto_move"></block>
 			<block type="otto_dance"></block>
 			<block type="otto_do"></block>
-			<block type="otto9_smooth"></block>
+			<!-- OCULTO: <block type="otto9_smooth"></block> -->
 			<block type="otto_gesture"></block>
 			<!-- OCULTO: <block type="otto9_app"></block> -->
 			<block type="otto_movelegs">
