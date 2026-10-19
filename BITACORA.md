@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-18 — Búsqueda de bloques: ajustes
+- **Archivo:** `www/js/mpr_buscar.js`.
+- Al abrir la búsqueda o mostrar resultados se cierra una lista desplegable que haya quedado abierta (antes quedaba encima
+  del panel de resultados).
+- Hasta 6 variantes por bloque (antes 4): al buscar "31 minutos" aparece el bloque "Tocar RTTTL" con cada canción.
+- **Probado:** en el entorno de prueba.
+
 ### 2026-10-18 — Verificar/Subir: arduino-cli.exe con ruta completa
 - **Problema:** al subir un programa apareció `"arduino-cli.exe" no se reconoce como un comando interno o externo`.
   Causa: la app se abrió desde una sesión con la variable de Windows `NoDefaultCurrentDirectoryInExePath=1` (opción de

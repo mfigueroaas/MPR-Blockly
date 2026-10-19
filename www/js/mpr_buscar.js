@@ -14,7 +14,7 @@ var MPRBuscar = {
 	dinamicas: [],      // categorías que cambian (Variables, Funciones): se leen en cada búsqueda
 	temporizador: null,
 	MAX_RESULTADOS: 40,
-	MAX_VARIANTES: 4,   // máximo de opciones distintas de un mismo bloque
+	MAX_VARIANTES: 6,   // máximo de opciones distintas de un mismo bloque
 	// Palabras que un alumno puede buscar y que no están escritas en los bloques
 	SINONIMOS: {
 		caminar: 'mover', camina: 'mover', andar: 'mover', avanzar: 'adelante', retroceder: 'atras',
@@ -265,6 +265,7 @@ MPRBuscar.mostrar = function(consulta) {
 	var ws = BlocklyDuino.workspace;
 	var tb = ws && ws.toolbox_;
 	if (!tb || !tb.flyout_) return;
+	Blockly.hideChaff(true);
 	var resultados = MPRBuscar.buscar(consulta, ws);
 	if (resultados === null) {
 		MPRBuscar.ocultarResultados();
@@ -303,6 +304,7 @@ MPRBuscar.abierta = function() {
 
 MPRBuscar.abrir = function() {
 	var caja = document.getElementById('buscar_bloques');
+	Blockly.hideChaff(true);   // cierra una lista desplegable o ayuda abierta (el menú queda igual)
 	caja.style.display = 'block';
 	MPRBuscar.ubicar();
 	$('#btn_buscar').addClass('activo');
