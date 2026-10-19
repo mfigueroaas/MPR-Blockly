@@ -8,7 +8,7 @@
 | **Base** | [OttoDIY/blockly](https://github.com/OttoDIY/blockly), master `fdb2026` del 2026‑08‑14 |
 | **Repositorio previsto** | `https://github.com/Admin-Proteinlab/blockly_mpr` (aún no publicado desde esta máquina) |
 | **Licencia** | GPL‑2.0 (ver `LICENSE.md`); arduino-cli es GPL‑3.0 |
-| **Documentos hermanos** | `CLAUDE.md` (reglas para Claude Code), `LEEME_MPR.md` (resumen), `BITACORA.md` (registro de cada cambio) |
+| **Documentos hermanos** | `CLAUDE.md` (reglas para Claude Code), `LEEME_MPR.md` (resumen), `BITACORA.md` (registro de cada cambio), `ANALISIS_SERVOS.md` (movimiento de los servos) |
 
 Este documento explica **qué es el proyecto, de dónde viene, cómo está armado, cómo se modifica, se prueba y se entrega**, y qué quedó pendiente. Está pensado para que alguien nuevo pueda retomar el trabajo sin la conversación original. Lo que no se ha comprobado en la app real está marcado como **sin confirmar**.
 
@@ -24,7 +24,7 @@ Diferencias principales respecto de Otto Blockly oficial:
 
 - Solo español y solo placas AVR (Nano / Nano Old en el selector).
 - Marca y colores del programa (logos, pie de página), ejemplos "Mi Primer Robot", menú de velocidades, interfaz simplificada y toolbox reducida.
-- Librería Otto con **limitador de velocidad de servos** y refresco round‑robin (movimiento más suave).
+- Librería Otto con **limitador de velocidad de servos** (240 grados/s), arranque escalonado de los servos y refresco round‑robin.
 - Instalador propio (`C:\MPRBlockly`), con asociación de archivos `.bloc`, desinstalador, driver CH340 y permisos pensados para alumnos sin administrador.
 - Actualizador automático desactivado (apuntaba a Otto Blockly oficial y lo habría reemplazado).
 
@@ -208,8 +208,10 @@ Ocultos (sin borrar): categoría **Texto**; bloques Otto `App code` (`otto9_app`
 Bloques `ultrasonic_sensor` (configuración, pines 8 y 9 por defecto) y `ultrasonic_distance` (lectura) en `sensors.js`. Generan `ultrasound_distance_simple()` con `pulseIn` y `duration/58`. (Existe una variante para pines 4/5 con otros tiempos.) Los demás bloques pasaron a `CAT_SENSORES_EXTRA`. **Verificado por el usuario ("está bien").**
 
 ### 5.5 Librería Otto (`compilation/arduino/userlibs/libraries/Otto/`)
-- **Limitador de velocidad de servos**: `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h` = **3** (grados por segundo, mínimo 1 grado por escritura). Da movimiento muy suave y pasos algo más cortos (`walk()` ≈ 19° a T=1500 y ≈ 25° a T=2000, de 30 pedidos). Para pasos de amplitud completa usar 120 (o 240, valor de OttoDIYLib). **No cambiar sin que lo pidan y sin probar en el robot.**
-- Refresco round‑robin de servos.
+- **Limitador de velocidad de servos**: `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h` = **240** grados por segundo (desde oct‑2026; antes 3, que en la práctica era 1 grado por orden y recortaba los pasos). Después de una pausa (más de `OSCILLATOR_MAX_DT_MS` = 50 ms sin órdenes) el primer paso es como un solo pulso de 20 ms. Análisis, números y pruebas en `ANALISIS_SERVOS.md`. **No cambiar sin que lo pidan y sin probar en el robot.**
+- **Arranque escalonado:** `Otto::init()` lee los trims y conecta los servos de a uno (`OTTO_ATTACH_DELAY_MS` = 200 ms).
+- **Reconexión sin salto:** `Oscillator::attach()` envía la última posición conocida con trim antes de conectar (antes mandaba a 90 sin trim después de cada `home()`).
+- Refresco round‑robin de servos (se mantiene; con el límite en grados/s ya no frena el movimiento).
 - Corrección en `_moveServos`: la trayectoria se calcula desde la posición inicial en `double`; antes `pos + 4*increment` se truncaba a `int` y los movimientos lentos hacia ángulos mayores no avanzaban.
 - `OTTO_DBG_BEGIN`: en Uno/Nano `Serial` siempre es verdadero, nunca iniciaba (`OTTO_DBG` desactivado por defecto).
 
@@ -314,6 +316,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 11 | Otto: oculto el bloque "Dance smooth criminal" (`otto9_smooth`) | toolbox XML | Sin confirmar (visto en entorno de prueba) |
 | 12 | Estructura: bloque "Declaración" con ícono #️⃣ en vez del engranaje | `Arduino_es.js` (`Blockly.Msg.def`) | Sin confirmar (visto en entorno de prueba) |
 | 13 | Lupa: búsqueda de bloques (el monitor serie quedó oculto) | `mpr_buscar.js` (nuevo), `index.html`, `blocklino.css`, `msg_es.js`, `code.js` | Sin confirmar (probado en entorno de prueba) |
+| 14 | Librería Otto: limitador 240 grados/s, arranque escalonado, reconexión sin salto, oscilador a 20 ms exactos | `Otto.h/.cpp`, `Oscillator.h/.cpp` | **Pendiente en el robot** (verificado en simulación y compilación) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 
@@ -330,7 +333,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Otras placas (Uno, Mega, Leonardo, Micro, MRTduino, ZUM BT‑328) | Volver a agregar sus `<option>` en las **dos** listas de `index.html` (sus perfiles siguen en `boards.js`); para compilar, el core AVR ya está incluido |
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |
 | Monitor serie (lo abría la lupa) | En `www/index.html` quitar el comentario `OCULTO` de `btn_term` (y comentar `btn_buscar` si no se quiere la búsqueda) |
-| Más velocidad / pasos más amplios del robot | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h` (120 o 240); **probar en el robot** |
+| Limitador de servos como antes (más lento y suave) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h`: 3 (ahora 240); valores intermedios 150–180; **probar en el robot** |
 
 Después de cualquiera: `python tools/probar.py` y F5.
 
@@ -374,4 +377,4 @@ Después de cualquiera: `python tools/probar.py` y F5.
 - Repositorio base: https://github.com/OttoDIY/blockly
 - Instalador oficial 1.5.0: https://github.com/OttoDIY/blockly/releases/tag/v1.5.0
 - Librería Otto original: https://github.com/OttoDIY/OttoDIYLib
-- Más contexto: `LEEME_MPR.md`, `CLAUDE.md`, `BITACORA.md`, `git log`
+- Más contexto: `LEEME_MPR.md`, `CLAUDE.md`, `BITACORA.md`, `ANALISIS_SERVOS.md`, `git log`

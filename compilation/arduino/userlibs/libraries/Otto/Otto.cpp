@@ -20,7 +20,23 @@ void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int Buzze
   servo_pins[2] = RL;
   servo_pins[3] = RR;
 
-  attachServos();
+  // MPR: los trims se leen ANTES de conectar los servos: asi el primer pulso ya va
+  // calibrado (antes cada servo iba a 90 sin trim y despues saltaba al trim).
+  if (load_calibration) {
+    for (int i = 0; i < 4; i++) {
+      int servo_trim = EEPROM.read(i);
+      if (servo_trim > 128) servo_trim -= 256;
+      servo[i].SetTrim(servo_trim);
+    }
+  }
+
+  // MPR: al encender no se sabe donde esta cada servo y cada uno va a 90 a toda velocidad.
+  // Se conectan de a uno, con OTTO_ATTACH_DELAY_MS entre cada uno, para que los cuatro
+  // motores no arranquen a la vez (pico de corriente que puede reiniciar la placa).
+  for (int i = 0; i < 4; i++) {
+    if (i > 0 && OTTO_ATTACH_DELAY_MS > 0) delay(OTTO_ATTACH_DELAY_MS);
+    servo[i].attach(servo_pins[i]);
+  }
     // --- Default limiter (compile-time configurable) ---
     #if OTTO_LIMITER_DEFAULT_ON
       for (int i = 0; i < 4; ++i) {
@@ -35,14 +51,6 @@ void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int Buzze
     #endif
 
   isOttoResting=false;
-
-  if (load_calibration) {
-    for (int i = 0; i < 4; i++) {
-      int servo_trim = EEPROM.read(i);
-      if (servo_trim > 128) servo_trim -= 256;
-      servo[i].SetTrim(servo_trim);
-    }
-  }
 
   //Buzzer pin:
   pinBuzzer = Buzzer;
@@ -153,8 +161,9 @@ void Otto::_moveServos(int time, int  servo_target[]) {
 }
 
 void Otto::_moveSingle(int position, int servo_number) {
-if (position > 180) position = 90;
-if (position < 0) position = 90;
+// MPR: fuera de rango se limita a 0..180 (antes se mandaba a 90, un salto brusco)
+if (position > 180) position = 180;
+if (position < 0) position = 0;
   attachServos();
   if(getRestState()==true){
         setRestState(false);

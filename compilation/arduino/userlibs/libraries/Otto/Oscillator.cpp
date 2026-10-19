@@ -27,7 +27,9 @@ bool Oscillator::next_sample()
   _currentMillis = millis();
  
   //-- Check if the timeout has passed
-  if(_currentMillis - _previousMillis > _samplingPeriod) {
+  //-- MPR: ">=" (antes ">"): con ">" la muestra salia cada 21 ms en vez de 20 y cada
+  //-- movimiento de 1 ciclo quedaba en ~95% del ciclo (mas lento que el periodo pedido).
+  if(_currentMillis - _previousMillis >= _samplingPeriod) {
     _previousMillis = _currentMillis;   
 
     return true;
@@ -44,16 +46,20 @@ void Oscillator::attach(int pin, bool rev)
   //-- If the oscillator is detached, attach it.
   if(!_servo.attached()){
 
-    //-- Attach the servo and move it to the home position
+    //-- MPR: antes se hacia attach() y luego write(90): cada vez que el servo se volvia a
+    //-- conectar (home() lo desconecta) saltaba a 90 SIN el trim y _pos volvia a 90 aunque
+    //-- el servo estuviera en otra posicion. Ahora se envia la ultima posicion conocida, con
+    //-- trim, ANTES de conectar: el primer pulso ya es el correcto y no hay salto.
+    //-- Al encender, la ultima posicion conocida es 90 (constructor).
+      _servo.write(_pos + _trim);
       _servo.attach(pin);
-      _pos = 90; 
-      _servo.write(90);
+      _servo.write(_pos + _trim);
       _previousServoCommandMillis = millis();
 
       //-- Initialization of oscilaltor parameters
       _samplingPeriod=20;
       _period=2000;
-      _numberSamples = _period/_samplingPeriod;
+      _numberSamples = (double)_period/_samplingPeriod;
       _inc = 2*M_PI/_numberSamples;
 
       _previousMillis=0;
@@ -89,7 +95,8 @@ void Oscillator::SetT(unsigned int T)
   _period=T;
   
   //-- Recalculate the parameters
-  _numberSamples = _period/_samplingPeriod;
+  //-- MPR: division con decimales (con enteros, T=750 quedaba en 740 ms)
+  _numberSamples = (double)_period/_samplingPeriod;
   _inc = 2*M_PI/_numberSamples;
 };
 
@@ -132,9 +139,17 @@ void Oscillator::refresh()
 
 void Oscillator::write(int position) 
 {
-  long currentMillis = millis();
+  unsigned long currentMillis = millis();
   if (_diff_limit > 0) {
-    int limit =  max(1,(((int)(currentMillis - _previousServoCommandMillis)) * _diff_limit) / 1000);
+    //-- MPR: limite de velocidad en GRADOS POR SEGUNDO segun el tiempo desde la orden
+    //-- anterior. Si fue una pausa (mas de OSCILLATOR_MAX_DT_MS) se cuenta como un solo
+    //-- pulso del servo (20 ms): asi no hay un salto grande al retomar el movimiento.
+    //-- Se calcula en long: en el Nano int es de 16 bits y dt * limite se desborda con
+    //-- limites altos o pausas largas.
+    unsigned long dt = currentMillis - _previousServoCommandMillis;
+    if (dt > OSCILLATOR_MAX_DT_MS) dt = 20;
+    int limit = (int)(((long)dt * _diff_limit + 500) / 1000);
+    if (limit < 1) limit = 1;
     if (abs(position - _pos) > limit) {
       _pos += position < _pos ? -limit : limit;
     } else {

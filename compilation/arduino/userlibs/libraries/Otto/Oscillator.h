@@ -19,10 +19,17 @@
   #define DEG2RAD(g) ((g)*M_PI)/180
 #endif
 
+//-- MPR: si entre dos ordenes pasa mas que esto (ms), el limitador lo trata como una pausa:
+//-- el servo no salta de golpe, retoma el movimiento a la velocidad del limitador.
+#ifndef OSCILLATOR_MAX_DT_MS
+  #define OSCILLATOR_MAX_DT_MS 50
+#endif
+
 class Oscillator
 {
   public:
-    Oscillator(int trim=0) {_trim=trim; _diff_limit = 0; };
+    //-- MPR: _pos parte en 90 (posicion de inicio); es la ultima posicion enviada al servo
+    Oscillator(int trim=0) {_trim=trim; _diff_limit = 0; _pos = 90; _previousServoCommandMillis = 0; };
     void attach(int pin, bool rev =false);
     void detach();
     
@@ -76,8 +83,9 @@ class Oscillator
     //    This is for smooth movement and preventing Ardino to crash 
     //    because of the high current consumed by servo motors.
     //    set 0 for disabling the limiter
+    //    MPR: unidad = grados por segundo (ver Oscillator::write)
     int  _diff_limit;  
-    long _previousServoCommandMillis;
+    unsigned long _previousServoCommandMillis;
 };
 
 #endif

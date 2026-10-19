@@ -53,14 +53,21 @@
 #endif
 
 #ifndef OTTO_DIFF_LIMIT_DEFAULT
-  // Limite de velocidad de los servos. Oscillator::write() lo interpreta en
-  // GRADOS POR SEGUNDO, con un minimo de 1 grado por escritura.
-  // MPR: se mantiene el valor del parche (3), que en la practica deja el
-  // limitador en 1 grado por escritura: movimiento muy suave y pasos algo mas
-  // cortos (walk() ~19 grados a T=1500 y ~25 a T=2000, de 30 pedidos).
-  // Para pasos de amplitud completa con las mismas velocidades del menu usar 120
-  // (o 240, el valor de OttoDIYLib). Probar en el robot antes de cambiarlo.
-  #define OTTO_DIFF_LIMIT_DEFAULT 3
+  // Limite de velocidad de los servos, en GRADOS POR SEGUNDO (Oscillator::write()).
+  // MPR (oct-2026): 240, el valor de OttoDIYLib. Alcanza para que los movimientos sigan
+  // la trayectoria pedida a las velocidades del menu (caminar a T=1000 pide ~190 grados/s
+  // en la cadera) y evita saltos bruscos: al empezar un movimiento, tras una pausa o al
+  // cambiar de baile, el servo se mueve como maximo a esta velocidad.
+  // Antes era 3 (= 1 grado por escritura, ~25-47 grados/s): muy suave, pero recortaba los
+  // pasos (caminar a T=1500 hacia ~18 de 30 grados) y obligo a bajar las velocidades.
+  // Para volver al limitador anterior: 3. Probar en el robot antes de cambiarlo.
+  #define OTTO_DIFF_LIMIT_DEFAULT 240
+#endif
+
+#ifndef OTTO_ATTACH_DELAY_MS
+  // MPR: pausa (ms) entre la conexion de cada servo al encender (Otto::init()), para que
+  // los cuatro no arranquen a la vez hacia 90 grados (pico de corriente). 0 = sin pausa.
+  #define OTTO_ATTACH_DELAY_MS 200
 #endif
 
 
