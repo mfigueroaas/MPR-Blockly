@@ -31,7 +31,8 @@ Blockly.Blocks['RTTTL_music'] = {
     this.setColour("#FF63BB");
     this.appendDummyInput().appendField(Blockly.Msg.ARDUINO_TONE_INPUT1).appendField(new Blockly.FieldDropdown(profile[card].dropdownAllPins), "PIN_BUZZER");
 	this.appendDummyInput().appendField(Blockly.Msg.ARDUINO_RTTTL_BLOCK)
-        .appendField(new Blockly.FieldDropdown([['StarWars','StarWars'],['MahnaMahna','MahnaMahna'],['LeisureSuit','LeisureSuit'],['MissionImp','MissionImp'],['Entertainer','Entertainer'],['Muppets','Muppets'],['Flinstones','Flinstones'],['YMCA','YMCA'],['Simpsons','Simpsons'],['Indiana','Indiana'],['TakeOnMe','TakeOnMe'],['Looney','Looney'],['20thCenFox','_20thCenFox'],['Bond','Bond'],['GoodBad','GoodBad'],['PinkPanther','PinkPanther'],['A_Team','A_Team'],['Jeopardy','Jeopardy'],['Gadget','Gadget'],['Smurfs','Smurfs'],['Toccata','Toccata'],['Short','Short'],['JingleBell','JingleBell'],['Rudolph','Rudolph'],['WeWishYou','WeWishYou'],['WinterWonderland','WinterWonderland'],['OhDennenboom','OhDennenboom'],['LetItSnow','LetItSnow'],['Frosty','Frosty'],['SilentNight','SilentNight'],['LastChristmas','LastChristmas'],['AllIWant','AllIWant'],['AmazingGrace','AmazingGrace']]), "MELODY");
+        // MPR: primero las canciones agregadas (mpr_canciones.js), luego las de la librería PlayRtttl
+        .appendField(new Blockly.FieldDropdown((Blockly.MPR_CANCIONES || []).map(function(c) { return [c[0], c[1]]; }).concat([['StarWars','StarWars'],['MahnaMahna','MahnaMahna'],['LeisureSuit','LeisureSuit'],['MissionImp','MissionImp'],['Entertainer','Entertainer'],['Muppets','Muppets'],['Flinstones','Flinstones'],['YMCA','YMCA'],['Simpsons','Simpsons'],['Indiana','Indiana'],['TakeOnMe','TakeOnMe'],['Looney','Looney'],['20thCenFox','_20thCenFox'],['Bond','Bond'],['GoodBad','GoodBad'],['PinkPanther','PinkPanther'],['A_Team','A_Team'],['Jeopardy','Jeopardy'],['Gadget','Gadget'],['Smurfs','Smurfs'],['Toccata','Toccata'],['Short','Short'],['JingleBell','JingleBell'],['Rudolph','Rudolph'],['WeWishYou','WeWishYou'],['WinterWonderland','WinterWonderland'],['OhDennenboom','OhDennenboom'],['LetItSnow','LetItSnow'],['Frosty','Frosty'],['SilentNight','SilentNight'],['LastChristmas','LastChristmas'],['AllIWant','AllIWant'],['AmazingGrace','AmazingGrace']])), "MELODY");
 	this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
@@ -46,6 +47,10 @@ Blockly.Arduino['RTTTL_music'] = function(block) {
   var code;
   var card=window.localStorage.card;
   Blockly.Arduino.includes_['include_PlayRTTTL'] = '#include <PlayRtttl.hpp>\n';
+  // MPR: las canciones agregadas no están en la librería: se define la melodía en el programa
+  (Blockly.MPR_CANCIONES || []).forEach(function(c) {
+    if (c[1] == melody) Blockly.Arduino.definitions_['mpr_cancion_' + c[1]] = 'static const char ' + c[1] + '[] PROGMEM = "' + c[2] + '";';
+  });
   if (card =="MRTnode")
 	code= 'playRtttlBlocking('+PIN_BUZZER+',(char*)'+melody+');\n';
   else

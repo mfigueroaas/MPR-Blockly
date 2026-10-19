@@ -59,6 +59,7 @@ arduino-cli y el core AVR; lo más simple es probar con el instalador.
 |---|---|
 | Interfaz, logos, colores | `www/index.html`, `www/css/blocklino.css`, `www/media/` |
 | Búsqueda de bloques (lupa) | `www/js/mpr_buscar.js` |
+| Canciones agregadas (31 Minutos) | `www/blocs&generateurs/mpr_canciones.js` |
 | Bloques y código generado | `www/blocs&generateurs/` |
 | Textos en español, menú de velocidades | `www/lang/Arduino_es.js`, `www/lang/msg_es.js` |
 | Ejemplos | `www/examples/` + `www/examples/examples.json` |

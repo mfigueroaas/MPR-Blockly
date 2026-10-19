@@ -128,6 +128,7 @@ El instalador MPR **no recompila nada de esto**: reutiliza los binarios ya compi
 | `www/js/boards.js` | Perfiles de placas |
 | `www/js/mpr_fixes.js` | Sobrescribe `Blockly.FieldDropdown.prototype.showEditor_` (listas desplegables largas) |
 | `www/js/mpr_buscar.js` | Búsqueda de bloques del botón de la lupa (objeto `MPRBuscar`) |
+| `www/blocs&generateurs/mpr_canciones.js` | Canciones agregadas al bloque "Tocar RTTTL" (31 Minutos) |
 | `www/blocs&generateurs/` | Definición de bloques y generadores de código, un archivo por familia |
 | `www/lang/` | Textos. Se usa `Arduino_es.js` y `msg_es.js`; `code.js` fija el idioma a `es` |
 | `www/toolbox/toolbox_arduino_all.xml` | Categorías y bloques del menú (el que usa Nano) |
@@ -215,10 +216,13 @@ Bloques `ultrasonic_sensor` (configuración, pines 8 y 9 por defecto) y `ultraso
 - Corrección en `_moveServos`: la trayectoria se calcula desde la posición inicial en `double`; antes `pos + 4*increment` se truncaba a `int` y los movimientos lentos hacia ángulos mayores no avanzaban.
 - `OTTO_DBG_BEGIN`: en Uno/Nano `Serial` siempre es verdadero, nunca iniciaba (`OTTO_DBG` desactivado por defecto).
 
-### 5.6 Ejemplos
+### 5.6 Canciones del bloque "Tocar RTTTL"
+El bloque `RTTTL_music` (Zumbador) toca melodías RTTTL con la librería PlayRtttl. Las canciones agregadas por MPR están en `www/blocs&generateurs/mpr_canciones.js` (`Blockly.MPR_CANCIONES`: texto, identificador `MPR_...`, melodía) y aparecen primero en la lista; el generador (`RTTTL.js`) escribe la melodía en el programa como `PROGMEM` solo si se usa. Hoy: 6 de 31 Minutos (Yo nunca vi televisión ×2, Bailan sin cesar, Mi muñeca me habló, El dinosaurio Anacleto ×2). Fuentes y confianza en `BITACORA.md`.
+
+### 5.7 Ejemplos
 `www/examples/examples.json` define qué ejemplos se ven. Sección "Ejemplos Mi Primer Robot": Caminar (`Ottowalk.xml`), Canto (`mpr_sing.xml`), Movimiento improvisado (`mpr_randommove.xml`), Meneito (`mpr_meneito.xml`), Equilibrio (`mpr_balance.xml`), Subir el Cerro Renca (`mpr_cerro.xml`); luego "Explora otros ejemplos" (varios en inglés heredados). `mpr_salto.xml` existe en `www/examples/` pero **no está en `examples.json`**, así que no se muestra.
 
-### 5.7 Otros
+### 5.8 Otros
 - Compilación: `arduino-cli.yaml` sin índices de terceros y con telemetría desactivada.
 - `electronApp.js`: rutas válidas instalada/desarrollo; enlaces externos se abren en el navegador; actualizador desactivado; instancia única; abre `.bloc` por argumento (también con la app abierta); F5/F8 solo con el foco en la app (antes eran atajos globales de Windows).
 - `index.js`: `chdir` a la carpeta de instalación (doble clic en `.bloc`); etiqueta "MPR Blockly V<versión>".
@@ -319,6 +323,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 14 | Librería Otto: limitador 240 grados/s, arranque escalonado, reconexión sin salto, oscilador a 20 ms exactos | `Otto.h/.cpp`, `Oscillator.h/.cpp` | **Pendiente en el robot** (verificado en simulación y compilación) |
 | 15 | Menú de velocidades: nueva opción "Muy rápido" (1000 ms) | `Arduino_es.js` (`OTTO9_MOVE_SPEED_CHOICE`) | **Pendiente en el robot** |
 | 16 | Verificar/Subir: `arduino-cli.exe` con ruta completa (falla si Windows tiene `NoDefaultCurrentDirectoryInExePath`) | `index.js` | Error reproducido y corregido fuera de la app; en la app pendiente |
+| 17 | Zumbador: 6 canciones de 31 Minutos en "Tocar RTTTL" | `mpr_canciones.js` (nuevo), `RTTTL.js`, `index.html` | **Pendiente en el robot** (validadas y compiladas) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 

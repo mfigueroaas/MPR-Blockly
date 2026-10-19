@@ -12,6 +12,38 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-18 — Zumbador: canciones de 31 Minutos en "Tocar RTTTL"
+- **Pedido:** agregar canciones de 31 Minutos al bloque que tiene canciones, buscando las partituras y definiendo los
+  tonos, para que queden como canciones seleccionables.
+- **Archivos:**
+  - `www/blocs&generateurs/mpr_canciones.js` (nuevo): tabla `Blockly.MPR_CANCIONES` con [texto en la lista,
+    identificador, melodía RTTTL].
+  - `www/blocs&generateurs/RTTTL.js`: la lista del bloque `RTTTL_music` ("Tocar RTTTL", Zumbador) muestra primero esas
+    canciones; su generador escribe la melodía en el programa (`static const char MPR_x[] PROGMEM = "..."`) solo si se
+    usa. La librería PlayRtttl no se tocó.
+  - `www/index.html`: carga `mpr_canciones.js` antes de `RTTTL.js`.
+- **Canciones** (melodía principal, octavas 5–6, 16–22 s cada una):
+
+  | En la lista | Parte | Fuente (ritmo y notas) y comparación | Confianza |
+  |---|---|---|---|
+  | Yo nunca vi televisión (tema) | introducción/estrofa; es la melodía de la cortina del programa | Songsterr "31 Minutos - Tema Central" (s24427, flautín, 83 BPM); notas de metalófono y melódica (YouTube 2n8RfEiJ31c, g8AhYWPndxk), flauta (vr5Nm2fWy6M) y LaCuerda | alta |
+  | Yo nunca vi televisión (coro) | coro | misma tablatura, compases 10–17; un La# se corrigió a Si según 4 fuentes | media-alta |
+  | Bailan sin cesar | coro | Songsterr s5069183 (voz, 130 BPM) y tablatura de LaCuerda | alta |
+  | Mi muñeca me habló | coro (2 veces) | notas: flauta dulce (YouTube kuEtVLZ2gwk, iguales) y Profe Andrea Martínez (xh-TRkjmx0o); ritmo: tablatura de Songsterr **generada por IA** (s3183773) | media: los silencios largos entre frases vienen de esa fuente |
+  | El dinosaurio Anacleto | estrofa y pre-coro | Songsterr s3869622 (voz, 106 BPM); notas de melódica/teclado (YouTube _vTypr3yKwE, OwSymGJSvfo) | alta |
+  | El dinosaurio Anacleto (coro) | coro | misma tablatura, compases 36–43 | media-alta |
+
+  Descartadas por no tener fuentes confiables o que coincidan: Tangananica Tanganana, Mi equilibrio espiritual, Diente
+  blanco no te vayas, Arwrarwrirwrarwro, Lala, Calcetín con rombos man. Las transcripciones se hicieron con un script a
+  partir de los datos de las tablaturas (no a mano). Son melodías sin letra, como las demás de la librería.
+- **Verificación:** cada melodía pasa un validador que reproduce el intérprete de PlayRtttl (formato, octavas 4–7, sin
+  notas fuera de la tabla) y se generaron archivos .wav (onda cuadrada, como el zumbador) para escucharlas. Un programa
+  con las 6 canciones compila para Nano (8.620 bytes; la RAM no cambia porque van en memoria de programa). En el entorno
+  de prueba: lista del bloque, código generado y búsqueda "31 minutos".
+- **Para agregar otra canción:** una línea más en `mpr_canciones.js`, con identificador que empiece con `MPR_`; validar
+  el RTTTL antes (sin espacios, notas a–g con `#`, octavas 4–7).
+- **Probado en el robot:** pendiente (que suenen reconocibles; "Mi muñeca me habló" es la de ritmo menos seguro).
+
 ### 2026-10-18 — Búsqueda de bloques: ajustes
 - **Archivo:** `www/js/mpr_buscar.js`.
 - Al abrir la búsqueda o mostrar resultados se cierra una lista desplegable que haya quedado abierta (antes quedaba encima
