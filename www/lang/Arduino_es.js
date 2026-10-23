@@ -522,7 +522,11 @@ Blockly.Msg.ADAFRUIT_MOTORSHIELD_MOTORDC2 = "Motor DC 2";
 Blockly.Msg.m_pap = "Motor paso a paso";
 Blockly.Msg.m_pap_step = "Paso";
 Blockly.Msg.m_pap_step1 = "Avanzar";
-Blockly.Msg.m_pap_tooltip = "Inicialización de un motor paso a paso. \ NIndique el número de pasos, la velocidad en rpm y los pines para conectar";
+Blockly.Msg.m_pap_tooltip = "Inicialización de un motor paso a paso. Indique el número de pasos, la velocidad en rpm y los pines para conectar";
+Blockly.Msg.MATH_MAP_TITLE = "convertir";
+Blockly.Msg.MATH_MAP_FROM = "del rango";
+Blockly.Msg.MATH_MAP_TO = "al rango";
+Blockly.Msg.MATH_MAP_TOOLTIP = "Convierte un valor de un rango a otro de forma proporcional (función map de Arduino). Ejemplo: una lectura de 0 a 1023 pasada al rango 0 a 10.";
 Blockly.Msg.m_pap_step_tooltip = "activa el motor paso a paso por la cantidad de pasos indicados, la siguiente instrucción solo se ejecutará una vez que se haga la rotación del motor";
 // serial
 Blockly.Msg.Serial_Init = "puerto serie activado";

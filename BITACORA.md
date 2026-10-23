@@ -12,6 +12,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-23 — Bloque map (Matemáticas): descripción y textos
+- **Pedido / problema:** el bloque `map` mostraba como descripción la del motor paso a paso
+  (`m_pap_tooltip`, además con un "\ N" sobrante) y las etiquetas "map/from/to" en inglés.
+- **Archivos:** `www/blocs&generateurs/blockly_blocs.js` (`math_map`), `www/lang/Arduino_es.js`.
+- **Qué se hizo:** nuevos mensajes `MATH_MAP_TITLE/FROM/TO/TOOLTIP` ("convertir … del rango … al rango …"
+  y descripción propia); se corrigió el texto de `m_pap_tooltip`. El código generado no cambia.
+- **Commit:** (este)  **Probado en la app:** copiado con `probar.py`; falta F5 y revisión visual.
+
 ### 2026-10-18 — Zumbador: canciones de 31 Minutos en "Tocar RTTTL"
 - **Pedido:** agregar canciones de 31 Minutos al bloque que tiene canciones, buscando las partituras y definiendo los
   tonos, para que queden como canciones seleccionables.
