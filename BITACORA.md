@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-23 — Instalador 1.3.0
+- Versión subida a 1.3.0 en `package.json`. Generado con
+  `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`:
+  `dist\MPR_Blockly_Setup_1.3.0.exe`, 138 MB, SHA‑256 `549fcf71ed2f3cd6f0c46192006016e940a83dd235998d6def2923ca612b6769`.
+- **Probado:** no; falta instalarlo y revisar los acentos, el driver y la página final.
+
 ### 2026-10-23 — Instalador: acentos y driver CH340 obligatorio
 - **Pedido / problema:** el instalador mostraba textos rotos ("instalarÃ¡", "cÃ³digo") y al final
   ofrecía el driver CH340 como casilla opcional; debe instalarse siempre.

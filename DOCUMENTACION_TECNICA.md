@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Producto** | MPR Blockly (programa *Mi Primer Robot*, Crecer en Renca) |
-| **Versión de la app** | 1.2.0 (`package.json`) |
+| **Versión de la app** | 1.3.0 (`package.json`) |
 | **Tipo** | Aplicación de escritorio Windows (Electron) para programar robots Otto DIY por bloques |
 | **Base** | [OttoDIY/blockly](https://github.com/OttoDIY/blockly), master `fdb2026` del 2026‑08‑14 |
 | **Repositorio previsto** | `https://github.com/Admin-Proteinlab/blockly_mpr` (aún no publicado desde esta máquina) |
@@ -295,6 +295,7 @@ El bloque `RTTTL_music` (Zumbador) toca melodías RTTTL con la librería PlayRtt
 | 1.1.0 | Primera versión empaquetada (parche + base actual + instalador) |
 | 1.1.1 | Driver CH340 marcado por defecto en el instalador; sin otros cambios de la app |
 | 1.2.0 | Incluye los cambios de octubre 2026 de la sección 8. Generado el 2026-10-02: `dist\MPR_Blockly_Setup_1.2.0.exe`, 138 MB, SHA‑256 `e54bbe5cddc798a0879926154472b35fb9cb1617006fe80d594cb0d0cdbd54e3`. Pendiente de pruebas en otros PCs |
+| 1.3.0 | Cambios del 18 y 23 de octubre de 2026 (velocidad Muy rápido, búsqueda de bloques, canciones RTTTL, bloque map, acentos del instalador, driver CH340 obligatorio). Generado el 2026-10-23: `dist\MPR_Blockly_Setup_1.3.0.exe`, 138 MB, SHA‑256 `549fcf71ed2f3cd6f0c46192006016e940a83dd235998d6def2923ca612b6769`. Pendiente de pruebas |
 
 La versión de `package.json` se pasa al `.nsi` (`-DVERSION`) al generar el instalador.
 
