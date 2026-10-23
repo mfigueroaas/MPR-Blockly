@@ -176,7 +176,7 @@ def main():
                 f.write('  Delete "$INSTDIR\\%s"\n' % name)
         f.write('  Delete "$INSTDIR\\config.json"\n')
     outfile = os.path.join(os.path.abspath(args.out), "MPR_Blockly_Setup_%s.exe" % version)
-    run([makensis, "-V2", "-DSTAGE=" + stage, "-DVERSION=" + version, "-DOUTFILE=" + outfile,
+    run([makensis, "-V2", "-INPUTCHARSET", "UTF8", "-DSTAGE=" + stage, "-DVERSION=" + version, "-DOUTFILE=" + outfile,
          "-DUNLIST=" + unlist,
          os.path.join(REPO, "build", "installer.nsi")])
 

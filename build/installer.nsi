@@ -43,9 +43,6 @@ VIAddVersionKey /LANG=1034 "LegalCopyright" "GPL-2.0 - basado en Otto Blockly (O
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "Abrir ${APPNAME}"
 !define MUI_FINISHPAGE_RUN_FUNCTION RunAppNotElevated
-!define MUI_FINISHPAGE_SHOWREADME ""
-!define MUI_FINISHPAGE_SHOWREADME_TEXT "Instalar driver USB CH340 (placas Nano compatibles)"
-!define MUI_FINISHPAGE_SHOWREADME_FUNCTION InstallCH340
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${STAGE}\LICENSE.md"
@@ -149,6 +146,10 @@ Section "MPR Blockly" SecMain
   WriteRegStr HKLM "${REGKEY}" "UninstallString" '"$INSTDIR\Desinstalar.exe"'
   WriteRegDWORD HKLM "${REGKEY}" "NoModify" 1
   WriteRegDWORD HKLM "${REGKEY}" "NoRepair" 1
+
+  ; Driver USB CH340 (placas Nano compatibles): siempre se instala
+  DetailPrint "Instalando driver USB CH340..."
+  Call InstallCH340
 SectionEnd
 
 Function un.onInit

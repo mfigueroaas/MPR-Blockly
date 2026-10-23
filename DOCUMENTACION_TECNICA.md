@@ -268,14 +268,14 @@ El bloque `RTTTL_music` (Zumbador) toca melodías RTTTL con la librería PlayRtt
 4. `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`
 5. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe`.
 
-`tools/build_installer.py` extrae el instalador oficial, conserva el runtime de Electron y los paquetes AVR mínimos (`arduino:avr` 1.8.3, avr-gcc, avrdude, arduinoOTA), pone encima el código del repo, cambia ícono y datos de versión del `.exe` (resedit‑cli), y compila `build/installer.nsi` con `makensis -DSTAGE -DVERSION -DOUTFILE`. La carpeta de trabajo es `C:\mprb` (corta a propósito por el límite de 260 caracteres de Windows). No usa 7za (no abre instaladores NSIS).
+`tools/build_installer.py` extrae el instalador oficial, conserva el runtime de Electron y los paquetes AVR mínimos (`arduino:avr` 1.8.3, avr-gcc, avrdude, arduinoOTA), pone encima el código del repo, cambia ícono y datos de versión del `.exe` (resedit‑cli), y compila `build/installer.nsi` con `makensis -INPUTCHARSET UTF8 -DSTAGE -DVERSION -DOUTFILE` (el `.nsi` es UTF-8 sin BOM). La carpeta de trabajo es `C:\mprb` (corta a propósito por el límite de 260 caracteres de Windows). No usa 7za (no abre instaladores NSIS).
 
 ### 7.2 Qué hace el instalador (`build/installer.nsi`)
 - Instala en `C:\MPRBlockly` (no choca con Otto Blockly oficial).
 - Accesos directos; asociación de `.bloc` (`MPRBlockly.bloc`); desinstalador (`Desinstalar.exe`, borra solo lo instalado según lista generada); entrada en Agregar o quitar programas.
 - **Permisos (`icacls`)**: SYSTEM y Administradores control total; Usuarios solo lectura y ejecución, **salvo** `compilation\arduino` y `config.json`, que Usuarios puede modificar. Así los alumnos sin administrador pueden compilar y subir, y una DLL plantada no se ejecuta como administrador.
 - Al terminar abre la app **sin privilegios de administrador** (`RunAppNotElevated`).
-- Casilla (marcada por defecto) para instalar el driver CH340 con `pnputil /add-driver ...ch341ser.inf /install`; el código de salida 3010 se considera correcto. `pnputil` no reemplaza un driver más nuevo ya instalado por Windows Update.
+- Instala siempre el driver CH340 (al final de la copia de archivos) con `pnputil /add-driver ...ch341ser.inf /install`; el código de salida 3010 se considera correcto. `pnputil` no reemplaza un driver más nuevo ya instalado por Windows Update.
 
 ### 7.3 Archivos de entrega y bundles (carpeta `C:\ClaudeCode\MPR_Blockly`)
 | Archivo | Para qué |

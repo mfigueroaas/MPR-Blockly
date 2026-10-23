@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-23 — Instalador: acentos y driver CH340 obligatorio
+- **Pedido / problema:** el instalador mostraba textos rotos ("instalarÃ¡", "cÃ³digo") y al final
+  ofrecía el driver CH340 como casilla opcional; debe instalarse siempre.
+- **Archivos:** `tools/build_installer.py`, `build/installer.nsi`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** `makensis` se llama con `-INPUTCHARSET UTF8` (el `.nsi` es UTF-8 sin BOM y NSIS
+  lo leía como ANSI). Se quitó la casilla `SHOWREADME`; la sección principal llama a `InstallCH340`
+  al final. En la página final queda solo la casilla "Abrir MPR Blockly".
+- **Commit:** (este)  **Probado en la app:** no; falta generar el instalador y probarlo.
+
 ### 2026-10-23 — Bloque map (Matemáticas): descripción y textos
 - **Pedido / problema:** el bloque `map` mostraba como descripción la del motor paso a paso
   (`m_pap_tooltip`, además con un "\ N" sobrante) y las etiquetas "map/from/to" en inglés.
