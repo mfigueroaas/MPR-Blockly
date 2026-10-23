@@ -12,6 +12,17 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-10-23 — Herramienta partitura → RTTTL
+- **Pedido:** guardar el script con que se transcribieron las canciones de 31 Minutos para usarlo otra vez.
+- **Archivos:** `tools/rtttl/partitura_a_rtttl.py` y `tools/rtttl/LEEME.md` (nuevos), `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** los scripts sueltos de la sesión del 2026-10-18 (en una carpeta temporal) se juntaron en una
+  herramienta con comandos `buscar`, `descargar`, `ver`, `convertir` (compases de una pista de Songsterr),
+  `texto` (notas escritas a mano), `validar` y `wav`. Se agregaron `--transponer auto`, `--quitar-final` y
+  `--ultima` para los ajustes que antes se hacían en el código.
+- **Verificación:** con las pistas descargadas aquella vez, las recetas del LEEME reproducen exactamente las 6
+  melodías de `mpr_canciones.js`. `descargar` probado con la canción 3869622.
+- **Commit:** (este)  **Probado en la app:** no aplica (herramienta aparte).
+
 ### 2026-10-23 — Instalador 1.3.0
 - Versión subida a 1.3.0 en `package.json`. Generado con
   `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`:
