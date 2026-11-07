@@ -375,3 +375,36 @@ html, body { overflow: hidden; }
 	fill: #2d2d64;
 	font-weight: bold;
 }
+
+/* MPR: pie con logos flexibles. Vive bajo el toolbox (que termina ~440 px desde arriba):
+   los logos se reducen con el alto de la ventana y se ocultan antes de pisar las categorías. */
+.footer_float {
+	left: 0;
+	bottom: 6px;
+	width: 220px;
+	max-width: 220px !important;
+	box-sizing: border-box;
+	padding: 0 6px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow: hidden;
+}
+.footer_float .footer_logo {
+	height: auto;
+	max-width: 100%;
+	max-height: clamp(22px, 5vh, 35px);
+	object-fit: contain;
+}
+.footer_float .logo_crecer {
+	max-height: clamp(30px, 7vh, 52px);
+	background: #fff;            /* el logo es negro: se ve igual sobre fondo claro u oscuro */
+	border-radius: 8px;
+	padding: 3px 6px;
+}
+.footer_float .disclaimer { overflow-wrap: anywhere; }
+@media (max-height: 760px) { .footer_float .disclaimer { display: none; } }
+@media (max-height: 640px) { .footer_float h5 { display: none; } }
+@media (max-height: 540px) { .footer_float { display: none; } }
+.footer_float .footer_row { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; }
+.footer_float .footer_row .footer_logo { max-width: 48%; }

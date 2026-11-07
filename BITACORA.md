@@ -12,6 +12,32 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-06 — Logo nuevo de Crecer en Renca, pie flexible y tamaño mínimo
+- **Pedido:** reemplazar el logo (SVG nuevo), que el diseño no se superponga en ventanas chicas y logos en SVG si se puede.
+- **Archivos:** `www/media/crecer-en-rencaLOGO-hor.svg` y `crecer-en-rencaLOGO.svg` (reemplazados por el SVG nuevo),
+  `crecer-en-rencaLOGO-hor.png` (eliminado), `www/index.html` (pie), `www/css/blocklino.css` (final del archivo), `electronApp.js`.
+- **Qué se hizo:** el pie usa el SVG, que escala sin pérdida. Es un logo negro sin fondo, por eso va sobre una pastilla blanca
+  (legible sobre fondo claro u oscuro). El pie es flex bajo el toolbox: los logos se achican con el alto de la ventana
+  (`clamp` en `vh`) y nunca pasan del ancho disponible; bajo 760 px de alto se oculta el texto de Otto DIY, bajo 640 px los
+  títulos y bajo 540 px el pie. Ventana principal con mínimo 800×560 (`minWidth`/`minHeight`): más chica, la barra de botones se monta.
+- **Logos que siguen en PNG:** innova, Renca y La Fábrica (son imágenes; no hay SVG original). El ícono de la app y el del
+  instalador son el robot MPR, no llevan el logo de Crecer: no se cambiaron.
+- **Verificación:** capturas en Edge (servidor local) a 1240×700 y 1600×900, e iframes de 800×560, 760×600, 640×560 y 640×660: sin
+  solapamientos del pie. **Probado en la app Electron:** no.
+
+### 2026-11-06 — Canciones de 31 Minutos como "Canción misteriosa"
+- **Pedido:** no mostrar el nombre; cada canción una sola vez aunque tenga etapas.
+- **Archivos:** `www/blocs&generateurs/mpr_canciones.js` (formato nuevo: texto neutro, id, nombre real, etapas), `RTTTL.js`, `index.js`.
+- **Qué se hizo:** 4 entradas ("Canción misteriosa 1–4"). Las etapas (tema/coro) suenan una tras otra dentro del mismo bloque.
+  Los identificadores C y el título RTTTL son neutros (`MPR_C1E1`…) para que la vista de código no delate la canción. Al terminar
+  de subir el programa, `index.js` (`revelarCanciones`) muestra "Canción misteriosa N es: …" durante 10 s.
+- **Verificación:** prueba con Blockly simulado (lista, código y canciones usadas) y compilación para Nano de las canciones 1 y 4
+  (con 2 etapas): OK. **Probado en la app:** no.
+
+### 2026-11-06 — Ícono de chat en la búsqueda de bloques
+- **Archivos:** `www/index.html`, `www/lang/msg_es.js`. Lupa → globo de chat (`fa-comments`); tooltip "Hablar con Otto: dile qué bloque buscas"
+  y placeholder "Dile a Otto qué bloque buscas...". **Probado en la app:** no (en Edge el ícono se ve).
+
 ### 2026-10-23 — Herramienta partitura → RTTTL
 - **Pedido:** guardar el script con que se transcribieron las canciones de 31 Minutos para usarlo otra vez.
 - **Archivos:** `tools/rtttl/partitura_a_rtttl.py` y `tools/rtttl/LEEME.md` (nuevos), `DOCUMENTACION_TECNICA.md`.
