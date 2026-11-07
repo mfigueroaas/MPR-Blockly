@@ -70,6 +70,14 @@ Blockly.MPR_CANCIONES = [
 	["Misteriosa 13: se canta con torta y velitas", "MPR_Cancion13", "Cumpleaños feliz (tradicional)", [
 		["MPR_C13E1", "C13E1:d=4,o=5,b=140:8g.,16g,a,g,c6,2b,8g.,16g,a,g,d6,2c6,8g.,16g,g6,e6,c6,b,a,8f.6,16f6,e6,c6,d6,2c6"],
 	]],
+	// Martinillo / Fray Santiago (tradicional)
+	["Misteriosa 14: un fraile dormilón y unas campanas", "MPR_Cancion14", "Martinillo / Fray Santiago (tradicional)", [
+		["MPR_C14E1", "C14E1:d=4,o=6,b=130:c,d,e,c,c,d,e,c,e,f,2g,e,f,2g,8g,8a,8g,8f,e,c,8g,8a,8g,8f,e,c,c,g5,2c,c,g5,2c"],
+	]],
+	// Pepito tenía una granja (tradicional)
+	["Misteriosa 15: una granja con muchos animales", "MPR_Cancion15", "Pepito tenía una granja (tradicional)", [
+		["MPR_C15E1", "C15E1:d=4,o=6,b=130:c,c,c,g5,a5,a5,2g5,e,e,d,d,2c,p,c,c,c,g5,a5,a5,2g5,e,e,d,d,2c"],
+	]],
 ];
 
 // Devuelve las canciones misteriosas usadas en el espacio de trabajo: [[texto en la lista, nombre real], ...]
