@@ -11,6 +11,8 @@
 // Songsterr y comparada con notas para flauta dulce / metalófono publicadas (fuentes en BITACORA.md).
 // Canciones 5 a 10 (nov-2026): tablaturas de Songsterr (voz o melodía); varias están generadas por IA o son arreglos:
 // conviene escucharlas con la herramienta (--wav) y en el robot. Recetas en tools/rtttl/LEEME.md.
+// Canciones 11 a 13 (nov-2026, infantiles tradicionales): 11 y 12 de tablaturas de Songsterr "Clase de Música" y de una guitarra,
+// 13 escrita a mano con la herramienta (comando texto).
 // Melodías para uso educativo (sin letra); los derechos de las canciones son de sus autores.
 Blockly.MPR_CANCIONES = [
 	// 31 Minutos: Yo nunca vi televisión
@@ -55,6 +57,18 @@ Blockly.MPR_CANCIONES = [
 	// Gracias a la vida (Violeta Parra)
 	["Misteriosa 10: gracias por todo lo que me dio", "MPR_Cancion10", "Gracias a la vida (Violeta Parra)", [
 		["MPR_C10E1", "C10E1:d=8,o=6,b=96:16f,16f,16f,16f,f,f#,2c,2p,d#,d#,16d#,d#,d#,c#,f.,a#5,4a#.5,4p,c#,c#,c#,16c#,c#,4g#5,2p,p,16p,f,f,16f,16f,16f,16f,f,4c#"],
+	]],
+	// Caballito blanco (tradicional)
+	["Misteriosa 11: un caballo claro que te lleva a tu pueblo", "MPR_Cancion11", "Caballito blanco (tradicional)", [
+		["MPR_C11E1", "C11E1:d=8,o=5,b=120:g,g,g,g,4g,4e,c6,c6,b,a,2b,f,f,f,f,4f,4d,b,b,a,g,2c6,g,g,g,g,4g,4e,c6,c6,b,a,4b,4b,f,f,f,f,4f,4d,b,b,a,g,4c6,4c6"],
+	]],
+	// Estrellita, ¿dónde estás? (tradicional)
+	["Misteriosa 12: una lucecita que brilla de noche", "MPR_Cancion12", "Estrellita, ¿dónde estás? (tradicional)", [
+		["MPR_C12E1", "C12E1:d=4,o=6,b=85:g5,g5,d,d,e,e,2d,c,c,b5,b5,a5,a5,2g5,d,d,c,c,b5,b5,2a5,d,d,c,c,b5,b5,2a5,g5,g5,d,d,e,e,2d,c,c,b5,b5,a5,a5,2g5"],
+	]],
+	// Cumpleaños feliz (tradicional)
+	["Misteriosa 13: se canta con torta y velitas", "MPR_Cancion13", "Cumpleaños feliz (tradicional)", [
+		["MPR_C13E1", "C13E1:d=4,o=5,b=140:8g.,16g,a,g,c6,2b,8g.,16g,a,g,d6,2c6,8g.,16g,g6,e6,c6,b,a,8f.6,16f6,e6,c6,d6,2c6"],
 	]],
 ];
 

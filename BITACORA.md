@@ -12,6 +12,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-06 — Canciones infantiles tradicionales (11 a 13)
+- **Pedido:** 10 canciones latinoamericanas más, alegres y para niños, y agregar "Firestarter" (K/DA).
+- **Archivos:** `www/blocs&generateurs/mpr_canciones.js`.
+- **Hecho (3 de 10):** 11 Caballito blanco (Songsterr 470721, pista 0, compases 1-8), 12 Estrellita ¿dónde estás? (5301939, pista 0,
+  compases 1-12), 13 Cumpleaños feliz (escrita a mano con el comando `texto`: la tablatura 268973 tenía notas equivocadas).
+  Las 13 compilan juntas para Nano. Probado en el robot: no.
+- **No hecho:** Firestarter (canción comercial reciente: no se transcribe su melodía). Faltan 7 infantiles: Songsterr casi solo trae
+  versiones comerciales (La Granja de Zenón, etc.). Descartada "Los pollitos dicen": la tablatura no era la melodía.
+  Se necesita partitura o notas de las canciones tradicionales que se quieran.
+
 ### 2026-11-06 — Más canciones latinoamericanas con pistas, Himno Nacional, logo transparente y ventana mínima mayor
 - **Pedido:** más canciones reconocidas en Chile, agregar el Himno, pistas tipo acertijo, logo sin fondo blanco, y que el pie no se
   monte al achicar la ventana (captura del usuario: bloques y barra superior cortados).
