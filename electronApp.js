@@ -64,7 +64,7 @@ function indexUrlFor(file) {
 	return file ? INDEX_URL + '?url=' + encodeURIComponent(file) : INDEX_URL
 }
 function createWindow () {
-	mainWindow = new BrowserWindow({width: 1240, height: 700, minWidth: 800, minHeight: 560, icon: APP_ICON, title: 'MPR Blockly', frame: false, movable: true})
+	mainWindow = new BrowserWindow({width: 1240, height: 700, minWidth: 1100, minHeight: 650, icon: APP_ICON, title: 'MPR Blockly', frame: false, movable: true})
 	mainWindow.loadURL(indexUrlFor(fileFromArgv(process.argv)))
 	mainWindow.setMenu(null)
 	protectNavigation(mainWindow)

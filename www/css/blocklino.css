@@ -376,8 +376,8 @@ html, body { overflow: hidden; }
 	font-weight: bold;
 }
 
-/* MPR: pie con logos flexibles. Vive bajo el toolbox (que termina ~440 px desde arriba):
-   los logos se reducen con el alto de la ventana y se ocultan antes de pisar las categorías. */
+/* MPR: pie con logos que se achican con el alto de la ventana. Vive bajo el toolbox (termina ~440 px desde
+   arriba). Compatible con Chromium 69 (Electron 4): sin clamp(), min(), gap ni overflow-wrap:anywhere. */
 .footer_float {
 	left: 0;
 	bottom: 6px;
@@ -385,26 +385,26 @@ html, body { overflow: hidden; }
 	max-width: 220px !important;
 	box-sizing: border-box;
 	padding: 0 6px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
 	overflow: hidden;
 }
 .footer_float .footer_logo {
-	height: auto;
+	display: inline-block;
+	height: 35px;
+	width: auto;
 	max-width: 100%;
-	max-height: clamp(22px, 5vh, 35px);
 	object-fit: contain;
 }
-.footer_float .logo_crecer {
-	max-height: clamp(30px, 7vh, 52px);
-	background: #fff;            /* el logo es negro: se ve igual sobre fondo claro u oscuro */
-	border-radius: 8px;
-	padding: 3px 6px;
+.footer_float .logo_crecer { height: 48px; margin: 2px auto; }   /* SVG sin fondo (transparente) */
+.footer_float .footer_row { text-align: center; white-space: nowrap; }
+.footer_float .footer_row .footer_logo { max-width: 48%; margin: 0 3px; }
+@media (max-height: 800px) {
+	.footer_float .footer_logo { height: 28px; }
+	.footer_float .logo_crecer { height: 40px; }
+	.footer_float .disclaimer { display: none; }
 }
-.footer_float .disclaimer { overflow-wrap: anywhere; }
-@media (max-height: 760px) { .footer_float .disclaimer { display: none; } }
-@media (max-height: 640px) { .footer_float h5 { display: none; } }
-@media (max-height: 540px) { .footer_float { display: none; } }
-.footer_float .footer_row { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; }
-.footer_float .footer_row .footer_logo { max-width: 48%; }
+@media (max-height: 700px) {
+	.footer_float .footer_logo { height: 24px; }
+	.footer_float .logo_crecer { height: 34px; }
+	.footer_float h5 { margin: 4px 0 2px 0; }
+}
+@media (max-height: 600px) { .footer_float { display: none; } }

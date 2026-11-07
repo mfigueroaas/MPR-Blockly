@@ -32,7 +32,7 @@ window.addEventListener('load', function load(event) {
 		if (!usadas.length) return false
 		messageDiv.style.color = '#009000'
 		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK' + quitDiv + '<div style="color:#000;margin-top:8px">🎵 ' +
-			usadas.map(function(u){ return '<b>' + u[0] + '</b> es: ' + u[1] }).join('<br>🎵 ') + '</div>'
+			usadas.map(function(u){ return '<b>Canción ' + u[0].split(':')[0].toLowerCase() + '</b> era: ' + u[1] }).join('<br>🎵 ') + '</div>'
 		$('#message').modal('show')
 		setTimeout(function() { $('#message').modal('hide') }, 10000)
 		return true

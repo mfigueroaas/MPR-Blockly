@@ -12,6 +12,24 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-06 — Más canciones latinoamericanas con pistas, Himno Nacional, logo transparente y ventana mínima mayor
+- **Pedido:** más canciones reconocidas en Chile, agregar el Himno, pistas tipo acertijo, logo sin fondo blanco, y que el pie no se
+  monte al achicar la ventana (captura del usuario: bloques y barra superior cortados).
+- **Archivos:** `www/blocs&generateurs/mpr_canciones.js`, `index.js`, `www/css/blocklino.css`, `electronApp.js`.
+- **Canciones:** de 4 a 10 "Misteriosas". La lista muestra "Misteriosa N: pista" (ej. "Misteriosa 5: se canta de pie en el colegio").
+  Nuevas (Songsterr, `tools/rtttl/partitura_a_rtttl.py`): 5 Himno Nacional de Chile (estrofa 1 + coro, 2 etapas; track 3 de la
+  canción 5903477, compases 10-18 `--quitar-final 2` y 51-57), 6 La Bamba (11536, pista 0, compases 5-14), 7 Cielito lindo
+  (1085176, pista 0, compases 1-10), 8 Run Run se fue pa'l norte (9883, pista 4, compases 3-18, `--bpm 90`), 9 La cucaracha
+  (73940, pista 0, compases 1-8), 10 Gracias a la vida (5514926, pista 2, compases 9-16). Todas validadas con PlayRtttl y las 10
+  compilan juntas para Nano (5.894 bytes, 19 %). **Confianza media:** varias tablaturas son generadas por IA o arreglos
+  (Cielito lindo, Gracias a la vida): hay que escucharlas en el robot. Descartadas por tablatura poco clara: Guantanamera,
+  El baile de los que sobran, Los pollitos dicen, Si vas para Chile, De música ligera, Volver a los 17.
+  Al subir el programa se muestra "Canción misteriosa N era: nombre".
+- **Logo y pie:** el logo ya no lleva pastilla blanca (queda transparente). En la app (Chromium 69) el pie no se achicaba porque usé
+  `clamp()`, que ese motor no entiende: ahora son alturas fijas por tramos con `@media (max-height)`.
+- **Ventana:** mínimo 1100×650 (a 800 px de ancho el botón de subir pasaba a otra línea; a 1100 caben todos los botones).
+- **Probado:** captura en Edge a 1100×650 con todos los botones; en la app Electron y en el robot, pendiente.
+
 ### 2026-11-06 — Dos bloques de canciones: latinoamericanas y extranjeras
 - **Pedido:** separar las canciones en dos bloques (latinoamericanas / extranjeras) para explorar y acortar la lista.
 - **Archivos:** `www/blocs&generateurs/RTTTL.js`, `mpr_canciones.js`, `www/lang/Arduino_es.js`, `www/toolbox/toolbox_arduino_all.xml`.
