@@ -25,7 +25,20 @@ window.addEventListener('load', function load(event) {
 	var messageDiv = document.getElementById('messageDIV')
 	localStorage.setItem("verif",false)
 	document.getElementById('versionapp').textContent = " MPR Blockly V" + appVersion
+	// MPR: al subir el programa se revela el nombre real de las "canciones misteriosas" que usa
+	function revelarCanciones(){
+		var usadas = []
+		try { usadas = Blockly.MPR_cancionesUsadas(Blockly.getMainWorkspace()) } catch (e) { console.log(e) }
+		if (!usadas.length) return false
+		messageDiv.style.color = '#009000'
+		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK' + quitDiv + '<div style="color:#000;margin-top:8px">🎵 ' +
+			usadas.map(function(u){ return '<b>' + u[0] + '</b> es: ' + u[1] }).join('<br>🎵 ') + '</div>'
+		$('#message').modal('show')
+		setTimeout(function() { $('#message').modal('hide') }, 10000)
+		return true
+	}
 	function uploadOK(){
+		if (revelarCanciones()) return
 		messageDiv.style.color = '#009000'
 		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK code uploaded' + quitDiv
 		$('#message').modal('show');

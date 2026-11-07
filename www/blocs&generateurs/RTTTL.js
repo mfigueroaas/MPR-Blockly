@@ -47,14 +47,18 @@ Blockly.Arduino['RTTTL_music'] = function(block) {
   var code;
   var card=window.localStorage.card;
   Blockly.Arduino.includes_['include_PlayRTTTL'] = '#include <PlayRtttl.hpp>\n';
-  // MPR: las canciones agregadas no están en la librería: se define la melodía en el programa
+  // MPR: las canciones agregadas no están en la librería: se define cada etapa en el programa y se tocan en orden
+  var etapas = [];
   (Blockly.MPR_CANCIONES || []).forEach(function(c) {
-    if (c[1] == melody) Blockly.Arduino.definitions_['mpr_cancion_' + c[1]] = 'static const char ' + c[1] + '[] PROGMEM = "' + c[2] + '";';
+    if (c[1] != melody) return;
+    c[3].forEach(function(e) {
+      Blockly.Arduino.definitions_['mpr_cancion_' + e[0]] = 'static const char ' + e[0] + '[] PROGMEM = "' + e[1] + '";';
+      etapas.push(e[0]);
+    });
   });
-  if (card =="MRTnode")
-	code= 'playRtttlBlocking('+PIN_BUZZER+',(char*)'+melody+');\n';
-  else
-	code= 'playRtttlBlockingPGM('+PIN_BUZZER+',(char*)'+melody+');\n';
+  if (!etapas.length) etapas.push(melody);
+  var play = (card == "MRTnode") ? 'playRtttlBlocking(' : 'playRtttlBlockingPGM(';
+  code = etapas.map(function(e) { return play + PIN_BUZZER + ',(char*)' + e + ');\n'; }).join('');
  return code;
 };
 
