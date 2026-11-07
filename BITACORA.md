@@ -12,6 +12,17 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-06 — Dos bloques de canciones: latinoamericanas y extranjeras
+- **Pedido:** separar las canciones en dos bloques (latinoamericanas / extranjeras) para explorar y acortar la lista.
+- **Archivos:** `www/blocs&generateurs/RTTTL.js`, `mpr_canciones.js`, `www/lang/Arduino_es.js`, `www/toolbox/toolbox_arduino_all.xml`.
+- **Qué se hizo:** bloque nuevo `RTTTL_music_lat` ("Tocar canción latinoamericana", las 4 "Canción misteriosa"), primero en la
+  toolbox. `RTTTL_music` se mantiene como "Tocar canción extranjera" con 20 canciones: TV/dibujos (Simpsons, Flinstones, Muppets,
+  PinkPanther, Looney, Smurfs, Gadget, A_Team, Jeopardy), Navidad (10) y `Short` (la usan los ejemplos `mpr_sing` y `mpr_randommove`).
+  Se quitaron de la lista: StarWars, MahnaMahna, LeisureSuit, MissionImp, Entertainer, YMCA, Indiana, TakeOnMe, 20thCenFox, Bond,
+  GoodBad, Toccata, AmazingGrace. Los programas guardados que usaban una de esas pierden la canción (el menú vuelve a la primera).
+  La revelación del nombre ahora mira solo `RTTTL_music_lat`.
+- **Verificación:** prueba con Blockly simulado (código de ambos bloques, listas, revelación). **Probado en la app:** ver abajo.
+
 ### 2026-11-06 — Logo nuevo de Crecer en Renca, pie flexible y tamaño mínimo
 - **Pedido:** reemplazar el logo (SVG nuevo), que el diseño no se superponga en ventanas chicas y logos en SVG si se puede.
 - **Archivos:** `www/media/crecer-en-rencaLOGO-hor.svg` y `crecer-en-rencaLOGO.svg` (reemplazados por el SVG nuevo),

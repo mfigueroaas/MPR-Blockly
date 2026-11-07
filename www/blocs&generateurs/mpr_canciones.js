@@ -36,7 +36,7 @@ Blockly.MPR_cancionesUsadas = function(ws) {
 	var usadas = [];
 	if (!ws) return usadas;
 	ws.getAllBlocks().forEach(function(b) {
-		if (b.type != 'RTTTL_music') return;
+		if (b.type != 'RTTTL_music_lat') return;
 		var id = b.getFieldValue('MELODY');
 		(Blockly.MPR_CANCIONES || []).forEach(function(c) {
 			if (c[1] == id && !usadas.some(function(u) { return u[0] == c[0]; })) usadas.push([c[0], c[2]]);
