@@ -37,8 +37,8 @@ MPROtto3D.iniciar = function(canvas, colores) {
 
 	self.escena = new THREE.Scene();
 	self.camara = new THREE.PerspectiveCamera(28, w / h, 50, 2000);
-	self.camara.position.set(0, 30, 560);
-	self.camara.lookAt(new THREE.Vector3(0, 0, 0));
+	self.camara.position.set(0, 82, 380);
+	self.camara.lookAt(new THREE.Vector3(0, 60, 0));
 	self.escena.add(new THREE.HemisphereLight(0xffffff, 0x6b6b8f, 0.85));
 	var luz = new THREE.DirectionalLight(0xffffff, 0.6);
 	luz.position.set(120, 260, 300);
@@ -49,54 +49,64 @@ MPROtto3D.iniciar = function(canvas, colores) {
 	self.PARTES_COLOR.forEach(function(n) {
 		self.mat[n] = new THREE.MeshLambertMaterial({ color: (colores && colores[n]) || '#ff5700', flatShading: true });
 	});
-	var matBlanco = new THREE.MeshBasicMaterial({ color: 0xffffff });
-	var matNegro = new THREE.MeshBasicMaterial({ color: 0x1b1b3a });
+	// Materiales del sensor ultrasónico (no se personalizan: son parte del robot)
+	var matPlata = new THREE.MeshLambertMaterial({ color: 0xc7ccd4 });
+	var matOscuro = new THREE.MeshBasicMaterial({ color: 0x14142b });
 
-	var giroY = new THREE.Matrix4().makeRotationY(Math.PI);      // el lado abierto del cuerpo queda atrás
-	var tumbar = new THREE.Matrix4().makeRotationX(-Math.PI / 2); // los pies: el saliente apunta hacia arriba
+	// Todas las piezas del 3MF tienen su altura en z y el frente de la cabeza en -y: se giran -90° en X
+	// (x, y, z) -> (x, z, -y). Ejes del robot: X derecha, Y arriba, Z hacia el frente. Medidas en mm.
+	var tumbar = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
 
 	self.raiz = new THREE.Group();
 	self.escena.add(self.raiz);
 
-	self.cuerpo = new THREE.Mesh(self.geometria('cuerpo', giroY), self.mat.cuerpo);
+	// Cuerpo (y 50..89) y cabeza apoyada encima (y 87..126, con 2 mm dentro del borde del cuerpo)
+	self.cuerpo = new THREE.Mesh(self.geometria('cuerpo', tumbar), self.mat.cuerpo);
+	self.cuerpo.position.set(0, 69.5, 0);
 	self.raiz.add(self.cuerpo);
 
-	// Cabeza: pivote en el cuello (y = 35)
+	// Cabeza: pivote en el cuello (y = 87)
 	self.cabeza = new THREE.Group();
-	self.cabeza.position.set(0, 35, 0);
-	var malla = new THREE.Mesh(self.geometria('cabeza'), self.mat.cabeza);
-	malla.position.set(0, 33, 0);
+	self.cabeza.position.set(0, 87, 0);
+	var malla = new THREE.Mesh(self.geometria('cabeza', tumbar), self.mat.cabeza);
+	malla.position.set(0, 19.5, 0);
 	self.cabeza.add(malla);
-	// Ojos (sobre la cara de la cabeza)
+
+	// "Ojos" = sensor ultrasónico: dos cilindros plateados con malla oscura, en los agujeros del frente
 	self.ojos = [];
-	self.pupilas = [];
-	[-15, 15].forEach(function(x) {
-		var ojo = new THREE.Mesh(new THREE.SphereGeometry(9.5, 14, 10), matBlanco);
-		ojo.scale.set(1, 1, 0.5);
-		ojo.position.set(x, 37, 20.5);
-		var pupila = new THREE.Mesh(new THREE.SphereGeometry(4.2, 10, 8), matNegro);
-		pupila.scale.set(1, 1, 0.5);
-		pupila.position.set(0, 0, 7);
-		ojo.add(pupila);
-		self.cabeza.add(ojo);
-		self.ojos.push(ojo);
-		self.pupilas.push(pupila);
+	[-13.4, 13.4].forEach(function(x) {
+		var sensor = new THREE.Group();
+		var lata = new THREE.Mesh(new THREE.CylinderGeometry(7.9, 7.9, 14, 20), matPlata);
+		lata.rotation.x = Math.PI / 2;
+		lata.position.z = -1;
+		sensor.add(lata);
+		var malla2 = new THREE.Mesh(new THREE.CircleGeometry(6.2, 20), matOscuro);
+		malla2.position.z = 6.1;
+		sensor.add(malla2);
+		[-3.4, 0, 3.4].forEach(function(bx) {   // rejilla del transductor
+			var barra = new THREE.Mesh(new THREE.BoxGeometry(0.9, 9.5, 0.4), matPlata);
+			barra.position.set(bx, 0, 6.3);
+			sensor.add(barra);
+		});
+		sensor.position.set(x, 25.9, 34.2 - 5);   // la lata asoma ~2 mm del frente
+		self.cabeza.add(sensor);
+		self.ojos.push(sensor);
 	});
 	self.raiz.add(self.cabeza);
 
-	// Piernas: pivote en la cadera; pies: pivote en el tobillo (dentro de la pierna)
+	// Piernas (y 8..50): pivote en la cadera, a x = ±23; pies: pivote en el tobillo (y = 8).
+	// El pie con el saliente a la izquierda va bajo la pierna de la derecha y viceversa: la placa sobresale hacia afuera.
 	self.piernas = [];
-	[-27, 27].forEach(function(x) {
+	[-23, 23].forEach(function(x) {
 		var cadera = new THREE.Group();
-		cadera.position.set(x, -35, 0);
-		var pierna = new THREE.Mesh(self.geometria('pierna'), self.mat.piernas);
-		pierna.position.set(0, -19, 0);
+		cadera.position.set(x, 50, 0);
+		var pierna = new THREE.Mesh(self.geometria('pierna', tumbar), self.mat.piernas);
+		pierna.position.set(0, -21, 0);
 		cadera.add(pierna);
 		var tobillo = new THREE.Group();
-		tobillo.position.set(0, -38, 0);
-		// el pie con el saliente a la izquierda va bajo la pierna de la derecha y viceversa
+		tobillo.position.set(0, -42, 0);
 		var pie = new THREE.Mesh(self.geometria(x > 0 ? 'pieIzq' : 'pieDer', tumbar), self.mat.pies);
-		pie.position.set(x > 0 ? 9 : -9, -13, -2.5);
+		pie.position.set(x > 0 ? 9 : -9, 5, 0);
 		tobillo.add(pie);
 		cadera.add(tobillo);
 		self.raiz.add(cadera);
@@ -105,8 +115,6 @@ MPROtto3D.iniciar = function(canvas, colores) {
 
 	self.vivo = true;
 	self.estado = { nombre: 'reposo', inicio: performance.now() / 1000 };
-	self.proxCierre = 2.5;
-	self.siguienteParpadeo = 2.5;
 	self.prox.desde = performance.now();
 	window.addEventListener('mousemove', self.alMover);
 	document.addEventListener('visibilitychange', function() { if (!document.hidden) self.ultimo = 0; });
@@ -156,7 +164,7 @@ MPROtto3D.pose = function(t) {
 	m.ay += (m.y - m.ay) * 0.12;
 
 	var y = Math.sin(t * 2.2) * 1.4, giro = 0, cabY = m.ax * 0.55, cabX = m.ay * 0.3, cabZ = Math.sin(t * 1.3) * 0.03;
-	var legA = 0, legB = 0, ojoEsc = 1, pupY = 0;
+	var legA = 0, legB = 0, ojoEsc = 1;
 
 	if (e.nombre == 'saludo') {
 		legB = (0.8 + 0.35 * Math.sin(s * 13)) * env;        // pierna derecha saluda
@@ -165,10 +173,9 @@ MPROtto3D.pose = function(t) {
 		y += 42 * Math.abs(Math.sin(Math.PI * s / 0.9)) * env;
 		giro = Math.min(1, s / 1.3) * Math.PI * 2;
 		legA = -(0.45 + 0.25 * Math.sin(s * 16)) * env; legB = -legA;
-		ojoEsc = 1.1;
+		ojoEsc = 1.12;
 	} else if (e.nombre == 'pensar') {
 		cabZ += 0.28 * env; cabX = -0.18 * env; cabY *= 0.3;
-		pupY = 3.2 * env;
 	} else if (e.nombre == 'alerta') {
 		cabY = Math.sin(s * 26) * 0.4 * env; ojoEsc = 1 + 0.3 * env;
 		y += 3 * env;
@@ -180,14 +187,8 @@ MPROtto3D.pose = function(t) {
 	self.piernas[0].rotation.z = legA;
 	self.piernas[1].rotation.z = legB;
 
-	// Parpadeo cada ~3,5 s
-	if (t > self.siguienteParpadeo) self.cierre = t, self.siguienteParpadeo = t + 2.5 + Math.random() * 2.5;
-	var cerrado = self.cierre && t - self.cierre < 0.14;
-	for (var i = 0; i < 2; i++) {
-		self.ojos[i].scale.set(ojoEsc, cerrado ? 0.1 : ojoEsc, 0.5);
-		self.pupilas[i].position.y = pupY + m.ay * 2;
-		self.pupilas[i].position.x = m.ax * 2.5;
-	}
+	// Los sensores se agrandan un poco con las emociones (alerta, celebrar)
+	for (var i = 0; i < 2; i++) self.ojos[i].scale.set(ojoEsc, ojoEsc, 1);
 };
 
 MPROtto3D.bucle = function(ahora) {

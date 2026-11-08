@@ -382,6 +382,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Notas:** probado en Chrome moderno (menú, colores, detectores). Pendiente probar en Electron 4 (three r128 y WebGL).
 - **Commit:** (ver git log)  **Probado en la app:** no
 
+### 2026-11-08  Otto 3D: orientación de piezas y ojos como sensor ultrasónico
+- **Pedido / problema:** las piezas del Otto 3D estaban mal orientadas y armadas; los ojos blancos debían ser el sensor ultrasónico.
+- **Archivos:** `www/js/mpr_otto3d.js`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** con las fotos de `Fotos otto armado/` y la inspección de las piezas originales del 3MF se corrigió el giro de todas las piezas (altura en z, frente de la cabeza en -y), las medidas del ensamblado, la posición de piernas (x = ±23) y pies (placa hacia afuera) y los pivotes de cuello, cadera y tobillo. Los ojos pasaron a ser dos sensores ultrasónicos (cilindro plateado, malla oscura y rejilla) que se agrandan un poco con alerta/celebrar; se quitaron pupilas y parpadeo.
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto
