@@ -461,6 +461,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** en este notebook no cambia nada visible: Otto queda listo en `load` + 1,47 s y el recorrido aparece en `load` + 1,81 s.
 - **Commit:** (ver git log)  **Probado en la app:** sí (primera vez simulada borrando `mpr_tour_visto` y restaurándolo; botones Siguiente/Atrás/Saltar y teclas)
 
+### 2026-11-08 — Otto 3D: sin recorte por vista (arranque más liviano, misma imagen)
+- **Pedido / problema:** parte de la revisión de rendimiento. El perfil del arranque mostró ~28 ms (en frío) calculando la esfera envolvente de cada pieza (`computeBoundingSphere`, que recorre los ~370 mil vértices del modelo completo) y probándola en cada cuadro. Ese trabajo no sirve: Otto siempre cabe entero en su canvas.
+- **Archivos:** `www/js/mpr_otto3d.js` (`MPROtto3D.armar`).
+- **Qué se hizo:** `frustumCulled = false` en todas las mallas, también al bajar de nivel de modelo.
+- **Notas:** imagen idéntica comprobada píxel a píxel (`gl.readPixels`, 0 bytes distintos en reposo y en mitad de "celebrar"). El primer cuadro de Otto pasó de 114 a ~65 ms en este notebook. También se probó compartir el sombreador del sensor (`flatShading` en `matPlata`), pero no hay nada que ganar: `MeshLambertMaterial` de r128 no tiene esa propiedad y ya hay solo 2 programas. Por eso salen 4 avisos "'flatShading' is not a property" en la consola, que son inofensivos.
+- **Commit:** (ver git log)  **Probado en la app:** sí (prueba de humo: animaciones, paseo, menú, colores, esconder/mostrar, bajar a liviano)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

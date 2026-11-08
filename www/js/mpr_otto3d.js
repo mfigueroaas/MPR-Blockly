@@ -161,6 +161,9 @@ MPROtto3D.armar = function() {
 		self.pies.push(tobillo);
 	});
 
+	// Otto siempre cabe entero en su canvas: sin el recorte por vista, three.js no calcula la esfera envolvente de cada
+	// pieza (recorre ~370 mil vértices al arrancar) ni la prueba en cada cuadro. La imagen es idéntica (comprobado píxel a píxel).
+	self.raiz.traverse(function(o) { o.frustumCulled = false; });
 };
 
 MPROtto3D.alMover = function(e) {
