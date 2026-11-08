@@ -492,14 +492,18 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - Probado: compilación del instalador.
   - Probado: cierre ordenado con un ejecutable de prueba contra la app real, en modo silencioso y con ventana. Se cierra en ~1,2 s y guarda el trabajo (`loadOnceBlocks`).
   - Probado: firma con un certificado autofirmado de prueba (instalador, desinstalador y lote de ejecutables), respetando las firmas existentes. El certificado se borró.
-  - Pendiente: instalar la 1.4.1 sobre la 1.4.0 y la prueba silenciosa, que requieren aceptar el permiso de administrador. El primer intento se canceló solo a los ~2 minutos sin respuesta.
-- **Commit:** (ver git log)  **Probado en la app:** parcial (ver notas)
+  - Instalación de un clic de la 1.4.1 sobre la 1.4.0 con la app abierta: la app se cerró sola y guardó el trabajo. Terminó con código 0 en 155 s y reabrió la app sin permisos de administrador (desde explorer.exe). Dejó versión 1.4.1 en el registro, accesos directos y permisos correctos.
+  - Con la app abierta, `Desinstalar.exe /S` cerró la app y terminó con código 0 en 72 s, sin dejar restos en `C:\MPRBlockly`, en el registro, en los accesos directos ni en la asociación de `.bloc`.
+  - Después, `/S` instaló con código 0 en 109 s, sin ventanas y sin abrir la app. Dejó permisos, accesos, `.bloc` y driver CH340 correctos.
+  - Las preferencias del usuario (recorrido visto, colores y posición de Otto) se conservaron.
+  - El primer intento se canceló porque Windows cierra el permiso de administrador si nadie responde en ~2 minutos.
+- **Commit:** (ver git log)  **Probado en la app:** sí (instalación de un clic, desinstalación e instalación silenciosas en el notebook NB0003)
 
 ### 2026-11-08 — Versión 1.4.1 e instalador generado
 - **Pedido / problema:** repartir las correcciones de rendimiento (recorrido fluido) y el instalador de un clic y desatendido.
 - **Archivos:** `package.json` (1.4.1), `DOCUMENTACION_TECNICA.md` (7.4, 13.1, 13.4). Salida: `dist\MPR_Blockly_Setup_1.4.1.exe` (139 MB, SHA-256 `49749d6553d28c30677b3ddcc3c070064c11034d39e60ab5935b29791c7a90c9`), sin firma digital.
 - **Qué se hizo:** `py tools/build_installer.py --official <Descargas>\ottoblockly.Setup.1.5.0.exe` en el notebook (tardó 14 min); el SHA-256 del instalador oficial coincidió.
-- **Commit:** (ver git log)  **Probado en la app:** pendiente (instalación completa y modo silencioso)
+- **Commit:** (ver git log)  **Probado en la app:** sí (ver la entrada anterior; es la versión instalada en el notebook)
 
 ## Plantilla para nuevas entradas
 ```
