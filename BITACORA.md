@@ -454,6 +454,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** en la app instalada pasó a 60 cuadros/s en los 8 pasos, 0 avisos de memoria, 6 "Swap throttled" y 61 % menos rasterizado. Sin GPU (`--disable-gpu`): de 43–58 a 60 cuadros/s. No quitar esas dos líneas.
 - **Commit:** (ver git log)  **Probado en la app:** sí (`C:\MPRBlockly` en el notebook NB0003, copiado con `probar.py`)
 
+### 2026-11-08 — Recorrido de la primera vez: espera a que Otto 3D termine de cargar
+- **Pedido / problema:** parte de la revisión de rendimiento para PCs con gráfica integrada. Al arrancar, la carga de Otto 3D bloquea la página unos 250 ms en este notebook (decodificar el modelo y primer dibujo); empieza 1,2 s después de `load` y terminaba solo ~280 ms antes de que apareciera el recorrido (`load` + 1,8 s). En un PC 1,5–2,5 veces más lento ambas cosas se cruzan y se nota un tirón justo al aparecer el recorrido.
+- **Archivos:** `www/js/mpr_tour.js` (`MPRTour.iniciarCuandoListo`), `www/js/mpr_mascota.js` (`MPRMascota.cargando3D`).
+- **Qué se hizo:** la mascota marca `cargando3D` mientras carga three.js y el modelo, hasta después del primer cuadro (o del respaldo 2D). El recorrido automático de la primera vez espera a que termine, revisando cada 150 ms y como máximo 6 s más. No se repite si mientras tanto lo abrieron con "?". Con Otto escondido no espera. El botón "?" funciona igual que antes.
+- **Notas:** en este notebook no cambia nada visible: Otto queda listo en `load` + 1,47 s y el recorrido aparece en `load` + 1,81 s.
+- **Commit:** (ver git log)  **Probado en la app:** sí (primera vez simulada borrando `mpr_tour_visto` y restaurándolo; botones Siguiente/Atrás/Saltar y teclas)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

@@ -172,9 +172,12 @@ MPRMascota.iniciar3D = function() {
 			MPRMascota.planificar(20000 + Math.random() * 20000);
 			MPROtto3D.alLento = MPRMascota.bajarCalidad;
 			setTimeout(function() { try { console.log('[Otto 3D]', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {} }, 4000);
+			// El primer cuadro (sombreadores y subida del modelo a la GPU) se dibuja en el próximo refresco: después termina la carga
+			requestAnimationFrame(function() { requestAnimationFrame(function() { MPRMascota.cargando3D = false; }); });
 		}
 	}
 	if (typeof THREE != 'undefined' && window.OTTO3D) return aplicar();
+	MPRMascota.cargando3D = true;   // el recorrido de la primera vez espera a que termine (js/mpr_tour.js)
 	MPRMascota.nivel = MPRMascota.nivelModelo();
 	MPRMascota.cargarScript('js/three.min.js', function() {
 		MPRMascota.cargarScript(MPRMascota.ARCHIVOS[MPRMascota.nivel], aplicar, MPRMascota.respaldo2D);
@@ -183,6 +186,7 @@ MPRMascota.iniciar3D = function() {
 
 // Si el equipo no soporta WebGL, Otto aparece en 2D con los mismos globos
 MPRMascota.respaldo2D = function() {
+	MPRMascota.cargando3D = false;
 	var canvas = document.getElementById('mpr_masc_canvas');
 	if (!canvas || document.getElementById('mpr_masc_img')) return;
 	var img = document.createElement('img');

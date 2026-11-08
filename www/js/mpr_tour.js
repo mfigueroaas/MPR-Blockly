@@ -146,10 +146,23 @@ MPRTour.cerrar = function() {
 	try { window.localStorage[MPRTour.CLAVE] = '1'; } catch (e) {}
 };
 
+// La primera vez, además de la pantalla de carga, espera a que Otto 3D termine de cargar: en equipos lentos esa carga
+// ocupa la página unos cientos de milisegundos y se notaría como un tirón justo al aparecer el recorrido (máximo 6 s más).
+MPRTour.iniciarCuandoListo = function(intentos) {
+	intentos = intentos || 0;
+	if (typeof MPRMascota != 'undefined' && MPRMascota.cargando3D && intentos < 40) {
+		setTimeout(function() { MPRTour.iniciarCuandoListo(intentos + 1); }, 150);
+		return;
+	}
+	var visto = false;
+	try { visto = !!window.localStorage[MPRTour.CLAVE]; } catch (e) {}
+	if (!MPRTour.activo && !visto) MPRTour.iniciar();   // no lo repite si mientras tanto lo abrieron con "?"
+};
+
 window.addEventListener('load', function() {
 	var btn = document.getElementById('btn_tour');
 	if (btn) btn.addEventListener('click', MPRTour.iniciar);
 	var visto = false;
 	try { visto = !!window.localStorage[MPRTour.CLAVE]; } catch (e) {}
-	if (!visto) setTimeout(MPRTour.iniciar, 1800);   // espera a que termine la pantalla de carga
+	if (!visto) setTimeout(MPRTour.iniciarCuandoListo, 1800);   // espera a que termine la pantalla de carga
 });
