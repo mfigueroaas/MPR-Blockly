@@ -363,6 +363,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - Se ejecutÃ³ `PREPARAR_CODIGO.bat` (clona `MPR_Blockly.bundle` y aplica `actualizacion.bundle`).
   QuedÃ³ en `32ad6ed` (incluye `tools/probar.py`). El aviso "No such remote: 'origin'" es inofensivo.
 
+### 2026-11-08  Contorno verde del botón cargar y placeholder del buscador cortado
+- **Pedido / problema:** el botón de cargar código (flecha) tenía un contorno verde; en el buscador (chat) el texto "Dile a Otto qué bloque buscas..." se cortaba.
+- **Archivos:** `www/css/blocklino.css`.
+- **Qué se hizo:** `.btn-arduino` ahora fuerza `border-color: #FF5700` (el borde verde venía de bootstrap.min.3.3.6.css); `#buscar_bloques` pasa de 240 px a 330 px de ancho.
+- **Commit:** (ver git log)  **Probado en la app:** no
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto
