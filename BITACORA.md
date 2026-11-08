@@ -478,6 +478,23 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** el consumo en reposo es casi todo la animación de Otto (~9 % de un núcleo); bajarlo cambiaría lo que se ve, así que queda a decisión del usuario. En 13.4 quedó anotado el error heredado de `microbit.js` y `typing.js:95`.
 - **Commit:** (ver git log)  **Probado en la app:** sí (las cuatro órdenes de la herramienta contra `C:\MPRBlockly`)
 
+### 2026-11-08 — Instalador de un clic y desatendido, menos avisos de seguridad y firma digital lista
+- **Pedido / problema:** al ejecutar el instalador apareció un aviso de que el programa podía ser peligroso. Se pidió reducirlo al mínimo y que la instalación sea lo más desatendida posible.
+- **Archivos:** `build/installer.nsi`, `build/cerrar_app.nsh` (nuevo), `tools/build_installer.py`, `DOCUMENTACION_TECNICA.md` (7.1, 7.2 y 7.5 nueva), `LEEME_MPR.md`, `BITACORA.md`.
+- **Causa de los avisos:** nada está firmado: ni el instalador, ni `MPR Blockly.exe`, ni `Desinstalar.exe`, y 55 de los 57 ejecutables instalados tampoco. Por eso Windows muestra "editor desconocido" al pedir permisos y SmartScreen avisa si el archivo viene de Internet. El antivirus también puede desconfiar: Acronis puso en cuarentena un ejecutable de prueba que usaba `taskkill`.
+- **Qué se hizo:**
+  - Instalador de un clic: solo barra de progreso (sin bienvenida, licencia, carpeta ni pantalla final); al terminar se cierra y abre la app. Solo corre una copia a la vez.
+  - Si la app está abierta, la cierra sola de forma ordenada (`WM_CLOSE`, como la X), sin `cmd`, `tasklist` ni `taskkill`. La app respalda los bloques y los recupera al abrirse.
+  - Modo desatendido `/S` para instalar y desinstalar, sin ventanas y sin abrir la app. Devuelve código 2 si no pudo cerrar la app, y deja `QuietUninstallString` en el registro.
+  - Firma digital opcional al generar (`--firma` o `MPR_FIRMA`): instalador, desinstalador y los 77 ejecutables y bibliotecas que vienen sin firma, con sello de tiempo.
+  - Documentación de los avisos, de cómo distribuir sin la marca de Internet y de las opciones de certificado (7.5).
+- **Notas:**
+  - Probado: compilación del instalador.
+  - Probado: cierre ordenado con un ejecutable de prueba contra la app real, en modo silencioso y con ventana. Se cierra en ~1,2 s y guarda el trabajo (`loadOnceBlocks`).
+  - Probado: firma con un certificado autofirmado de prueba (instalador, desinstalador y lote de ejecutables), respetando las firmas existentes. El certificado se borró.
+  - Pendiente: instalar la 1.4.1 sobre la 1.4.0 y la prueba silenciosa, que requieren aceptar el permiso de administrador. El primer intento se canceló solo a los ~2 minutos sin respuesta.
+- **Commit:** (ver git log)  **Probado en la app:** parcial (ver notas)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

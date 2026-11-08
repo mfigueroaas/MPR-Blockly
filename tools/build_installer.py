@@ -11,11 +11,23 @@ Uso:
 
 Requisitos (Windows o Linux):
     - 7-Zip      (7z / 7z.exe)
-    - NSIS 3     (makensis / makensis.exe)
+    - NSIS 3.08 o más nuevo (makensis / makensis.exe)
     - Node.js    (npx, para cambiar ícono y datos de versión del .exe; opcional)
 Salida: dist/MPR_Blockly_Setup_<versión>.exe
+
+Firma digital (opcional, solo Windows, cuando haya un certificado de firma de código):
+    python tools/build_installer.py --official ... --firma "/sha1 <huella del certificado>"
+    (o la variable de entorno MPR_FIRMA). El texto son los argumentos de signtool que eligen el certificado:
+      /sha1 <huella>  o  /n "<nombre>"     certificado instalado en Windows (también el de la nube de
+                                            Certum con SimplySign Desktop conectado)
+      /dlib <Azure.CodeSigning.Dlib.dll> /dmdf <metadata.json>    Azure Artifact Signing
+    Se firman con sello de tiempo (--tsa) el instalador, Desinstalar.exe y todos los .exe/.dll/.node que vienen
+    sin firma (MPR Blockly.exe y las herramientas de Arduino), para que funcionen también con el Control
+    inteligente de aplicaciones de Windows 11 activado.
+    Requiere signtool.exe (SDK de Windows: winget install Microsoft.WindowsSDK.10.0.26100).
 """
 import argparse
+import glob
 import hashlib
 import json
 import os
@@ -43,6 +55,7 @@ AVR_PACKAGES = [
 OFFICIAL_ARDUINO_FILES = ["arduino-cli.exe", "package_index.json", "package_index.json.sig",
                           "library_index.json"]
 REPO_JS = ["electronApp.js", "index.js", "factory.js", "term.js", "repl.js"]
+TSA_DEFECTO = "http://timestamp.digicert.com"   # sello de tiempo RFC 3161: sirve con certificados de cualquier emisor
 
 
 def find_tool(names, extra_paths):
@@ -73,6 +86,66 @@ def sha256(path):
     return h.hexdigest()
 
 
+def find_signtool():
+    kits = sorted(glob.glob(r"C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe"), reverse=True)
+    return find_tool(["signtool", "signtool.exe"], kits)
+
+
+def ruta_sin_espacios(path):
+    """Ruta corta 8.3 de Windows: NSIS ejecuta !finalize con cmd, que se confunde con rutas entre comillas."""
+    if os.name != "nt" or " " not in path:
+        return path
+    import ctypes
+    buf = ctypes.create_unicode_buffer(1024)
+    if ctypes.windll.kernel32.GetShortPathNameW(path, buf, 1024) and " " not in buf.value:
+        return buf.value
+    sys.exit("La carpeta de trabajo no puede tener espacios si se firma: usa --work C:\\mprb")
+
+
+def pe_con_firma(path):
+    """True si el ejecutable o biblioteca ya trae firma Authenticode (o no es un archivo PE): no se toca."""
+    with open(path, "rb") as f:
+        dos = f.read(64)
+        if len(dos) < 64 or dos[:2] != b"MZ":
+            return True
+        pe = int.from_bytes(dos[60:64], "little")
+        f.seek(pe)
+        if f.read(4) != b"PE\0\0":
+            return True
+        f.seek(pe + 24)
+        magic = int.from_bytes(f.read(2), "little")
+        # directorios de datos: tras 96 bytes del encabezado opcional (PE32) o 112 (PE32+); el 4.º es el de certificados
+        f.seek(pe + 24 + (96 if magic == 0x10b else 112) + 4 * 8)
+        return int.from_bytes(f.read(8)[4:8], "little") > 0
+
+
+def firmar_todo(stage, signtool, firma, tsa):
+    """Firma todos los .exe/.dll/.node que vienen sin firma: los de MPR y las herramientas de Arduino incluidas
+    (arduino-cli, avr-gcc, avrdude...). Con el Control inteligente de aplicaciones de Windows 11 activo, cualquier
+    programa sin firma ni reputación queda bloqueado, también al compilar. Los que ya traen firma no se tocan."""
+    archivos = [os.path.join(d, f) for d, _, fs in os.walk(stage) for f in fs
+                if f.lower().endswith((".exe", ".dll", ".node")) and not pe_con_firma(os.path.join(d, f))]
+    for i in range(0, len(archivos), 40):   # en lotes: cada archivo pide un sello de tiempo
+        lote = " ".join('"%s"' % a for a in archivos[i:i + 40])
+        subprocess.run('"%s" sign /fd sha256 /tr %s /td sha256 %s %s' % (signtool, tsa, firma, lote),
+                       check=True, stdout=subprocess.DEVNULL)
+    return len(archivos)
+
+
+def preparar_firma(firma, tsa, work):
+    """Escribe <work>/firmar.cmd, que firma con signtool el archivo que recibe (lo usan este script y NSIS)."""
+    if os.name != "nt":
+        sys.exit("La firma digital solo está disponible en Windows (signtool).")
+    signtool = find_signtool()
+    if not signtool:
+        sys.exit("Para firmar falta signtool.exe (SDK de Windows): winget install Microsoft.WindowsSDK.10.0.26100")
+    cmd = os.path.join(work, "firmar.cmd")
+    with open(cmd, "w", encoding="utf-8", newline="\r\n") as f:
+        # chcp 65001: los nombres de certificado pueden llevar tildes
+        f.write('@echo off\nchcp 65001 >nul\n"%s" sign /fd sha256 /tr %s /td sha256 %s %%1\n' % (signtool, tsa, firma))
+    return ruta_sin_espacios(cmd), signtool
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--official", required=True, help="ottoblockly.Setup.1.5.0.exe")
@@ -82,6 +155,9 @@ def main():
     ap.add_argument("--work", default=default_work, help="carpeta de trabajo (ruta corta)")
     ap.add_argument("--out", default=os.path.join(REPO, "dist"), help="carpeta de salida")
     ap.add_argument("--skip-exe-resources", action="store_true", help="no cambiar ícono/versión del .exe")
+    ap.add_argument("--firma", default=os.environ.get("MPR_FIRMA"),
+                    help='argumentos de signtool que eligen el certificado, por ejemplo "/sha1 <huella>" (o variable MPR_FIRMA)')
+    ap.add_argument("--tsa", default=os.environ.get("MPR_FIRMA_TSA", TSA_DEFECTO), help="servidor de sello de tiempo")
     args = ap.parse_args()
 
     pkg = json.load(open(os.path.join(REPO, "package.json"), encoding="utf-8"))
@@ -106,6 +182,8 @@ def main():
     os.makedirs(official)
     os.makedirs(stage)
     os.makedirs(args.out, exist_ok=True)
+    firmar, signtool = preparar_firma(args.firma, args.tsa, work) if args.firma else (None, None)
+    print("  Firma digital: %s" % ("sí (%s)" % args.firma if firmar else "no (sin certificado: Windows mostrará 'Editor desconocido')"))
 
     print("[2/6] Extrayendo runtime oficial (Electron 4.1.1, serialport 7.1.4, arduino-cli 0.14.0)")
     run([sevenzip, "e", "-y", "-o" + work, args.official, "$PLUGINSDIR/app-32.7z"], stdout=subprocess.DEVNULL)
@@ -164,6 +242,9 @@ def main():
              "--legal-copyright", "GPL-2.0 - basado en Otto Blockly (Otto DIY)",
              "--file-version", v4, "--product-version", v4])
         os.replace(exe + ".tmp", exe)
+    if firmar:
+        n = firmar_todo(stage, signtool, args.firma, args.tsa)
+        print("  Firmados %d ejecutables y bibliotecas que venían sin firma (MPR y herramientas de Arduino)" % n)
 
     print("[5/6] Generando instalador NSIS (puede tardar varios minutos)")
     # Lista de desinstalación: solo lo que se instala (no se borra nada más de la carpeta)
@@ -177,12 +258,16 @@ def main():
         f.write('  Delete "$INSTDIR\\config.json"\n')
     outfile = os.path.join(os.path.abspath(args.out), "MPR_Blockly_Setup_%s.exe" % version)
     run([makensis, "-V2", "-INPUTCHARSET", "UTF8", "-DSTAGE=" + stage, "-DVERSION=" + version, "-DOUTFILE=" + outfile,
-         "-DUNLIST=" + unlist,
-         os.path.join(REPO, "build", "installer.nsi")])
+         "-DUNLIST=" + unlist] + (["-DFIRMAR=" + firmar] if firmar else []) +
+        [os.path.join(REPO, "build", "installer.nsi")])
 
     print("[6/6] Listo")
     size = os.path.getsize(outfile) / 1e6
     print("  %s  (%.0f MB)\n  SHA-256 %s" % (outfile, size, sha256(outfile)))
+    if firmar:
+        ok = subprocess.run([signtool, "verify", "/pa", "/q", outfile]).returncode == 0
+        print("  Firma: %s" % ("válida y de confianza" if ok else
+                               "PRESENTE pero Windows no confía en el certificado (¿certificado de prueba?)"))
 
 
 if __name__ == "__main__":

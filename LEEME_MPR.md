@@ -15,9 +15,13 @@ Otto con placas Arduino AVR (Nano, Uno, Mega…), sin conexión a internet.
   táctil, bloque switch).
 - Solo español y solo placas AVR.
 - Instalador propio: carpeta `C:\MPRBlockly`, accesos directos, asociación de
-  archivos `.bloc`, desinstalador y driver CH340 opcional. No reemplaza ni choca con
+  archivos `.bloc`, desinstalador y driver CH340. No reemplaza ni choca con
   una instalación de Otto Blockly. Requiere Windows de 64 bits (arduino-cli es de
   64 bits, igual que en Otto Blockly 1.5.0).
+- Instalación de un clic: no hace preguntas y cierra sola la app si está abierta (la
+  app guarda el trabajo del alumno). Desatendida para muchos PCs:
+  `MPR_Blockly_Setup_<versión>.exe /S`. Sin firma digital Windows avisa "editor
+  desconocido"; ver `DOCUMENTACION_TECNICA.md` 7.5.
 - Alumnos sin permisos de administrador pueden compilar y subir: solo
   `compilation\arduino` y `config.json` son modificables por el grupo Usuarios.
 - Actualizador automático desactivado (apuntaba a Otto Blockly oficial).

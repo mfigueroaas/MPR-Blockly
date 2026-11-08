@@ -282,19 +282,21 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 
 ### 7.1 Generar el instalador
 1. Descargar `ottoblockly.Setup.1.5.0.exe` de https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 y dejarlo en la raíz del repo (el script verifica su SHA‑256).
-2. Una vez: `winget install 7zip.7zip NSIS.NSIS` (Node.js y Python ya instalados).
+2. Una vez: `winget install 7zip.7zip NSIS.NSIS` (NSIS 3.08 o más nuevo; Node.js y Python ya instalados).
 3. Subir la versión en `package.json`.
-4. `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`
-5. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe`.
+4. `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`. Con certificado de firma, agregar `--firma "/sha1 <huella>"` (ver 7.5).
+5. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe`. En el notebook tarda unos 14 minutos.
 
 `tools/build_installer.py` extrae el instalador oficial, conserva el runtime de Electron y los paquetes AVR mínimos (`arduino:avr` 1.8.3, avr-gcc, avrdude, arduinoOTA), pone encima el código del repo, cambia ícono y datos de versión del `.exe` (resedit‑cli), y compila `build/installer.nsi` con `makensis -INPUTCHARSET UTF8 -DSTAGE -DVERSION -DOUTFILE` (el `.nsi` es UTF-8 sin BOM). La carpeta de trabajo es `C:\mprb` (corta a propósito por el límite de 260 caracteres de Windows). No usa 7za (no abre instaladores NSIS).
 
 ### 7.2 Qué hace el instalador (`build/installer.nsi`)
+- **Un clic** (desde la 1.4.1): después del permiso de administrador solo muestra la barra de progreso. Al terminar se cierra sola y abre la app **sin privilegios de administrador** (`RunAppNotElevated`). No hay pantallas de bienvenida, licencia, carpeta ni final: la GPL-2.0 no exige aceptarla y `LICENSE.md` queda junto al programa. Solo corre una copia del instalador a la vez (mutex `MPRBlocklyInstalador`).
+- **Si la app está abierta, la cierra sola** (`build/cerrar_app.nsh`). Detecta que `MPR Blockly.exe` está en uso porque no se puede abrir para escritura (error 32) y le envía `WM_CLOSE` a su ventana, como al apretar la X. La app respalda los bloques del alumno (`loadOnceBlocks`) y los recupera al abrirse; el instalador espera hasta 15 s. No usa `cmd`, `tasklist` ni `taskkill`: un ejecutable de prueba que los usaba quedó en cuarentena del antivirus del notebook. Si la app no se cierra (por ejemplo, abierta en otra sesión de Windows), con ventana pide cerrarla y en modo silencioso cancela con código 2.
+- **Modo desatendido:** `MPR_Blockly_Setup_<versión>.exe /S` instala sin ventanas y sin abrir la app (código 0 = instalado, 2 = no se pudo cerrar la app). Para otra carpeta: `/S /D=D:\MPRBlockly` (siempre al final). Para desinstalar: `"C:\MPRBlockly\Desinstalar.exe" /S`, que también queda como `QuietUninstallString` en el registro. Desde un script con permisos de administrador o una herramienta de despliegue no aparece ninguna ventana.
 - Instala en `C:\MPRBlockly` (no choca con Otto Blockly oficial).
 - Accesos directos; asociación de `.bloc` (`MPRBlockly.bloc`); desinstalador (`Desinstalar.exe`, borra solo lo instalado según lista generada); entrada en Agregar o quitar programas.
 - **Permisos (`icacls`)**: SYSTEM y Administradores control total; Usuarios solo lectura y ejecución, **salvo** `compilation\arduino` y `config.json`, que Usuarios puede modificar. Así los alumnos sin administrador pueden compilar y subir, y una DLL plantada no se ejecuta como administrador.
-- Al terminar abre la app **sin privilegios de administrador** (`RunAppNotElevated`).
-- Instala siempre el driver CH340 (al final de la copia de archivos) con `pnputil /add-driver ...ch341ser.inf /install`; el código de salida 3010 se considera correcto. `pnputil` no reemplaza un driver más nuevo ya instalado por Windows Update.
+- Instala siempre el driver CH340 (al final de la copia de archivos) con `pnputil /add-driver ...ch341ser.inf /install`; el código de salida 3010 se considera correcto. `pnputil` no reemplaza un driver más nuevo ya instalado por Windows Update. Es un driver WHQL y no muestra ventanas. Si falla, con ventana se abre la carpeta del driver para instalarlo a mano; en modo silencioso no se abre nada.
 
 ### 7.3 Archivos de entrega y bundles (carpeta `C:\ClaudeCode\MPR_Blockly`)
 | Archivo | Para qué |
@@ -318,6 +320,31 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 | 1.4.0 | Cambios de noviembre 2026: recorrido inicial "Conoce a Otto", mascota Otto 3D (consejos, errores comunes, colores personalizables, paseos; modelos completo/liviano/mínimo que siempre se ven en 3D, también sin GPU), ventana principal siempre maximizada, arreglos visuales (contorno verde del botón de cargar, buscador). Generado el 2026-11-08: `distMPR_Blockly_Setup_1.4.0.exe`, 139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`. Pendiente de pruebas (en especial el 3D en Electron 4 y en un notebook sin GPU) |
 
 La versión de `package.json` se pasa al `.nsi` (`-DVERSION`) al generar el instalador.
+
+### 7.5 Avisos de seguridad de Windows y firma digital (revisión del 2026-11-08)
+El instalador y los programas **no tienen firma digital** (Authenticode). De los 57 ejecutables instalados, 55 no tienen firma; solo los drivers y `d3dcompiler_47.dll` traen la de su autor. Por eso Windows puede mostrar estos avisos:
+
+| Aviso | Cuándo aparece | Cómo reducirlo sin certificado | Con certificado |
+|---|---|---|---|
+| Control de cuentas de usuario amarillo: "¿Quieres permitir que esta aplicación de un **editor desconocido**...?" | Siempre, porque el instalador necesita permisos de administrador | No se puede quitar: es un clic en "Sí". Con herramientas de despliegue (modo `/S` como administrador) no aparece | Pasa a azul: "Editor comprobado: \<nombre\>" |
+| SmartScreen: "**Windows protegió su PC**... aplicación no reconocida" | Solo si el archivo trae la marca "descargado de Internet" (navegador, correo, Teams, WhatsApp Web) | Copiar el instalador por pendrive, por la carpeta de OneDrive sincronizada o por una carpeta de red, que no ponen la marca. Si se descargó: clic derecho → Propiedades → **Desbloquear** (o `Unblock-File` en PowerShell) | Se reduce a medida que el certificado gana reputación con las instalaciones. Desde 2024 ningún certificado (ni EV) la da de inmediato |
+| Antivirus: "el archivo contiene un virus o software potencialmente no deseado" | Heurística ante ejecutables nuevos sin firma. Acronis, en el notebook, puso en cuarentena un ejecutable de prueba que usaba `taskkill` | El instalador ya no usa `cmd`, `tasklist` ni `taskkill`. Si un antivirus lo bloquea, reportarlo al fabricante como falso positivo | La firma ayuda mucho |
+| **Control inteligente de aplicaciones** (Smart App Control, Windows 11) | Si está activado. Desde abril de 2026 se puede activar en cualquier PC; no aplica a equipos administrados por una organización | Bloquea programas sin firma ni reputación **sin opción de ejecutarlos igual**, y eso incluye `arduino-cli` al compilar. La única salida es desactivarlo en Seguridad de Windows → Control de aplicaciones y del navegador | Con todo firmado, funciona |
+
+**Firma digital, la solución de fondo.** Opciones vigentes en noviembre de 2026 (confirmar precios antes de comprar):
+- **Certum Open Source Code Signing en la nube (SimplySign), desde ~€49 al año.** Es para desarrolladores individuales de software libre no comercial, y MPR es GPL-2.0. El certificado sale a nombre de la persona ("Open Source Developer, \<nombre\>"). Permite 5.000 firmas al mes; cada instalador usa unas 80.
+- **Certificado OV a nombre de la organización:** Certum en la nube cuesta ~€209 al año y otros emisores, entre US$129 y 530. Muestra el nombre de la institución y requiere validarla.
+- **Azure Artifact Signing** (Microsoft, US$9,99 al mes) **no está disponible para organizaciones de Chile**: según Microsoft, solo para EE. UU., Canadá, la UE y el Reino Unido.
+- Desde junio de 2023 las claves deben estar en hardware o en la nube; ya no se entregan archivos `.pfx`. Un certificado OV sirve igual que uno EV para SmartScreen.
+
+**Cómo firmar al generar el instalador.** Con el certificado instalado en Windows (con Certum, SimplySign Desktop conectado), ejecutar `py tools/build_installer.py --official <ruta>\ottoblockly.Setup.1.5.0.exe --firma "/sha1 <huella>"` (o usar la variable `MPR_FIRMA`). El script firma con sello de tiempo (DigiCert por defecto, opción `--tsa`):
+- el instalador (`!finalize` de NSIS);
+- `Desinstalar.exe` (`!uninstfinalize`);
+- los 77 `.exe`, `.dll` y `.node` que vienen sin firma: MPR Blockly y las herramientas de Arduino. Los que ya traen firma no se tocan.
+
+Requiere `signtool.exe` (`winget install Microsoft.WindowsSDK.10.0.26100`). Se probó el 2026-11-08 con un certificado autofirmado de prueba (luego borrado), y quedaron firmados los tres tipos de archivo.
+
+**Opcional y gratis, en cada versión:** enviar el instalador a Microsoft como desarrollador (https://www.microsoft.com/wdsi/filesubmission, opción "Software developer") para que lo revisen. Ayuda sobre todo si Defender lo marca; no es seguro que quite el aviso de SmartScreen.
 
 ---
 

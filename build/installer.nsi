@@ -1,6 +1,17 @@
 ; MPR Blockly - instalador NSIS
 ; Lo genera tools/build_installer.py, que pasa:
-;   -DSTAGE=<carpeta con la app armada>  -DVERSION=x.y.z  -DOUTFILE=<ruta del .exe>
+;   -DSTAGE=<carpeta con la app armada>  -DVERSION=x.y.z  -DOUTFILE=<ruta del .exe>  -DUNLIST=<lista de desinstalación>
+;   y, si hay certificado, -DFIRMAR=<script que firma el archivo %1> (firma el desinstalador y el instalador).
+;
+; Instalación de un clic: después del permiso de administrador solo se ve la barra de progreso; al terminar la
+; ventana se cierra sola y se abre MPR Blockly. No hace preguntas: si la app está abierta, le pide cerrarse como
+; al apretar la X (build/cerrar_app.nsh), y la app guarda el trabajo del alumno para recuperarlo al abrirse.
+;
+; Instalación desatendida (varios PCs, sin ventanas ni abrir la app):
+;     MPR_Blockly_Setup_x.y.z.exe /S                    (otra carpeta: /S /D=D:\MPRBlockly, siempre al final)
+; Desinstalación desatendida:
+;     "C:\MPRBlockly\Desinstalar.exe" /S
+; Código de salida en modo silencioso: 0 = instalado; 2 = cancelado (no se pudo cerrar la app abierta).
 Unicode true
 SetCompressor /SOLID lzma
 SetCompressorDictSize 64
@@ -14,7 +25,14 @@ ManifestDPIAware true
 !define REGKEY    "Software\Microsoft\Windows\CurrentVersion\Uninstall\MPRBlockly"
 !define PUBLISHER "Programa Mi Primer Robot"
 
+; Firma digital (Authenticode): con certificado, Windows muestra "Editor comprobado" en vez de "Editor desconocido"
+!ifdef FIRMAR
+  !uninstfinalize '${FIRMAR} "%1"' = 0
+  !finalize '${FIRMAR} "%1"' = 0
+!endif
+
 Name "${APPNAME} ${VERSION}"
+Caption "Instalando ${APPNAME} ${VERSION}"
 OutFile "${OUTFILE}"
 ; Carpeta en la raíz de C: (como C:\OttoBlockly). La app escribe al compilar en
 ; compilation\arduino y en config.json; solo esas rutas quedan modificables por el
@@ -23,6 +41,7 @@ InstallDir "C:\MPRBlockly"
 InstallDirRegKey HKLM "${REGKEY}" "InstallLocation"
 RequestExecutionLevel admin
 BrandingText "${APPNAME} ${VERSION}"
+AutoCloseWindow true
 
 VIProductVersion "${VERSION}.0"
 VIAddVersionKey /LANG=1034 "ProductName" "${APPNAME}"
@@ -35,38 +54,35 @@ VIAddVersionKey /LANG=1034 "LegalCopyright" "GPL-2.0 - basado en Otto Blockly (O
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "x64.nsh"
+!include "WinMessages.nsh"
 
 !define MUI_ICON   "${STAGE}\mpr.ico"
 !define MUI_UNICON "${STAGE}\mpr.ico"
-!define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TEXT "Este asistente instalará ${APPNAME} ${VERSION}.$\r$\n$\r$\nIncluye todo lo necesario para programar y cargar código en placas Arduino AVR (Nano, Uno, Mega...) sin conexión a internet.$\r$\n$\r$\nCierra MPR Blockly si está abierto antes de continuar."
-!define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "Abrir ${APPNAME}"
-!define MUI_FINISHPAGE_RUN_FUNCTION RunAppNotElevated
 
-!insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "${STAGE}\LICENSE.md"
-!insertmacro MUI_PAGE_DIRECTORY
+; Una sola pantalla: el progreso. La licencia GPL-2.0 no exige aceptarla; se instala junto al programa (LICENSE.md).
 !insertmacro MUI_PAGE_INSTFILES
-!insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "Spanish"
 
-!macro CloseRunningApp
-  ; Si la app está abierta, pedir que se cierre (los archivos estarían bloqueados)
-  retry_close:
-  nsExec::ExecToStack 'cmd /c tasklist /FI "IMAGENAME eq ${APPEXE}" /NH | find /I "${APPEXE}"'
-  Pop $0
-  ${If} $0 == 0
-    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "${APPNAME} está abierto. Ciérralo y presiona Reintentar." IDRETRY retry_close
-    Abort
-  ${EndIf}
-!macroend
+!include "cerrar_app.nsh"
+!insertmacro FuncionCerrarApp ""
+!insertmacro FuncionCerrarApp "un."
 
 Function .onInit
   SetShellVarContext all
-  !insertmacro CloseRunningApp
+  ; Una sola copia del instalador a la vez (por ejemplo, si se hace doble clic dos veces)
+  System::Call 'kernel32::CreateMutex(p 0, i 0, t "MPRBlocklyInstalador") p .r0 ?e'
+  Pop $1
+  ${If} $1 == 183
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function .onInstSuccess
+  ${IfNot} ${Silent}
+    Call RunAppNotElevated
+  ${EndIf}
 FunctionEnd
 
 Function RunAppNotElevated
@@ -78,7 +94,7 @@ FunctionEnd
 Function InstallCH340
   ; Driver CH340/CH341 incluido en Otto Blockly (driversUSB\CH341.zip, extraído al armar).
   ; Windows 10/11 suele instalarlo solo por Windows Update; pnputil no reemplaza un
-  ; driver más nuevo ya instalado.
+  ; driver más nuevo ya instalado. Es un driver WHQL: se instala sin preguntas.
   ${If} ${FileExists} "$INSTDIR\resources\app\driversUSB\CH341\ch341ser.inf"
     ; el instalador es de 32 bits: en Windows 64 bits pnputil está en System32 real
     ${If} ${RunningX64}
@@ -89,12 +105,15 @@ Function InstallCH340
     ${If} ${RunningX64}
       ${EnableX64FSRedirection}
     ${EndIf}
+    DetailPrint "Driver CH340: código $0"
+    ; Si falló, con ventana se abre la carpeta del driver para instalarlo a mano; en modo silencioso, nada
     ${If} $0 != 0
     ${AndIf} $0 != 259
     ${AndIf} $0 != 3010
+    ${AndIfNot} ${Silent}
       ExecShell "open" "$INSTDIR\resources\app\driversUSB\CH341"
     ${EndIf}
-  ${Else}
+  ${ElseIfNot} ${Silent}
     ExecShell "open" "$INSTDIR\resources\app\driversUSB"
   ${EndIf}
 FunctionEnd
@@ -102,6 +121,7 @@ FunctionEnd
 Section "MPR Blockly" SecMain
   SectionIn RO
   SetShellVarContext all
+  Call CerrarApp
   SetOutPath "$INSTDIR"
 
   ; Actualización limpia: se reemplaza la app y las herramientas, pero no se
@@ -144,6 +164,7 @@ Section "MPR Blockly" SecMain
   WriteRegStr HKLM "${REGKEY}" "DisplayIcon" "$INSTDIR\mpr.ico"
   WriteRegStr HKLM "${REGKEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "${REGKEY}" "UninstallString" '"$INSTDIR\Desinstalar.exe"'
+  WriteRegStr HKLM "${REGKEY}" "QuietUninstallString" '"$INSTDIR\Desinstalar.exe" /S'
   WriteRegDWORD HKLM "${REGKEY}" "NoModify" 1
   WriteRegDWORD HKLM "${REGKEY}" "NoRepair" 1
 
@@ -154,16 +175,17 @@ SectionEnd
 
 Function un.onInit
   SetShellVarContext all
-  !insertmacro CloseRunningApp
 FunctionEnd
 
 Section "Uninstall"
   SetShellVarContext all
   ; Seguridad: solo borrar la carpeta si realmente es una instalación de MPR Blockly
   ${IfNot} ${FileExists} "$INSTDIR\${APPEXE}"
-    MessageBox MB_ICONSTOP "No se encontró ${APPEXE} en $INSTDIR. Desinstalación cancelada."
+    MessageBox MB_ICONSTOP "No se encontró ${APPEXE} en $INSTDIR. Desinstalación cancelada." /SD IDOK
+    SetErrorLevel 2
     Abort
   ${EndIf}
+  Call un.CerrarApp
   Delete "$DESKTOP\${APPNAME}.lnk"
   RMDir /r "$SMPROGRAMS\${APPNAME}"
   DeleteRegKey HKLM "${REGKEY}"
