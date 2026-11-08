@@ -133,39 +133,51 @@ MPRMascota.esSoftware = function() {
 	} catch (e) { return true; }
 };
 
-// Modelo completo (~123 mil triángulos) salvo en equipos sin aceleración gráfica. Se puede forzar con
-// localStorage.mpr_masc_calidad = 'liviana' o 'completa'.
+// Siempre se intenta mostrar el 3D. Hay tres modelos: completo (~123 mil triángulos, gráfica normal o integrada),
+// liviano (~26 mil) y mínimo (~5 mil, para equipos que dibujan por CPU, sin aceleración gráfica). Se puede forzar con
+// localStorage.mpr_masc_calidad = 'completa', 'liviana' o 'minima'.
+MPRMascota.ARCHIVOS = { completo: 'media/otto3d.js', liviano: 'media/otto3d_liviano.js', minimo: 'media/otto3d_minimo.js' };
+MPRMascota.SIGUIENTE = { completo: 'liviano', liviano: 'minimo' };
+
 MPRMascota.nivelModelo = function() {
+	MPRMascota.software = MPRMascota.esSoftware();
 	var q = MPRMascota.leer('calidad');
+	if (q == 'minima') return 'minimo';
 	if (q == 'liviana') return 'liviano';
 	if (q == 'completa') return 'completo';
-	return MPRMascota.esSoftware() ? 'liviano' : 'completo';
+	return MPRMascota.software ? 'minimo' : 'completo';
 };
 
-// Si aun así va lento, baja al modelo liviano sin reiniciar
+// Si va lento, baja un nivel de detalle (completo -> liviano -> mínimo) sin reiniciar y sin perder el 3D
 MPRMascota.bajarCalidad = function() {
-	MPRMascota.cargarScript('media/otto3d_liviano.js', function() {
-		MPRMascota.nivel = 'liviano';
-		if (window.MPROtto3D && MPROtto3D.vivo) MPROtto3D.armar();
-		try { console.log('[Otto 3D] equipo lento: modelo liviano', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {}
+	var sig = MPRMascota.SIGUIENTE[MPRMascota.nivel];
+	if (!sig) return;
+	MPRMascota.cargarScript(MPRMascota.ARCHIVOS[sig], function() {
+		MPRMascota.nivel = sig;
+		if (window.MPROtto3D && MPROtto3D.vivo) {
+			MPROtto3D.armar();
+			MPROtto3D.alLento = MPRMascota.bajarCalidad;   // si aun así va lento, baja otro nivel
+		}
+		try { console.log('[Otto 3D] equipo lento: modelo ' + sig, JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {}
 	}, function() {});
 };
 
 MPRMascota.iniciar3D = function() {
 	var canvas = document.getElementById('mpr_masc_canvas');
 	function aplicar() {
+		MPROtto3D.economia = !!MPRMascota.software;   // sin aceleración gráfica: menos cuadros por segundo y sin suavizado de bordes
 		MPRMascota.modo3d = MPROtto3D.iniciar(canvas, MPRMascota.colores);
 		if (!MPRMascota.modo3d) MPRMascota.respaldo2D();
 		else {
 			MPRMascota.planificar(20000 + Math.random() * 20000);
-			MPROtto3D.alLento = function() { if (MPRMascota.nivel == 'completo') MPRMascota.bajarCalidad(); };
+			MPROtto3D.alLento = MPRMascota.bajarCalidad;
 			setTimeout(function() { try { console.log('[Otto 3D]', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {} }, 4000);
 		}
 	}
 	if (typeof THREE != 'undefined' && window.OTTO3D) return aplicar();
 	MPRMascota.nivel = MPRMascota.nivelModelo();
 	MPRMascota.cargarScript('js/three.min.js', function() {
-		MPRMascota.cargarScript(MPRMascota.nivel == 'liviano' ? 'media/otto3d_liviano.js' : 'media/otto3d.js', aplicar, MPRMascota.respaldo2D);
+		MPRMascota.cargarScript(MPRMascota.ARCHIVOS[MPRMascota.nivel], aplicar, MPRMascota.respaldo2D);
 	}, MPRMascota.respaldo2D);
 };
 

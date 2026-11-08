@@ -5,6 +5,10 @@ var {electron, ipcMain, app, BrowserWindow, globalShortcut, dialog, shell} = req
 var path = require('path')
 var fs = require('fs')
 
+// MPR: usar también las gráficas integradas o antiguas que Chromium descarta por defecto (lista negra de GPU),
+// para que la mascota 3D (WebGL) se vea en todos los equipos. Sin GPU, Chromium dibuja por software (SwiftShader).
+app.commandLine.appendSwitch('ignore-gpu-blacklist')
+
 // MPR: el actualizador automático apuntaba a OttoDIY/blockly y habría reemplazado
 // MPR Blockly por Otto Blockly oficial. Queda desactivado.
 var UPDATES_ENABLED = false

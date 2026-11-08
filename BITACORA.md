@@ -421,6 +421,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Notas:** requiere reabrir la app (cambia `electronApp.js`). El commit parte del `electronApp.js` de HEAD (mínimo 1100×650); en el disco había un cambio sin commit (mínimo 1060×700) que no se incluyó.
 - **Commit:** (ver git log)  **Probado en la app:** no (no se pudo abrir una segunda instancia con la app en uso)
 
+### 2026-11-08  Otto 3D siempre visible, también sin GPU dedicada
+- **Pedido / problema:** el modelo 3D debe verse siempre, también en notebooks sin GPU dedicada (gráfica integrada o sin aceleración).
+- **Archivos:** `tools/convertir_otto.js`, `www/media/otto3d_minimo.js` (nuevo), `www/js/mpr_mascota.js`, `www/js/mpr_otto3d.js`, `electronApp.js`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** tercer modelo "mínimo" (~5.500 triángulos); si el equipo dibuja por CPU se parte del mínimo en modo económico (sin suavizado de bordes, menos cuadros/s); si va lento baja solo completo ’ liviano ’ mínimo sin reiniciar; `ignore-gpu-blacklist` en Electron para aprovechar gráficas integradas. El respaldo 2D queda solo para cuando WebGL no se puede crear.
+- **Notas:** el commit parte del `electronApp.js` de HEAD (no incluye el cambio previo sin commit de tamaños mínimos). Requiere reabrir la app.
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: nivel mínimo y descenso encadenado)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto

@@ -14,6 +14,7 @@ var MPROtto3D = {
 	ANIMACIONES: { saludo: 2.2, celebrar: 1.8, pensar: 3.2, alerta: 1.3, vuelta: 3.2 },
 	VEL_GIRO: 3.2,        // rad/s al girarse hacia donde camina
 	vivo: false,
+	economia: false,      // equipo sin aceleración gráfica: 20 cuadros/s al moverse, 8 en reposo, sin suavizado de bordes
 	estado: { nombre: 'reposo', inicio: 0 },
 	rumbo: 0,             // giro actual de todo el robot (radianes); 0 = de frente
 	rumboObj: 0,          // hacia dónde quiere mirar
@@ -53,10 +54,10 @@ MPROtto3D.iniciar = function(canvas, colores) {
 	if (typeof THREE == 'undefined' || !window.OTTO3D) return false;
 	var self = MPROtto3D;
 	try {
-		self.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: 'low-power' });
+		self.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !self.economia, powerPreference: 'low-power' });
 	} catch (e) { return false; }
 	var w = canvas.clientWidth || 150, h = canvas.clientHeight || 190;
-	self.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+	self.renderer.setPixelRatio(self.economia ? 1 : Math.min(window.devicePixelRatio || 1, 2));
 	self.renderer.setSize(w, h, false);
 	self.renderer.setClearColor(0x000000, 0);
 
@@ -281,15 +282,15 @@ MPROtto3D.bucle = function(ahora) {
 	requestAnimationFrame(self.bucle);
 	if (document.hidden) return;
 	// Ahorro de recursos: 30 cuadros/s al moverse, 12 en reposo
-	var meta = self.animando() ? 33 : 80;
+	var meta = self.animando() ? (self.economia ? 50 : 33) : (self.economia ? 125 : 80);
 	if (ahora - self.ultimo < meta - 4) return;
 	self.ultimo = ahora;
-	if (meta == 33) {   // mide los cuadros por segundo solo mientras se anima
+	if (self.animando()) {   // mide los cuadros por segundo solo mientras se anima
 		self.medA.n++;
 		if (ahora - self.medA.t0 >= 2500) {
 			var f = self.medA.n * 1000 / (ahora - self.medA.t0);
 			self.medA = { n: 0, t0: ahora };
-			if (f < 17 && self.alLento) { if (++self.lentos >= 2) { var cb = self.alLento; self.alLento = null; cb(f); } }
+			if (f < (self.economia ? 12 : 17) && self.alLento) { if (++self.lentos >= 2) { var cb = self.alLento; self.alLento = null; cb(f); } }
 			else self.lentos = 0;
 		}
 	} else self.medA = { n: 0, t0: ahora };

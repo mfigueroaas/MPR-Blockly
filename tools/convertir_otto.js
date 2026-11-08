@@ -2,7 +2,8 @@
 // Convierte las piezas del Otto (3MF de Bambu Studio) en los modelos de la mascota 3D.
 // Uso:  node tools/convertir_otto.js <carpeta_3mf_descomprimida> <carpeta_salida>
 //   Genera  otto3d.js          modelo COMPLETO (todos los triángulos originales, ~123 mil)
-//           otto3d_liviano.js  modelo simplificado (~24 mil) para equipos sin aceleración gráfica
+//           otto3d_liviano.js  modelo simplificado (~26 mil) para equipos lentos
+//           otto3d_minimo.js   modelo muy simplificado (~5 mil) para equipos que dibujan por CPU (sin aceleración gráfica)
 // Necesita:  npm i meshoptimizer@0.20.0   (solo para generar el modelo liviano; la app no lo usa)
 // Formato: window.OTTO3D = { nivel, partes: { nombre: { p: base64 Int16 (centésimas de mm), i: base64, w: 2|4 bytes } } }
 
@@ -15,11 +16,11 @@ if (!carpeta || !salida) { console.error('Uso: node tools/convertir_otto.js <car
 
 // objeto del 3MF -> nombre de la pieza y triángulos del modelo liviano
 const PARTES = [
-	{ nombre: 'cabeza', archivo: 'object_16.model', liviano: 7000 },
-	{ nombre: 'cuerpo', archivo: 'object_48.model', liviano: 12000 },
-	{ nombre: 'pierna', archivo: 'object_29.model', liviano: 2200 },
-	{ nombre: 'pieIzq', archivo: 'object_40.model', liviano: 1500 },
-	{ nombre: 'pieDer', archivo: 'object_41.model', liviano: 1500 }
+	{ nombre: 'cabeza', archivo: 'object_16.model', liviano: 7000, minimo: 1500 },
+	{ nombre: 'cuerpo', archivo: 'object_48.model', liviano: 12000, minimo: 2200 },
+	{ nombre: 'pierna', archivo: 'object_29.model', liviano: 2200, minimo: 500 },
+	{ nombre: 'pieIzq', archivo: 'object_40.model', liviano: 1500, minimo: 400 },
+	{ nombre: 'pieDer', archivo: 'object_41.model', liviano: 1500, minimo: 400 }
 ];
 
 function leer(archivo) {
@@ -69,14 +70,17 @@ function escribir(archivo, nivel, partes) {
 (async function() {
 	const { MeshoptSimplifier } = require('meshoptimizer');
 	await MeshoptSimplifier.ready;
-	const completo = {}, liviano = {};
+	const completo = {}, liviano = {}, minimo = {};
 	for (const parte of PARTES) {
 		const m = leer(parte.archivo);
 		completo[parte.nombre] = empaquetar(m.pos, m.idx);
 		// Colapso de aristas (conserva mejor los relieves y logos que el método 'sloppy')
 		const r = MeshoptSimplifier.simplify(m.idx, m.pos, 3, parte.liviano * 3, 0.02);
 		liviano[parte.nombre] = empaquetar(m.pos, Array.isArray(r) ? r[0] : r);
+		const r2 = MeshoptSimplifier.simplify(m.idx, m.pos, 3, parte.minimo * 3, 0.06);
+		minimo[parte.nombre] = empaquetar(m.pos, Array.isArray(r2) ? r2[0] : r2);
 	}
 	escribir(path.join(salida, 'otto3d.js'), 'completo', completo);
 	escribir(path.join(salida, 'otto3d_liviano.js'), 'liviano', liviano);
+	escribir(path.join(salida, 'otto3d_minimo.js'), 'minimo', minimo);
 })();
