@@ -119,13 +119,13 @@ MPROtto3D.armar = function() {
 
 	// "Ojos" = sensor ultrasónico: dos cilindros plateados con malla oscura dentro de los agujeros del frente
 	self.ojos = [];
-	[-13.4, 13.4].forEach(function(x) {
+	[-13.37, 13.37].forEach(function(x) {   // centros medidos en los agujeros de la cabeza original
 		var sensor = new THREE.Group();
-		var lata = new THREE.Mesh(new THREE.CylinderGeometry(7.9, 7.9, 14, 20), self.matPlata);
+		var lata = new THREE.Mesh(new THREE.CylinderGeometry(8.1, 8.1, 14, 24), self.matPlata);
 		lata.rotation.x = Math.PI / 2;
 		lata.position.z = -1;
 		sensor.add(lata);
-		var malla2 = new THREE.Mesh(new THREE.CircleGeometry(6.2, 20), self.matOscuro);
+		var malla2 = new THREE.Mesh(new THREE.CircleGeometry(6.5, 24), self.matOscuro);
 		malla2.position.z = 6.1;
 		sensor.add(malla2);
 		[-3.4, 0, 3.4].forEach(function(bx) {   // rejilla del transductor
@@ -133,7 +133,7 @@ MPROtto3D.armar = function() {
 			barra.position.set(bx, 0, 6.3);
 			sensor.add(barra);
 		});
-		sensor.position.set(x, 98.9, 26.6);     // y 106,9 del robot; el frente de la lata queda casi al ras de la cara
+		sensor.position.set(x, 101.5, 26.6);    // y 109,5 del robot = centro de la cabeza (103,5) + 6,0 mm; la lata queda al ras de la cara
 		self.inclinacion.add(sensor);
 		self.ojos.push(sensor);
 	});

@@ -407,6 +407,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Qué se hizo:** sombreado plano real (geometría no indexada con normales por triángulo); modelo completo de ~123 mil triángulos en formato binario compacto (1,3 MB); modelo liviano de respaldo (~26 mil) para equipos sin aceleración gráfica o lentos, con cambio automático sin reiniciar.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: ambos modelos, frente y 3/4 con logos en relieve)
 
+### 2026-11-08  Otto 3D: sensores centrados en los agujeros
+- **Pedido / problema:** los sensores (ojos) no quedaban bien centrados en su agujero.
+- **Archivos:** `www/js/mpr_otto3d.js`, `DOCUMENTACION_TECNICA.md`.
+- **Causa:** al bajar la cabeza 3 mm no se recalculó la altura de los sensores: quedaban ~2,6 mm más abajo que los agujeros.
+- **Qué se hizo:** se midieron los agujeros en la cabeza original (centros x = ±13,37 mm, 6,0 mm sobre el centro de la cabeza, 16,75 mm de diámetro) y se ajustó la posición (y = 109,5 del robot), el radio de la lata (8,1) y la malla (6,5).
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno con acercamiento a la cara)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto
