@@ -394,6 +394,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Qué se hizo:** cabeza, cuerpo, sensores y piernas cuelgan de un pivote en los tobillos; las animaciones inclinan/giran todo el bloque y solo las piernas se mueven aparte (caderas). Los pies quedan planos. Giro continuo de ~14 s por vuelta, que vuelve al frente al animar; el menú tiene "Quedarme quieto / Girar para verme" (se guarda). Girar sube el dibujo de 12 a 30 cuadros/s mientras la mascota está visible.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno)
 
+### 2026-11-08  Otto 3D: más detalle, cabeza más baja y paseos naturales
+- **Pedido / problema:** los polígonos eran muy pocos y no se veían los logos; la cabeza dejaba un hueco con el cuerpo; el giro continuo era artificial (se quería que gire de forma natural al moverse por la mesa de trabajo, de vez en cuando).
+- **Archivos:** `tools/convertir_otto.js`, `www/media/otto3d.js` (regenerado), `www/js/mpr_otto3d.js`, `www/js/mpr_mascota.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** modelo con `simplify` (colapso de aristas) a ~24.000 triángulos (16 llamadas de dibujo, ~500 KB): se ven los agujeros reales del sensor y los logos en relieve; los sensores quedan dentro de los agujeros. Cabeza 6 mm más abajo (metida en el borde del cuerpo). Se quitó el giro continuo: ahora cada 3080 s Otto camina a otro punto de la mesa girándose de perfil hacia donde va (caderas alternadas, tobillos levantan cada pie, cuerpo se balancea) y se vuelve de frente, o da una vuelta completa en su lugar. Se interrumpe si se le hace clic, se arrastra o va a hablar. Opción del menú "Quedarme en mi lugar / Pasear por la mesa".
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: paseo completo y regreso de frente)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto

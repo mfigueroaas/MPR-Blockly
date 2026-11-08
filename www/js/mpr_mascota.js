@@ -9,12 +9,15 @@
 
 var MPRMascota = {
 	W: 150, H: 190,
-	CLAVES: { colores: 'mpr_masc_colores', pos: 'mpr_masc_pos', oculta: 'mpr_masc_oculta', silencio: 'mpr_masc_silencio', presentada: 'mpr_masc_presentada', gira: 'mpr_masc_gira' },
+	CLAVES: { colores: 'mpr_masc_colores', pos: 'mpr_masc_pos', oculta: 'mpr_masc_oculta', silencio: 'mpr_masc_silencio', presentada: 'mpr_masc_presentada', pasea: 'mpr_masc_pasea' },
 	PARTES: [['todo', 'Todo'], ['cabeza', 'Cabeza'], ['cuerpo', 'Cuerpo'], ['piernas', 'Piernas'], ['pies', 'Pies']],
 	PALETA: ['#ff5700', '#e63946', '#ffc400', '#2bb673', '#19a7ce', '#3a5bd9', '#8e44ad', '#ff6fb5', '#f2f2f2', '#2b2b2b'],
 	PERMITIDOS: { variables_set_init: 1, base_define: 1, base_code: 1 },   // bloques raíz que no necesitan conectarse
 	colores: { cabeza: '#ff5700', cuerpo: '#ff5700', piernas: '#ff5700', pies: '#ff5700' },
 	silenciada: false,
+	paseando: true,       // de vez en cuando camina por la mesa de trabajo o da una vuelta
+	caminando: false,
+	arrastrando: false,
 	modo3d: false,
 	prioridadActual: 0,
 	ultimaActividad: Date.now(),
@@ -83,11 +86,13 @@ MPRMascota.acomodar = function() {
 MPRMascota.empezarArrastre = function(e) {
 	if (e.button !== 0) return;
 	var caja = document.getElementById('mpr_masc');
+	MPRMascota.cancelarPaseo();
 	var ini = { x: e.clientX, y: e.clientY, l: parseInt(caja.style.left, 10), t: parseInt(caja.style.top, 10), movio: false };
 	function mover(ev) {
 		var dx = ev.clientX - ini.x, dy = ev.clientY - ini.y;
 		if (!ini.movio && Math.abs(dx) + Math.abs(dy) < 5) return;
 		ini.movio = true;
+		MPRMascota.arrastrando = true;
 		MPRMascota.movida = true;
 		caja.style.left = (ini.l + dx) + 'px';
 		caja.style.top = (ini.t + dy) + 'px';
@@ -96,6 +101,7 @@ MPRMascota.empezarArrastre = function(e) {
 	function soltar() {
 		document.removeEventListener('mousemove', mover, true);
 		document.removeEventListener('mouseup', soltar, true);
+		MPRMascota.arrastrando = false;
 		if (ini.movio) MPRMascota.guardar('pos', { x: parseInt(caja.style.left, 10), y: parseInt(caja.style.top, 10) });
 		else MPRMascota.alHacerClic();
 	}
@@ -119,7 +125,7 @@ MPRMascota.iniciar3D = function() {
 		MPRMascota.modo3d = MPROtto3D.iniciar(canvas, MPRMascota.colores);
 		if (!MPRMascota.modo3d) MPRMascota.respaldo2D();
 		else {
-			MPROtto3D.girar(MPRMascota.leer('gira') !== 'no');
+			MPRMascota.planificar(20000 + Math.random() * 20000);
 			setTimeout(function() { try { console.log('[Otto 3D]', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {} }, 4000);
 		}
 	}
@@ -175,6 +181,7 @@ MPRMascota.decir = function(texto, o) {
 	var prio = o.prio || 1;
 	if (MPRMascota.silenciada && !o.forzar) return;
 	if (prio < MPRMascota.prioridadActual && document.getElementById('mpr_masc_globo').style.display == 'block') return;
+	MPRMascota.cancelarPaseo();
 	var cont = MPRMascota.cont();
 	cont.innerHTML = '';
 	var p = document.createElement('div');
@@ -212,7 +219,7 @@ MPRMascota.menu = function() {
 	lista.className = 'menu';
 	lista.appendChild(mprBoton('💡 ' + MPRMascota.msg('masc_consejo', 'Dame un consejo'), '', function() { MPRMascota.consejoAlAzar(true); }));
 	lista.appendChild(mprBoton('🎨 ' + MPRMascota.msg('masc_colores', 'Mis colores'), '', MPRMascota.panelColores));
-	lista.appendChild(mprBoton(MPROtto3D.gira ? '⏸ ' + MPRMascota.msg('masc_quieto', 'Quedarme quieto') : '🔄 ' + MPRMascota.msg('masc_girar', 'Girar para verme'), '', MPRMascota.alternarGiro));
+	lista.appendChild(mprBoton(MPRMascota.paseando ? '⏸ ' + MPRMascota.msg('masc_quieto', 'Quedarme en mi lugar') : '🚶 ' + MPRMascota.msg('masc_pasear', 'Pasear por la mesa'), '', MPRMascota.alternarPaseo));
 	lista.appendChild(mprBoton(MPRMascota.silenciada ? '🔔 ' + MPRMascota.msg('masc_activar', 'Activar avisos') : '🔕 ' + MPRMascota.msg('masc_silenciar', 'Avisos tranquilos'), '', MPRMascota.alternarSilencio));
 	lista.appendChild(mprBoton('💤 ' + MPRMascota.msg('masc_esconder', 'Esconderme'), '', MPRMascota.esconder));
 	cont.appendChild(lista);
@@ -268,10 +275,10 @@ MPRMascota.pintar = function(parte, hex) {
 	MPRMascota.guardar('colores', MPRMascota.colores);
 };
 
-MPRMascota.alternarGiro = function() {
-	if (!MPRMascota.modo3d || !window.MPROtto3D) return;
-	MPROtto3D.girar(!MPROtto3D.gira);
-	MPRMascota.guardar('gira', MPROtto3D.gira ? 'si' : 'no');
+MPRMascota.alternarPaseo = function() {
+	MPRMascota.paseando = !MPRMascota.paseando;
+	MPRMascota.guardar('pasea', MPRMascota.paseando ? 'si' : 'no');
+	if (MPRMascota.paseando) MPRMascota.planificar(15000); else MPRMascota.cancelarPaseo(true);
 	MPRMascota.menu();
 };
 
@@ -283,6 +290,7 @@ MPRMascota.alternarSilencio = function() {
 };
 
 MPRMascota.esconder = function() {
+	MPRMascota.cancelarPaseo(true);
 	MPRMascota.cerrarGlobo();
 	MPRMascota.guardar('oculta', '1');
 	document.getElementById('mpr_masc').style.display = 'none';
@@ -295,7 +303,7 @@ MPRMascota.mostrar = function() {
 	document.getElementById('mpr_masc_volver').style.display = 'none';
 	document.getElementById('mpr_masc').style.display = 'block';
 	MPRMascota.acomodar();
-	if (!document.getElementById('mpr_masc_img')) MPRMascota.iniciar3D();
+	if (!document.getElementById('mpr_masc_img')) MPRMascota.iniciar3D();   // al iniciar vuelve a programar sus paseos
 	setTimeout(function() { MPRMascota.decir(MPRMascota.msg('masc_regreso', '¡Aquí estoy de nuevo!'), { forzar: true, ms: 5000 }); }, 600);
 };
 
@@ -304,6 +312,73 @@ MPRMascota.consejoAlAzar = function(forzar) {
 	do { i = Math.floor(Math.random() * l.length); } while (l.length > 1 && i === MPRMascota.ultimoConsejo);
 	MPRMascota.ultimoConsejo = i;
 	MPRMascota.decir(l[i], { anim: 'pensar', forzar: !!forzar, ms: 14000 });
+};
+
+// ---------------------------------------------------------------- vida propia
+// De vez en cuando Otto camina por la mesa de trabajo (se gira de perfil hacia donde va, camina y vuelve a mirar de frente)
+// o da una vuelta completa en su lugar, para que no se vea estático. No lo hace si hay un globo abierto, un cuadro de
+// mensaje, el recorrido, o si se está arrastrando.
+MPRMascota.puedeMoverse = function() {
+	var caja = document.getElementById('mpr_masc'), g = document.getElementById('mpr_masc_globo');
+	return !!(MPRMascota.modo3d && MPRMascota.paseando && caja && g && caja.style.display != 'none' && !MPRMascota.arrastrando &&
+		!MPRMascota.caminando && g.style.display != 'block' && !document.hidden &&
+		!(typeof MPRTour != 'undefined' && MPRTour.activo) && !$('#message').hasClass('in'));
+};
+
+MPRMascota.planificar = function(espera) {
+	clearTimeout(MPRMascota.temporizadorPaseo);
+	if (!MPRMascota.paseando || !MPRMascota.modo3d) return;
+	MPRMascota.temporizadorPaseo = setTimeout(function() {
+		if (!MPRMascota.puedeMoverse()) { MPRMascota.planificar(8000); return; }   // ocupado: reintenta pronto
+		if (Math.random() < 0.7) MPRMascota.pasear();
+		else { MPROtto3D.animar('vuelta'); MPRMascota.planificar(); }
+	}, espera || 30000 + Math.random() * 50000);   // cada 30 a 80 s
+};
+
+MPRMascota.pasear = function() {
+	var caja = document.getElementById('mpr_masc');
+	var x0 = parseInt(caja.style.left, 10) || 0, y0 = parseInt(caja.style.top, 10) || 0;
+	var minX = 200, maxX = window.innerWidth - MPRMascota.W - 20;   // la mesa de trabajo empieza a la derecha del menú de bloques
+	var minY = 120, maxY = window.innerHeight - MPRMascota.H - 10;
+	if (maxX - minX < 200 || maxY - minY < 60) { MPRMascota.planificar(); return; }
+	var x1, y1, intentos = 0;
+	do {
+		x1 = minX + Math.random() * (maxX - minX);
+		y1 = minY + Math.random() * (maxY - minY);
+	} while (Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2)) < 200 && ++intentos < 12);
+	var dist = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
+	if (dist < 120) { MPRMascota.planificar(); return; }
+
+	MPRMascota.caminando = true;
+	MPRMascota.movida = true;
+	MPROtto3D.caminar(x1 >= x0 ? 1 : -1);
+	var dur = Math.min(10000, dist / 55 * 1000), inicio = 0;   // ~55 px por segundo
+	function paso(ahora) {
+		if (!MPRMascota.caminando) return;
+		if (!inicio) inicio = ahora + 600;                      // primero se gira de perfil
+		var k = Math.max(0, Math.min(1, (ahora - inicio) / dur));
+		var e = k * k * (3 - 2 * k);                            // arranca y frena suave
+		caja.style.left = Math.round(x0 + (x1 - x0) * e) + 'px';
+		caja.style.top = Math.round(y0 + (y1 - y0) * e) + 'px';
+		if (k < 1) { requestAnimationFrame(paso); return; }
+		MPRMascota.caminando = false;
+		MPROtto3D.pararCaminar();
+		MPRMascota.acomodar();
+		if (Math.random() < 0.3) setTimeout(function() { if (MPRMascota.puedeMoverse()) MPROtto3D.animar('saludo'); }, 900);
+		MPRMascota.planificar();
+	}
+	requestAnimationFrame(paso);
+};
+
+// Interrumpe el paseo (si el niño la toca, o si Otto va a hablar) y vuelve a mirar de frente
+MPRMascota.cancelarPaseo = function(sinReprogramar) {
+	if (MPRMascota.caminando) {
+		MPRMascota.caminando = false;
+		if (window.MPROtto3D && MPROtto3D.vivo) MPROtto3D.pararCaminar();
+		MPRMascota.acomodar();
+		if (!sinReprogramar) MPRMascota.planificar();
+	}
+	if (sinReprogramar) clearTimeout(MPRMascota.temporizadorPaseo);
 };
 
 // ---------------------------------------------------------------- detectores
@@ -396,6 +471,7 @@ MPRMascota.arrancar = function() {
 	try { guardados = JSON.parse(MPRMascota.leer('colores')); } catch (e) {}
 	if (guardados) for (var k in MPRMascota.colores) if (typeof guardados[k] == 'string') MPRMascota.colores[k] = guardados[k];
 	MPRMascota.silenciada = !!MPRMascota.leer('silencio');
+	MPRMascota.paseando = MPRMascota.leer('pasea') !== 'no';
 
 	MPRMascota.crear();
 	MPRMascota.posicionInicial();

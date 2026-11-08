@@ -14,11 +14,11 @@ if (!carpeta || !salida) { console.error('Uso: node tools/convertir_otto.js <car
 
 // objeto del 3MF -> nombre de la pieza y cantidad de triángulos objetivo
 const PARTES = [
-	{ nombre: 'cabeza', archivo: 'object_16.model', triangulos: 1400 },
-	{ nombre: 'cuerpo', archivo: 'object_48.model', triangulos: 1400 },
-	{ nombre: 'pierna', archivo: 'object_29.model', triangulos: 500 },
-	{ nombre: 'pieIzq', archivo: 'object_40.model', triangulos: 500 },
-	{ nombre: 'pieDer', archivo: 'object_41.model', triangulos: 500 }
+	{ nombre: 'cabeza', archivo: 'object_16.model', triangulos: 7000 },
+	{ nombre: 'cuerpo', archivo: 'object_48.model', triangulos: 12000 },
+	{ nombre: 'pierna', archivo: 'object_29.model', triangulos: 2200 },
+	{ nombre: 'pieIzq', archivo: 'object_40.model', triangulos: 1500 },
+	{ nombre: 'pieDer', archivo: 'object_41.model', triangulos: 1500 }
 ];
 
 function leer(archivo) {
@@ -51,9 +51,8 @@ function compactar(pos, idx) {
 	for (const parte of PARTES) {
 		const m = leer(parte.archivo);
 		const objetivo = Math.round(parte.triangulos * factor) * 3;
-		let r = MeshoptSimplifier.simplifySloppy
-			? MeshoptSimplifier.simplifySloppy(m.idx, m.pos, 3, objetivo, 0.08)
-			: MeshoptSimplifier.simplify(m.idx, m.pos, 3, objetivo, 0.08);
+		// Colapso de aristas (conserva mejor los relieves y logos que el método 'sloppy')
+		let r = MeshoptSimplifier.simplify(m.idx, m.pos, 3, objetivo, 0.02);
 		const nuevo = Array.isArray(r) ? r[0] : r;
 		const c = compactar(m.pos, nuevo);
 		out[parte.nombre] = c;
