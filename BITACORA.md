@@ -495,6 +495,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - Pendiente: instalar la 1.4.1 sobre la 1.4.0 y la prueba silenciosa, que requieren aceptar el permiso de administrador. El primer intento se canceló solo a los ~2 minutos sin respuesta.
 - **Commit:** (ver git log)  **Probado en la app:** parcial (ver notas)
 
+### 2026-11-08 — Versión 1.4.1 e instalador generado
+- **Pedido / problema:** repartir las correcciones de rendimiento (recorrido fluido) y el instalador de un clic y desatendido.
+- **Archivos:** `package.json` (1.4.1), `DOCUMENTACION_TECNICA.md` (7.4, 13.1, 13.4). Salida: `dist\MPR_Blockly_Setup_1.4.1.exe` (139 MB, SHA-256 `49749d6553d28c30677b3ddcc3c070064c11034d39e60ab5935b29791c7a90c9`), sin firma digital.
+- **Qué se hizo:** `py tools/build_installer.py --official <Descargas>\ottoblockly.Setup.1.5.0.exe` en el notebook (tardó 14 min); el SHA-256 del instalador oficial coincidió.
+- **Commit:** (ver git log)  **Probado en la app:** pendiente (instalación completa y modo silencioso)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
