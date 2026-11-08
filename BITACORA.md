@@ -441,6 +441,11 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** estado actual, qué no está en git, checklist de pruebas en el notebook, pendientes, cómo preparar otro PC y trampas conocidas. `tools/servidor_local.js` sirve `www/` en 127.0.0.1 para ver la mascota en un navegador. Se reparó la codificación de las entradas del 2026-11-08 de esta bitácora (33 líneas escritas por error en `latin1`: acentos, rayas y flechas).
 - **Commit:** (ver git log)  **Probado en la app:** no aplica
 
+### 2026-11-08 — Fuentes del Otto 3D a git
+- **Pedido / problema:** guardar en el repositorio el zip del 3MF y las fotos del robot armado, necesarios para regenerar los modelos 3D.
+- **Archivos:** `Otto DIY 2026.3mf.zip`, `Fotos otto armado/`, `DOCUMENTACION_TECNICA.md` (13.2 actualizado).
+- **Commit:** `d8558f9` (fuentes) y el siguiente (documentación)  **Probado en la app:** no aplica
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

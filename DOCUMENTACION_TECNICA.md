@@ -419,10 +419,10 @@ Esta sección resume la sesión del 8 de noviembre de 2026 para retomar el traba
   5. Opción `ignore-gpu-blacklist` en `electronApp.js` para aprovechar gráficas integradas.
 
 ### 13.2 Lo que NO está en git (en la carpeta del proyecto, sin commit)
+Ya están en git (commit `d8558f9`): `Otto DIY 2026.3mf.zip` (1,3 MB; **fuente de los modelos 3D**, hay que descomprimirlo para regenerar `www/media/otto3d*.js` con `tools/convertir_otto.js`) y `Fotos otto armado/` (7 fotos del robot armado, usadas para orientar y armar las piezas).
+
 | Elemento | Qué es | Nota |
 |---|---|---|
-| `Otto DIY 2026.3mf.zip` (1,3 MB) | Piezas 3D del Otto (Bambu Studio). **Es la fuente de los modelos 3D** | Hace falta descomprimirlo para regenerar `www/media/otto3d*.js` con `tools/convertir_otto.js`. Conviene commitearlo |
-| `Fotos otto armado/` (7 fotos, 0,9 MB) | Fotos del robot armado, usadas para orientar y armar las piezas | Referencia visual; conviene commitearla |
 | `Logo Crecer en Renca.svg` | Logo, sin usar aún | |
 | `versiones/` (354 MB) | Instaladores y bundles antiguos | No commitear |
 | `electronApp.js` (modificado) | En el disco los tamaños mínimos de ventana son **1060×700**; en el último commit son **1100×650**. Los commits de este día partieron del archivo de HEAD para no mezclar ese cambio | Decidir cuál queda. El instalador 1.4.0 lleva el del disco (1060×700). Con la ventana siempre maximizada casi no influye |
