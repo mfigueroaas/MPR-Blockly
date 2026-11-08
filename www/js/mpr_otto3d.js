@@ -2,13 +2,17 @@
 
 // MPR: Otto 3D de la mascota. Usa three.js (js/three.min.js) y las piezas simplificadas de media/otto3d.js
 // (generadas con tools/convertir_otto.js). Cabeza, cuerpo, piernas y pies son piezas separadas: cada una tiene
-// su propio color y se anima con un pivote (cuello, caderas, tobillos). Compatible con Electron 4 (Chromium 69).
+// su propio color. Como en el robot real, la cabeza va fija al cuerpo y todo el tronco se inclina desde los tobillos;
+// solo las piernas tienen movimiento propio (caderas). Compatible con Electron 4 (Chromium 69).
 // API: MPROtto3D.iniciar(canvas, colores) -> true/false, .colorear(parte, '#rrggbb'), .animar(nombre), .detener()
 
 var MPROtto3D = {
 	PARTES_COLOR: ['cabeza', 'cuerpo', 'piernas', 'pies'],
 	ANIMACIONES: { saludo: 2.2, celebrar: 1.8, pensar: 3.2, alerta: 1.3 },   // duración en segundos
 	vivo: false,
+	gira: true,      // gira despacio para verse en 360°; con una animación vuelve de frente
+	rumbo: 0,        // ángulo de giro acumulado (radianes)
+	VELOCIDAD_GIRO: 0.45,   // rad/s: una vuelta cada ~14 s
 	estado: { nombre: 'reposo', inicio: 0 },
 	mirada: { x: 0, y: 0, ax: 0, ay: 0 },
 	prox: { cuadros: 0, desde: 0, fps: 0 }
@@ -57,22 +61,23 @@ MPROtto3D.iniciar = function(canvas, colores) {
 	// (x, y, z) -> (x, z, -y). Ejes del robot: X derecha, Y arriba, Z hacia el frente. Medidas en mm.
 	var tumbar = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
 
-	self.raiz = new THREE.Group();
+	// Como en el robot real, la cabeza está fija al cuerpo: forman un solo bloque (el tronco) que se inclina
+	// desde los tobillos junto con las piernas. Los pies quedan planos en el suelo.
+	self.raiz = new THREE.Group();            // salta y gira todo el robot
 	self.escena.add(self.raiz);
+	self.inclinacion = new THREE.Group();     // pivote en los tobillos (y = 8): inclina piernas + cuerpo + cabeza
+	self.inclinacion.position.set(0, 8, 0);
+	self.raiz.add(self.inclinacion);
 
-	// Cuerpo (y 50..89) y cabeza apoyada encima (y 87..126, con 2 mm dentro del borde del cuerpo)
+	// Cuerpo (y 50..89) y cabeza encima (y 87..126, con 2 mm dentro del borde del cuerpo). Posiciones respecto al pivote.
 	self.cuerpo = new THREE.Mesh(self.geometria('cuerpo', tumbar), self.mat.cuerpo);
-	self.cuerpo.position.set(0, 69.5, 0);
-	self.raiz.add(self.cuerpo);
+	self.cuerpo.position.set(0, 61.5, 0);
+	self.inclinacion.add(self.cuerpo);
+	var cabeza = new THREE.Mesh(self.geometria('cabeza', tumbar), self.mat.cabeza);
+	cabeza.position.set(0, 98.5, 0);
+	self.inclinacion.add(cabeza);
 
-	// Cabeza: pivote en el cuello (y = 87)
-	self.cabeza = new THREE.Group();
-	self.cabeza.position.set(0, 87, 0);
-	var malla = new THREE.Mesh(self.geometria('cabeza', tumbar), self.mat.cabeza);
-	malla.position.set(0, 19.5, 0);
-	self.cabeza.add(malla);
-
-	// "Ojos" = sensor ultrasónico: dos cilindros plateados con malla oscura, en los agujeros del frente
+	// "Ojos" = sensor ultrasónico: dos cilindros plateados con malla oscura, en los agujeros del frente de la cabeza
 	self.ojos = [];
 	[-13.4, 13.4].forEach(function(x) {
 		var sensor = new THREE.Group();
@@ -88,30 +93,28 @@ MPROtto3D.iniciar = function(canvas, colores) {
 			barra.position.set(bx, 0, 6.3);
 			sensor.add(barra);
 		});
-		sensor.position.set(x, 25.9, 34.2 - 5);   // la lata asoma ~2 mm del frente
-		self.cabeza.add(sensor);
+		sensor.position.set(x, 104.9, 29.2);    // y 112,9 del robot; la lata asoma ~2 mm del frente
+		self.inclinacion.add(sensor);
 		self.ojos.push(sensor);
 	});
-	self.raiz.add(self.cabeza);
 
-	// Piernas (y 8..50): pivote en la cadera, a x = ±23; pies: pivote en el tobillo (y = 8).
+	// Piernas (y 8..50): pivote en la cadera (y = 50), a x = ±23, movidas por los servos de cadera.
 	// El pie con el saliente a la izquierda va bajo la pierna de la derecha y viceversa: la placa sobresale hacia afuera.
 	self.piernas = [];
 	[-23, 23].forEach(function(x) {
 		var cadera = new THREE.Group();
-		cadera.position.set(x, 50, 0);
+		cadera.position.set(x, 42, 0);
 		var pierna = new THREE.Mesh(self.geometria('pierna', tumbar), self.mat.piernas);
 		pierna.position.set(0, -21, 0);
 		cadera.add(pierna);
-		var tobillo = new THREE.Group();
-		tobillo.position.set(0, -42, 0);
-		var pie = new THREE.Mesh(self.geometria(x > 0 ? 'pieIzq' : 'pieDer', tumbar), self.mat.pies);
-		pie.position.set(x > 0 ? 9 : -9, 5, 0);
-		tobillo.add(pie);
-		cadera.add(tobillo);
-		self.raiz.add(cadera);
+		self.inclinacion.add(cadera);
 		self.piernas.push(cadera);
+		// Pie plano en el suelo (hijo de la raíz, no se inclina)
+		var pie = new THREE.Mesh(self.geometria(x > 0 ? 'pieIzq' : 'pieDer', tumbar), self.mat.pies);
+		pie.position.set(x + (x > 0 ? 9 : -9), 13, 0);
+		self.raiz.add(pie);
 	});
+
 
 	self.vivo = true;
 	self.estado = { nombre: 'reposo', inicio: performance.now() / 1000 };
@@ -142,6 +145,10 @@ MPROtto3D.animar = function(nombre) {
 	MPROtto3D.estado = { nombre: nombre, inicio: performance.now() / 1000 };
 };
 
+MPROtto3D.girar = function(si) {
+	MPROtto3D.gira = !!si;
+};
+
 MPROtto3D.animando = function() {
 	return MPROtto3D.estado.nombre != 'reposo';
 };
@@ -163,27 +170,35 @@ MPROtto3D.pose = function(t) {
 	m.ax += (m.x - m.ax) * 0.12;
 	m.ay += (m.y - m.ay) * 0.12;
 
-	var y = Math.sin(t * 2.2) * 1.4, giro = 0, cabY = m.ax * 0.55, cabX = m.ay * 0.3, cabZ = Math.sin(t * 1.3) * 0.03;
+	// Todo el robot se mueve como un bloque: la cabeza nunca se separa del cuerpo
+	// Giro de exhibición: continuo en reposo; al animar vuelve al frente por el camino más corto
+	var dt = self.tPrev ? Math.min(0.2, t - self.tPrev) : 0;
+	self.tPrev = t;
+	if (self.gira && e.nombre == 'reposo') self.rumbo += dt * self.VELOCIDAD_GIRO;
+	else self.rumbo += (Math.round(self.rumbo / (2 * Math.PI)) * 2 * Math.PI - self.rumbo) * Math.min(1, dt * 4);
+
+	var y = Math.sin(t * 2.2) * 1.2, giro = self.gira ? 0 : m.ax * 0.35, incX = 0, incZ = Math.sin(t * 1.3) * 0.03;
 	var legA = 0, legB = 0, ojoEsc = 1;
 
 	if (e.nombre == 'saludo') {
-		legB = (0.8 + 0.35 * Math.sin(s * 13)) * env;        // pierna derecha saluda
-		cabZ += 0.18 * env; cabY *= 0.4;
+		legB = (0.8 + 0.35 * Math.sin(s * 13)) * env;        // la pierna derecha saluda
+		incZ += 0.1 * env; giro *= 0.4;                      // y el cuerpo se inclina hacia el otro lado
 	} else if (e.nombre == 'celebrar') {
 		y += 42 * Math.abs(Math.sin(Math.PI * s / 0.9)) * env;
 		giro = Math.min(1, s / 1.3) * Math.PI * 2;
 		legA = -(0.45 + 0.25 * Math.sin(s * 16)) * env; legB = -legA;
+		incZ += Math.sin(s * 10) * 0.08 * env;
 		ojoEsc = 1.12;
 	} else if (e.nombre == 'pensar') {
-		cabZ += 0.28 * env; cabX = -0.18 * env; cabY *= 0.3;
+		incZ += 0.12 * env; incX = 0.1 * env; giro *= 0.3;   // se inclina como pensando
 	} else if (e.nombre == 'alerta') {
-		cabY = Math.sin(s * 26) * 0.4 * env; ojoEsc = 1 + 0.3 * env;
+		giro = Math.sin(s * 26) * 0.3 * env; ojoEsc = 1 + 0.3 * env;
 		y += 3 * env;
 	}
 
 	self.raiz.position.y = y;
-	self.raiz.rotation.y = giro;
-	self.cabeza.rotation.set(cabX, cabY, cabZ);
+	self.raiz.rotation.y = self.rumbo + giro;
+	self.inclinacion.rotation.set(incX, 0, incZ);
 	self.piernas[0].rotation.z = legA;
 	self.piernas[1].rotation.z = legB;
 
@@ -196,8 +211,8 @@ MPROtto3D.bucle = function(ahora) {
 	if (!self.vivo) return;
 	requestAnimationFrame(self.bucle);
 	if (document.hidden) return;
-	// Ahorro de recursos: 30 cuadros/s al animar, 12 en reposo
-	var meta = self.animando() ? 33 : 80;
+	// Ahorro de recursos: 30 cuadros/s al animar o girar, 12 si está quieto
+	var meta = (self.animando() || self.gira) ? 33 : 80;
 	if (ahora - self.ultimo < meta - 4) return;
 	self.ultimo = ahora;
 	self.pose(ahora / 1000);

@@ -9,7 +9,7 @@
 
 var MPRMascota = {
 	W: 150, H: 190,
-	CLAVES: { colores: 'mpr_masc_colores', pos: 'mpr_masc_pos', oculta: 'mpr_masc_oculta', silencio: 'mpr_masc_silencio', presentada: 'mpr_masc_presentada' },
+	CLAVES: { colores: 'mpr_masc_colores', pos: 'mpr_masc_pos', oculta: 'mpr_masc_oculta', silencio: 'mpr_masc_silencio', presentada: 'mpr_masc_presentada', gira: 'mpr_masc_gira' },
 	PARTES: [['todo', 'Todo'], ['cabeza', 'Cabeza'], ['cuerpo', 'Cuerpo'], ['piernas', 'Piernas'], ['pies', 'Pies']],
 	PALETA: ['#ff5700', '#e63946', '#ffc400', '#2bb673', '#19a7ce', '#3a5bd9', '#8e44ad', '#ff6fb5', '#f2f2f2', '#2b2b2b'],
 	PERMITIDOS: { variables_set_init: 1, base_define: 1, base_code: 1 },   // bloques raíz que no necesitan conectarse
@@ -119,6 +119,7 @@ MPRMascota.iniciar3D = function() {
 		MPRMascota.modo3d = MPROtto3D.iniciar(canvas, MPRMascota.colores);
 		if (!MPRMascota.modo3d) MPRMascota.respaldo2D();
 		else {
+			MPROtto3D.girar(MPRMascota.leer('gira') !== 'no');
 			setTimeout(function() { try { console.log('[Otto 3D]', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {} }, 4000);
 		}
 	}
@@ -211,6 +212,7 @@ MPRMascota.menu = function() {
 	lista.className = 'menu';
 	lista.appendChild(mprBoton('💡 ' + MPRMascota.msg('masc_consejo', 'Dame un consejo'), '', function() { MPRMascota.consejoAlAzar(true); }));
 	lista.appendChild(mprBoton('🎨 ' + MPRMascota.msg('masc_colores', 'Mis colores'), '', MPRMascota.panelColores));
+	lista.appendChild(mprBoton(MPROtto3D.gira ? '⏸ ' + MPRMascota.msg('masc_quieto', 'Quedarme quieto') : '🔄 ' + MPRMascota.msg('masc_girar', 'Girar para verme'), '', MPRMascota.alternarGiro));
 	lista.appendChild(mprBoton(MPRMascota.silenciada ? '🔔 ' + MPRMascota.msg('masc_activar', 'Activar avisos') : '🔕 ' + MPRMascota.msg('masc_silenciar', 'Avisos tranquilos'), '', MPRMascota.alternarSilencio));
 	lista.appendChild(mprBoton('💤 ' + MPRMascota.msg('masc_esconder', 'Esconderme'), '', MPRMascota.esconder));
 	cont.appendChild(lista);
@@ -264,6 +266,13 @@ MPRMascota.pintar = function(parte, hex) {
 		if (MPRMascota.modo3d) MPROtto3D.colorear(p, hex);
 	});
 	MPRMascota.guardar('colores', MPRMascota.colores);
+};
+
+MPRMascota.alternarGiro = function() {
+	if (!MPRMascota.modo3d || !window.MPROtto3D) return;
+	MPROtto3D.girar(!MPROtto3D.gira);
+	MPRMascota.guardar('gira', MPROtto3D.gira ? 'si' : 'no');
+	MPRMascota.menu();
 };
 
 MPRMascota.alternarSilencio = function() {

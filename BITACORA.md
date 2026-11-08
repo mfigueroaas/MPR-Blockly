@@ -388,6 +388,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Qué se hizo:** con las fotos de `Fotos otto armado/` y la inspección de las piezas originales del 3MF se corrigió el giro de todas las piezas (altura en z, frente de la cabeza en -y), las medidas del ensamblado, la posición de piernas (x = ±23) y pies (placa hacia afuera) y los pivotes de cuello, cadera y tobillo. Los ojos pasaron a ser dos sensores ultrasónicos (cilindro plateado, malla oscura y rejilla) que se agrandan un poco con alerta/celebrar; se quitaron pupilas y parpadeo.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno)
 
+### 2026-11-08  Otto 3D: cabeza fija al cuerpo y giro de 360°
+- **Pedido / problema:** la cabeza se movía por separado y parecía flotar atravesando el cuerpo; el robot real la tiene fija. Además se pidió que el modelo gire para verlo por todos lados.
+- **Archivos:** `www/js/mpr_otto3d.js`, `www/js/mpr_mascota.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** cabeza, cuerpo, sensores y piernas cuelgan de un pivote en los tobillos; las animaciones inclinan/giran todo el bloque y solo las piernas se mueven aparte (caderas). Los pies quedan planos. Giro continuo de ~14 s por vuelta, que vuelve al frente al animar; el menú tiene "Quedarme quieto / Girar para verme" (se guarda). Girar sube el dibujo de 12 a 30 cuadros/s mientras la mascota está visible.
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto

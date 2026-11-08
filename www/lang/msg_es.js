@@ -44,6 +44,8 @@ var MSG = {
   masc_hola: "¿En qué te ayudo?",
   masc_consejo: "Dame un consejo",
   masc_colores: "Mis colores",
+  masc_quieto: "Quedarme quieto",
+  masc_girar: "Girar para verme",
   masc_silenciar: "Avisos tranquilos",
   masc_activar: "Activar avisos",
   masc_esconder: "Esconderme",
