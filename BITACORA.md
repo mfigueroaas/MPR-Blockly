@@ -369,6 +369,19 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Qué se hizo:** `.btn-arduino` ahora fuerza `border-color: #FF5700` (el borde verde venía de bootstrap.min.3.3.6.css); `#buscar_bloques` pasa de 240 px a 330 px de ancho.
 - **Commit:** (ver git log)  **Probado en la app:** no
 
+### 2026-11-08  Recorrido inicial "Conoce a Otto"
+- **Pedido / problema:** walkthrough corto y sencillo que muestre qué hace cada zona sin revelar demasiado, para fomentar la exploración.
+- **Archivos:** `www/js/mpr_tour.js` (nuevo), `www/index.html`, `www/lang/msg_es.js`, `www/lang/code.js`, `www/css/blocklino.css`.
+- **Qué se hizo:** 7 pasos con globo de Otto y foco resaltado (menú de bloques, área de trabajo, ejemplos, puerto USB, flecha de enviar, chat/código). Aparece solo la primera vez (localStorage `mpr_tour_visto`), con botón Saltar siempre visible; el botón "?" de la barra lo abre de nuevo. Los pasos cuyo elemento no se ve se omiten.
+- **Commit:** (ver git log)  **Probado en la app:** pendiente
+
+### 2026-11-08  Mascota Otto 3D con consejos y colores personalizables
+- **Pedido / problema:** mascota 3D animada (tipo clip) que dé consejos y respuestas a errores comunes (bloques sueltos, puerto COM, errores de compilación); colores personalizables por pieza; modelo liviano. Además, el avatar de Otto en el recorrido no se veía sobre fondo blanco.
+- **Archivos:** `www/js/mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` (nuevos), `www/media/otto3d.js` (generado), `tools/convertir_otto.js`, `www/index.html`, `lang/msg_es.js`, `css/blocklino.css`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** Otto 3D armado con las piezas del 3MF simplificadas (~4.300 triángulos, 10 llamadas de dibujo); animaciones: reposo, saludo, celebrar, pensar, alerta; ojos que siguen el mouse; menú, colores por pieza (guardados), esconder y avisos tranquilos. Consejos: bloques sueltos, sin puerto, placa Nano/Nano Old, puerto ocupado/desconectado, variable no declarada, repetidos, programa grande, error genérico, y éxito al verificar/cargar. Avatar del recorrido con círculo azul.
+- **Notas:** probado en Chrome moderno (menú, colores, detectores). Pendiente probar en Electron 4 (three r128 y WebGL).
+- **Commit:** (ver git log)  **Probado en la app:** no
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto

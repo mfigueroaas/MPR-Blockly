@@ -105,6 +105,7 @@ Code.initLanguage = function() {
   $('#btn_fakeload').attr('title', MSG['btn_fakeload']);
   $('#btn_term').attr('title', MSG['btn_term']);
   $('#btn_buscar').attr('title', MSG['btn_buscar']);
+  $('#btn_tour').attr('title', MSG['btn_tour']);
   $('#buscar_bloques').attr('placeholder', MSG['buscar_placeholder']);
   $('#btn_factory').attr('title', MSG['btn_factory']);
   $('#btn_config').attr('title', MSG['btn_config']);

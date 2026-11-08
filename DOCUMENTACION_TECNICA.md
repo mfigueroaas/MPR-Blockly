@@ -346,6 +346,14 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 
 Después de cualquiera: `python tools/probar.py` y F5.
 
+
+### 4.x Recorrido inicial y mascota Otto 3D (noviembre 2026)
+- **Recorrido** (`www/js/mpr_tour.js`, objeto `MPRTour`): 7 pasos con globo y foco resaltado; se abre solo la primera vez (`localStorage.mpr_tour_visto`) y con el botón "?" (`#btn_tour`). Textos en `msg_es.js` (`tour_*`).
+- **Mascota** (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` r128, `media/otto3d.js`): Otto 3D en una esquina, arrastrable (posición en `mpr_masc_pos`), con menú (consejo, colores, avisos tranquilos, esconderse). Colores por pieza (cabeza, cuerpo, piernas, pies) en `mpr_masc_colores`; naranja por defecto.
+- **Modelo:** `tools/convertir_otto.js` convierte las piezas del 3MF (Bambu Studio) con `meshoptimizer` (`simplifySloppy`) a ~4.300 triángulos (78 KB) y escribe `www/media/otto3d.js`. La pose (cuerpo girado 180°, pies tumbados, pies cruzados bajo cada pierna) está en `mpr_otto3d.js`. Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`.
+- **Detectores:** bloques sueltos (bloques de la mesa con `previousConnection` u `outputConnection` sin conectar), y lectura del cuadro `#messageDIV` con un `MutationObserver` (rojo = error, verde = éxito) sin modificar `index.js`. Para agregar un error común basta una línea en `MPRConsejos.ERRORES` (`mpr_consejos.js`, texto en minúsculas).
+- **Por verificar en Electron 4:** `three.min.js` r128 y WebGL en Chromium 69 (se probó solo en un Chrome moderno). Si falla, queda el respaldo 2D.
+
 ---
 
 ## 10. Pendientes, riesgos y puntos a vigilar
