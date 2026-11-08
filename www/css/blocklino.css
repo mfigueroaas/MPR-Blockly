@@ -418,6 +418,11 @@ html, body { overflow: hidden; }
 	z-index: 100000;
 	-webkit-app-region: no-drag;
 	font-family: 'Poppins', sans-serif;
+	/* Rendimiento: la sombra de 9999 px del foco hacía una capa de unos 25.000 x 26.000 px que se repintaba entera
+	   en cada cuadro (15-30 cuadros/s y la gráfica integrada sin memoria). Recortado a la ventana y en capa propia,
+	   cada cuadro repinta solo el velo, nunca Blockly (60 cuadros/s). Se ve exactamente igual. */
+	overflow: hidden;
+	will-change: transform;
 }
 #mpr_tour_foco {
 	position: absolute;

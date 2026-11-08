@@ -446,6 +446,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Archivos:** `Otto DIY 2026.3mf.zip`, `Fotos otto armado/`, `DOCUMENTACION_TECNICA.md` (13.2 actualizado).
 - **Commit:** `d8558f9` (fuentes) y el siguiente (documentación)  **Probado en la app:** no aplica
 
+### 2026-11-08 — Recorrido: animación fluida en gráfica integrada
+- **Pedido / problema:** en el notebook de pruebas (Ryzen 5 4600H con gráfica Radeon integrada, pantalla al 125 %) la animación del recorrido "Conoce a Otto" iba muy lenta. Los PCs donde se usará el programa tienen gráfica integrada, sin GPU dedicada.
+- **Archivos:** `www/css/blocklino.css` (`#mpr_tour_velo`).
+- **Causa (medida en la app instalada por DevTools, ver `DOCUMENTACION_TECNICA.md` 13.7):** el foco oscurece la pantalla con `box-shadow: 0 0 0 9999px`, y el velo era una capa propia (por quedar sobre el canvas de Otto) de 25.287 × 25.907 píxeles. Cada cuadro de la transición la invalidaba entera: la GPU se quedaba sin memoria para las teselas (226 avisos "tile violates memory policy") y la pantalla esperaba a la GPU (325 "Swap throttled"). Resultado: 15–30 cuadros/s con tirones de 100–400 ms.
+- **Qué se hizo:** `overflow: hidden` recorta el velo a la ventana (lo de afuera nunca se veía) y `will-change: transform` lo deja siempre en capa propia (también con Otto escondido), así el recorrido nunca repinta Blockly. El velo solo existe mientras el recorrido está abierto. Se ve igual: capturas comparadas píxel a píxel (solo cambia el remuestreo subpíxel del avatar).
+- **Notas:** en la app instalada pasó a 60 cuadros/s en los 8 pasos, 0 avisos de memoria, 6 "Swap throttled" y 61 % menos rasterizado. Sin GPU (`--disable-gpu`): de 43–58 a 60 cuadros/s. No quitar esas dos líneas.
+- **Commit:** (ver git log)  **Probado en la app:** sí (`C:\MPRBlockly` en el notebook NB0003, copiado con `probar.py`)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
