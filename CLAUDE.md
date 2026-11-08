@@ -37,6 +37,9 @@ https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 (SHA‑256 en el script).
 
 ## Verificar antes de entregar
 - `node --check` sobre los `.js` modificados.
+- Si se cambia algo animado o gráfico (recorrido, mascota 3D, CSS): medir en la app instalada con
+  `node tools/medir_app.mjs` (sección 6.5 de `DOCUMENTACION_TECNICA.md`), no solo en un navegador. Los PCs
+  donde se usará tienen gráfica integrada (sin GPU dedicada) y no se puede perder calidad ni funciones.
 - Si se cambia la librería Otto o un generador de bloques: compilar un ejemplo con
   `compilation\arduino\arduino-cli.exe compile --fqbn arduino:avr:nano:cpu=atmega328old sketch\sketch.ino`
   desde la carpeta instalada (`C:\MPRBlockly\compilation\arduino`).

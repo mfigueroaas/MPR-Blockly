@@ -468,6 +468,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** imagen idéntica comprobada píxel a píxel (`gl.readPixels`, 0 bytes distintos en reposo y en mitad de "celebrar"). El primer cuadro de Otto pasó de 114 a ~65 ms en este notebook. También se probó compartir el sombreador del sensor (`flatShading` en `matPlata`), pero no hay nada que ganar: `MeshLambertMaterial` de r128 no tiene esa propiedad y ya hay solo 2 programas. Por eso salen 4 avisos "'flatShading' is not a property" en la consola, que son inofensivos.
 - **Commit:** (ver git log)  **Probado en la app:** sí (prueba de humo: animaciones, paseo, menú, colores, esconder/mostrar, bajar a liviano)
 
+### 2026-11-08 — Revisión de rendimiento y de OneDrive; herramienta para medir la app real
+- **Pedido / problema:** revisar la documentación y que todo esté sincronizado con OneDrive. Además, revisar en detalle el uso de recursos para PCs con gráfica integrada, sin perder calidad ni funciones, probando en el programa instalado y no en la versión de navegador.
+- **Archivos:** `tools/medir_app.mjs` (nuevo), `DOCUMENTACION_TECNICA.md` (convención de rutas, 3.2, 6.5 nueva, 13.1–13.4, 13.6 y 13.7 nueva), `BITACORA.md`.
+- **Qué se hizo:**
+  - OneDrive: los 5.136 archivos y 1.481 carpetas del proyecto (incluido `.git`) están sincronizados. Solo queda fuera `www/media/Thumbs.db`, que OneDrive excluye siempre. Faltan dos PNG de Firebase cuya ruta mide 282 caracteres y que no están en ninguna parte. `git fsck` sin errores.
+  - Rendimiento: mediciones en la app instalada por DevTools (13.7) y las tres correcciones de los commits anteriores.
+  - `tools/medir_app.mjs` permite repetir las mediciones en los PCs del colegio (6.5).
+- **Notas:** el consumo en reposo es casi todo la animación de Otto (~9 % de un núcleo); bajarlo cambiaría lo que se ve, así que queda a decisión del usuario. En 13.4 quedó anotado el error heredado de `microbit.js` y `typing.js:95`.
+- **Commit:** (ver git log)  **Probado en la app:** sí (las cuatro órdenes de la herramienta contra `C:\MPRBlockly`)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

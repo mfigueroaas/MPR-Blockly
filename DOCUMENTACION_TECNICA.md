@@ -12,7 +12,7 @@
 
 Este documento explica **qué es el proyecto, de dónde viene, cómo está armado, cómo se modifica, se prueba y se entrega**, y qué quedó pendiente. Está pensado para que alguien nuevo pueda retomar el trabajo sin la conversación original. Lo que no se ha comprobado en la app real está marcado como **sin confirmar**.
 
-> Convención: las rutas son relativas a la raíz del repositorio (`C:\ClaudeCode\mpr-blockly`) salvo que se indique otra cosa.
+> Convención: las rutas son relativas a la raíz del repositorio salvo que se indique otra cosa. La raíz era `C:\ClaudeCode\mpr-blockly` en el PC original; desde noviembre de 2026 es la carpeta de OneDrive `Proyectos\mpr-blockly`, compartida entre el PC y el notebook.
 
 ---
 
@@ -141,6 +141,7 @@ El instalador MPR **no recompila nada de esto**: reutiliza los binarios ya compi
 | `build/` | `installer.nsi` (NSIS), íconos y licencia del instalador |
 | `tools/build_installer.py` | Genera el instalador |
 | `tools/probar.py` | Copia cambios a la app instalada para probarlos con F5 |
+| `tools/medir_app.mjs` | Mide el rendimiento dentro de la app instalada (recorrido, capas del compositor, consumo en reposo) por DevTools; ver 6.5 |
 | `tools/rtttl/partitura_a_rtttl.py` | Convierte partituras (tablaturas de Songsterr o notas escritas a mano) en melodías RTTTL; guía en `tools/rtttl/LEEME.md` |
 | `.gitignore` | Excluye `dist/`, `build_tmp/`, `node_modules/`, el instalador oficial, binarios de arduino-cli |
 
@@ -192,7 +193,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - `electronApp.js` (`createWindow`): la ventana se crea con `show: false` y se muestra maximizada en `ready-to-show` (con un respaldo a los 5 s); el evento `unmaximize` la vuelve a maximizar, así no se usa en ventanas pequeñas donde la barra de botones no cabe. El botón de maximizar de `index.html` queda oculto (`display:none`) pero debe existir, porque `factory.js` le asigna un `onclick`. Minimizar y cerrar siguen funcionando. Cambia `electronApp.js`: hay que cerrar y volver a abrir la app (F5 no basta).
 
 ### 4.7 Recorrido inicial y mascota Otto 3D (noviembre 2026)
-- **Recorrido** (`www/js/mpr_tour.js`, objeto `MPRTour`): 7 pasos con globo y foco resaltado; se abre solo la primera vez (`localStorage.mpr_tour_visto`) y con el botón "?" (`#btn_tour`). Textos en `msg_es.js` (`tour_*`). El foco oscurece el resto con `box-shadow: 0 0 0 9999px`; **no quitar `overflow: hidden` ni `will-change: transform` de `#mpr_tour_velo`** (`blocklino.css`): sin ellos el velo era una capa de ~25.000 × 26.000 px que se repintaba en cada cuadro, y en gráficas integradas el recorrido iba a 15–30 cuadros/s. La primera vez, el recorrido espera además a que Otto 3D termine de cargar (`MPRMascota.cargando3D`, `MPRTour.iniciarCuandoListo`, máximo 6 s más), para que esa carga no se note como un tirón al aparecer.
+- **Recorrido** (`www/js/mpr_tour.js`, objeto `MPRTour`): 7 pasos con globo y foco resaltado; se abre solo la primera vez (`localStorage.mpr_tour_visto`) y con el botón "?" (`#btn_tour`). Textos en `msg_es.js` (`tour_*`). El foco oscurece el resto con `box-shadow: 0 0 0 9999px`; **no quitar `overflow: hidden` ni `will-change: transform` de `#mpr_tour_velo`** (`blocklino.css`): sin ellos el velo era una capa de ~25.000 × 26.000 px que se repintaba en cada cuadro, y en gráficas integradas el recorrido iba a 15–30 cuadros/s (13.7). La primera vez, el recorrido espera además a que Otto 3D termine de cargar (`MPRMascota.cargando3D`, `MPRTour.iniciarCuandoListo`, máximo 6 s más), para que esa carga no se note como un tirón al aparecer.
 - **Mascota** (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` r128, `media/otto3d.js`): Otto 3D en una esquina, arrastrable (posición en `mpr_masc_pos`), con menú (consejo, colores, avisos tranquilos, esconderse). Colores por pieza (cabeza, cuerpo, piernas, pies) en `mpr_masc_colores`; naranja por defecto.
 - **Modelo:** `tools/convertir_otto.js <carpeta_3mf> www/media` convierte las piezas del 3MF (Bambu Studio) a un formato binario compacto (posiciones Int16 en centésimas de mm + índices, en base64) y genera dos modelos: `media/otto3d.js` **completo** (~123 mil triángulos en la pose, 1,3 MB) y `media/otto3d_liviano.js` (~26 mil, 284 KB; simplificado con `simplify` de meshoptimizer, conserva agujeros y logos). Hay un tercer modelo, `media/otto3d_minimo.js` (~5.500 triángulos, 59 KB), y la mascota **siempre intenta mostrarse en 3D**: se usa el completo (también en gráficas integradas); si el navegador dibuja por CPU (SwiftShader/llvmpipe, `MPRMascota.esSoftware`) se parte del mínimo y con `MPROtto3D.economia` (sin suavizado de bordes, pixel ratio 1, 20 cuadros/s al moverse y 8 en reposo); y si algún nivel va a menos de 17 cuadros/s (12 en modo económico) durante 5 s, baja solo completo → liviano → mínimo (`MPROtto3D.alLento` → `bajarCalidad`, sin reiniciar). `electronApp.js` agrega `app.commandLine.appendSwitch('ignore-gpu-blacklist')` para que Chromium use también las gráficas integradas o antiguas que descarta por defecto. Solo si WebGL no se puede crear queda el respaldo 2D. Se puede forzar con `localStorage.mpr_masc_calidad = "completa"`, `"liviana"` o `"minima"`. Sombreado plano real: `MPROtto3D.geometria` pasa a no indexada y calcula normales por triángulo (el `MeshLambertMaterial` de three r128 ignora `flatShading`). Todas las mallas tienen `frustumCulled = false` (Otto siempre cabe en su canvas): three.js no calcula esferas envolventes al arrancar ni prueba el recorte en cada cuadro, con la misma imagen. Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`. La pose está en `mpr_otto3d.js` y se calculó con fotos del Otto armado: todas las piezas del 3MF tienen su altura en `z` y el frente de la cabeza (agujeros del sensor) en `-y`, por eso se giran -90° en X; medidas en mm: pies y 0–26, piernas y 8–50 (a x = ±23), cuerpo y 50–89, cabeza y 84–123 (6 mm metida en el borde del cuerpo). Cada pie lleva la placa hacia afuera (`pieIzq` bajo la pierna derecha y `pieDer` bajo la izquierda). Como en el robot real, la cabeza va fija al cuerpo: forman un solo tronco que se inclina desde los tobillos (`inclinacion`, pivote y = 8) junto con las piernas; solo las piernas tienen movimiento propio (caderas) y los pies quedan planos. Las caderas giran las piernas sobre su eje vertical y los tobillos inclinan los pies (como los servos reales). De vez en cuando (cada 30–80 s, si no hay globo, cuadro de mensaje ni recorrido) Otto camina a otro punto de la mesa de trabajo girándose de perfil hacia donde va, o da una vuelta completa en su lugar (`MPRMascota.planificar/pasear`; `MPROtto3D.caminar/pararCaminar`, animación `vuelta`). La opción del menú "Quedarme en mi lugar / Pasear por la mesa" se guarda en `mpr_masc_pasea`. El paseo no se guarda como posición: al reabrir vuelve a la posición elegida por el niño. Los "ojos" son dos sensores ultrasónicos (cilindro plateado con malla oscura) en x = ±13,37 y a 6,0 mm sobre el centro de la cabeza (medidos en los agujeros de la cabeza original: 16,75 mm de diámetro); si se cambia la altura de la cabeza hay que recalcular la altura de los sensores. No son personalizables. Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`.
 - **Detectores:** bloques sueltos (bloques de la mesa con `previousConnection` u `outputConnection` sin conectar), y lectura del cuadro `#messageDIV` con un `MutationObserver` (rojo = error, verde = éxito) sin modificar `index.js`. Para agregar un error común basta una línea en `MPRConsejos.ERRORES` (`mpr_consejos.js`, texto en minúsculas).
@@ -267,6 +268,13 @@ El bloque `RTTTL_music` (Zumbador) toca melodías RTTTL con la librería PlayRtt
 
 ### 6.4 Desarrollo sin instalar (opcional)
 `npm install` (recompila serialport para Electron 4.1.1; requiere Visual Studio Build Tools) y `npm start`. Para compilar/subir hace falta `compilation/arduino` con arduino-cli y el core AVR; lo más simple es probar con el instalador.
+
+### 6.5 Medir el rendimiento en la app real
+Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó con el recorrido): hay que medir en la app instalada, que es Chromium 69. `tools/medir_app.mjs` (Node 22 o más nuevo) se conecta a la app por DevTools y mide sin cambiar nada guardado:
+1. Cerrar MPR Blockly y abrirlo con `"C:\MPRBlockly\MPR Blockly.exe" --remote-debugging-port=9222`. Para simular un PC sin aceleración gráfica, agregar `--disable-gpu`.
+2. `node tools/medir_app.mjs info | recorrido | capas | reposo [segundos]`: GPU y modelo de Otto, cuadros/s de cada paso del recorrido, capas del compositor con su tamaño, y CPU/memoria de cada proceso en reposo.
+3. Valores del notebook con gráfica integrada (13.7): recorrido de 55–60 cuadros/s; ninguna capa mucho mayor que la ventana.
+4. Al terminar, cerrar la app y abrirla normal. El puerto solo escucha en 127.0.0.1, pero no conviene dejarlo abierto.
 
 ---
 
@@ -408,10 +416,11 @@ Después de cualquiera: `python tools/probar.py` y F5.
 Esta sección resume la sesión del 8 de noviembre de 2026 para retomar el trabajo sin el contexto de la conversación. Detalle cambio a cambio en `BITACORA.md` (entradas "2026-11-08") y mecanismos en 4.6 y 4.7.
 
 ### 13.1 Estado actual
-- **Rama `main`, último commit `afd7b0e` ("Versión 1.4.0 e instalador generado").** `package.json`: 1.4.0.
+- **Rama `main`.** `package.json`: 1.4.0. Después del instalador 1.4.0 (`afd7b0e`) vinieron la documentación de traspaso y, el mismo día en el notebook, la revisión de rendimiento (13.7): recorrido fluido, espera del recorrido a Otto 3D y Otto sin recorte por vista. Ver `git log`.
 - **Instalador generado:** `dist\MPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`). `dist/` está en `.gitignore`: el `.exe` no está en git, solo en la carpeta (OneDrive).
-- **Instalado en el PC principal** (`C:\MPRBlockly`) con `python tools/probar.py`, no con el instalador. El instalador 1.4.0 se está probando en un notebook **sin GPU dedicada**; ese es el motivo de este traspaso.
-- **Novedades de la 1.4.0** (todas probadas solo en un Chrome moderno, no en la app instalada):
+- **Instalado en el PC principal** (`C:\MPRBlockly`) con `python tools/probar.py`, no con el instalador. **En el notebook NB0003** (Ryzen 5 4600H con gráfica Radeon integrada, sin GPU dedicada, como los PCs donde se usará el programa) está el instalador 1.4.0 más los cambios de rendimiento, copiados con `probar.py` el 2026-11-08. Eso incluye el `electronApp.js` de git (mínimo 1100×650).
+- **Los PCs con el instalador 1.4.0 tienen todavía el recorrido lento:** hace falta un instalador nuevo (1.4.1) para repartir las correcciones.
+- **Novedades de la 1.4.0** (probadas en un Chrome moderno; el 2026-11-08 también en la app instalada del notebook, ver 13.4):
   1. Arreglos visuales: contorno verde del botón de cargar (`.btn-arduino` en `blocklino.css`) y placeholder cortado del buscador (ancho 330 px).
   2. Recorrido inicial "Conoce a Otto" (`mpr_tour.js`, botón "?").
   3. Mascota Otto 3D (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`): consejos, errores comunes, colores por pieza, paseos y vueltas, menú. Detalle en 4.7.
@@ -425,24 +434,29 @@ Ya están en git (commit `d8558f9`): `Otto DIY 2026.3mf.zip` (1,3 MB; **fuente d
 |---|---|---|
 | `Logo Crecer en Renca.svg` | Logo, sin usar aún | |
 | `versiones/` (354 MB) | Instaladores y bundles antiguos | No commitear |
-| `electronApp.js` (modificado) | En el disco los tamaños mínimos de ventana son **1060×700**; en el último commit son **1100×650**. Los commits de este día partieron del archivo de HEAD para no mezclar ese cambio | Decidir cuál queda. El instalador 1.4.0 lleva el del disco (1060×700). Con la ventana siempre maximizada casi no influye |
-| Borrados sin commit | `www/media/Thumbs.db` y dos PNG de ejemplo de la librería Firebase | Inofensivo |
+| `electronApp.js` | Ya no hay cambio sin commit: el archivo del disco es igual al de git (mínimo **1100×650**). El instalador 1.4.0 trae **1060×700** | En el notebook se reemplazó por el de git al usar `probar.py`. Con la ventana siempre maximizada no influye |
+| Faltan en el disco | Dos PNG del ejemplo de la librería Firebase (ESP32); su ruta en OneDrive mide 282 caracteres. No están en el disco ni en OneDrive | Inofensivo: es una librería que MPR no usa. Se pueden borrar de git o recuperar con `git checkout` |
+
+**Revisión de OneDrive (2026-11-08, desde el notebook):** los 5.136 archivos y las 1.481 carpetas del proyecto, incluido `.git`, están sincronizados y marcados "Siempre disponible en este dispositivo". Se comprobó con el estado del Explorador y con la base de datos de OneDrive, y `git fsck` no da errores. La carpeta raíz igual aparece "Sincronización pendiente" porque OneDrive excluye siempre `www/media/Thumbs.db`, una caché de miniaturas de Windows que viene de Otto Blockly y está en git. Por eso en el otro PC ese archivo figura como borrado. Para que la carpeta quede en verde hay que sacar `Thumbs.db` de git y agregarlo a `.gitignore`.
 
 ### 13.3 Probar en el notebook (checklist)
 1. Instalar `MPR_Blockly_Setup_1.4.0.exe` (encima de la versión anterior o desinstalando antes).
 2. **Ventana:** debe abrir maximizada y no poder restaurarse. Sin botón de maximizar; minimizar y cerrar funcionan.
-3. **Recorrido** (primera vez): 7 pasos; el paso del puerto USB solo aparece en la app instalada. Se repite con "?".
+3. **Recorrido** (primera vez): 7 pasos; el paso del puerto USB solo aparece en la app instalada. Se repite con "?". Debe ir fluido: 55–60 cuadros/s con `node tools/medir_app.mjs recorrido` (6.5).
 4. **Mascota 3D:** abrir F12 (consola) y buscar `[Otto 3D]`. Muestra el modelo elegido (`completo`, `liviano` o `minimo`), triángulos, llamadas, cuadros/s y memoria. Si baja de nivel por lentitud aparece `[Otto 3D] equipo lento: modelo ...`.
    - Sin aceleración gráfica debería partir en `minimo` (modo económico). Con gráfica integrada, en `completo`.
-   - Si Otto sale en 2D (imagen plana con globos), WebGL no se pudo crear: anotar el error de la consola. Es el caso más importante por confirmar (three.js r128 en Chromium 69).
+   - Si Otto sale en 2D (imagen plana con globos), WebGL no se pudo crear: anotar el error de la consola. Confirmado el 2026-11-08 en el notebook: el 3D funciona con la gráfica integrada y también con `--disable-gpu`.
 5. **Menú de la mascota** (clic en Otto): consejo, colores, avisos tranquilos, quedarme en mi lugar / pasear, esconderme. Arrastrarla; recargar (F5) y ver que recuerda posición y colores.
 6. **Consejos con mensajes reales:** provocar errores reales (sin puerto, puerto ocupado, placa equivocada, código con error) y ver qué mensaje de Otto sale. Las expresiones de `MPRConsejos.ERRORES` se escribieron suponiendo los mensajes típicos de `arduino-cli`/`avrdude`; ajustarlas con los textos reales (están en `www/js/mpr_consejos.js`, en minúsculas).
 7. **Bloques sueltos:** dejar 1–2 bloques sin conectar en la mesa y esperar ~4 s.
 8. **Paseo:** cada 30–80 s (si no hay globo ni cuadro de mensaje) camina de perfil a otro punto de la mesa y vuelve de frente; a veces da una vuelta. Comprobar fluidez en el notebook.
 
 ### 13.4 Temas pendientes o por revisar
-- **Verificar en Electron 4 / equipo sin GPU:** `three.min.js` r128 y WebGL en Chromium 69 (nunca probado ahí). Si falla, evaluar un `three` más antiguo o el respaldo 2D animado.
-- **Revisión del usuario en el notebook:** el usuario dijo que "se ve bien pero tiene unos temas que quiere revisar"; anotar aquí cuáles son: _(completar)_.
+- **Verificado el 2026-11-08:** `three.min.js` r128 y WebGL funcionan en Electron 4 en el notebook, tanto con la gráfica integrada (ANGLE/Direct3D 11, modelo completo, 12 cuadros/s en reposo) como simulando un PC sin GPU con `--disable-gpu` (SwiftShader, modelo mínimo, modo económico). Falta probarlo en un PC del colegio con gráfica Intel (`tools/medir_app.mjs`, 6.5).
+- **Revisión del usuario en el notebook:** el 3D funcionaba bien; el recorrido iba muy lento (corregido, ver 13.7). Regla del usuario: los PCs no tienen GPU dedicada sino la gráfica integrada del procesador, y las optimizaciones **no pueden bajar gráficos, calidad de animaciones ni quitar funciones** del programa ni de Otto 3D.
+- **Instalador 1.4.1:** falta generarlo para repartir las correcciones de rendimiento (subir la versión en `package.json`).
+- **Consumo en reposo de Otto:** ~9 % de un núcleo en el notebook; la app con Otto en pausa usa ~0,15 %. Bajarlo cambiaría lo que se ve o cómo se comporta (menos cuadros, pausar a Otto sin foco o tras minutos sin actividad), así que queda a decisión del usuario (13.7).
+- **Error heredado al cargar** (ya estaba en la 1.4.0 y en la base de Otto Blockly): `index.html` pide `blocs&generateurs/microbit.js` y `code.js` pide `lang/microbit_es.js`, que no existen. Además, `typing.js:95` lanza `TypeError` porque `Blockly.Blocks.digital_read` no existe, así que las líneas 95–161 de `typing.js` (tipos de dato de algunos bloques) nunca se ejecutan. Si se corrige, hacerlo con cuidado: afecta los tipos de las variables en el código generado.
 - **Textos de error reales** para `MPRConsejos.ERRORES` (ver 13.3, punto 6) y más errores comunes (el usuario aún no tiene una lista definida: "puerto COM" y "bloques sueltos" fueron los ejemplos).
 - **Cara del cuerpo:** se desconoce cuál cara es el frente real del cuerpo; como es casi simétrico no se nota, pero el texto en relieve ("lafábrica", "Renca") podría quedar en una cara distinta a la real.
 - **Animaciones aproximadas:** caderas giran las piernas sobre el eje vertical y los tobillos inclinan los pies (como los servos reales), pero las amplitudes y fases son una estimación visual. Ajustar en `MPROtto3D.pose`.
@@ -466,3 +480,24 @@ Ya están en git (commit `d8558f9`): `Otto DIY 2026.3mf.zip` (1,3 MB; **fuente d
 - **Commitear un archivo con cambios ajenos pendientes** (como `electronApp.js`): se parte de `git show HEAD:...`, se aplica el cambio, `git hash-object -w` y `git update-index --cacheinfo`, para no incluir el resto.
 - **Codificación:** `BITACORA.md`, `DOCUMENTACION_TECNICA.md`, `CLAUDE.md`, `msg_es.js` y los `.js` son **UTF-8**. Al editarlos con `node` leer y escribir en `utf8`; usar `latin1` solo en archivos donde lo que se reemplaza es ASCII puro (por ejemplo `index.html`, `blocklino.css`), porque `latin1` destruye acentos y rayas (—, →). Ese error ocurrió con `BITACORA.md` el 2026-11-08 y se reparó.
 - **Mensajes de la app:** la mascota lee el cuadro `#messageDIV` con un `MutationObserver` (color rojo = error, verde = éxito); no modifica `index.js`.
+- **Medir en la app real, no en Chrome:** el recorrido lento no se notaba en el Chrome moderno. En Chromium 69 (6.5): `Tracing.start` en una página no acepta `traceConfig` (hay que usar `categories`); el objetivo "navegador" de `/json/version` sí lo acepta e incluye el proceso GPU; las duraciones de la traza vienen redondeadas a 1 ms, así que las tareas cortas suman de menos. El consumo en reposo varía mucho entre muestras de 20 s por los paseos de Otto: para comparar, apagar `MPRMascota.paseando` en memoria y repetir.
+- **Sombras gigantes:** un `box-shadow` con spread enorme dentro de una capa compuesta agranda la capa entera (25.287 × 25.907 px en el recorrido). Recortar el contenedor con `overflow: hidden` o evitar el truco.
+- **Descartado por medición:** (1) un bucle de Otto con temporizador en vez de `requestAnimationFrame` continuo: el hilo principal baja 0,8 % pero el compositor sube 1,5 % (en Chromium 69 encender y apagar los cuadros cuesta más), y sin GPU bajaba los cuadros de Otto de 8 a 6–7; (2) decodificar el modelo en un solo recorrido: da lo mismo pero no es más rápido (three.js ya está optimizado); (3) compartir el sombreador del sensor: ya se comparte; (4) mover el globo del recorrido con `transform`: sin ganancia medible.
+
+### 13.7 Rendimiento: revisión del 2026-11-08 en el notebook NB0003
+Equipo: Ryzen 5 4600H con gráfica Radeon integrada (ANGLE/Direct3D 11), 16 GB, pantalla 1920×1080 al 125 %. Todo se midió en la app instalada con DevTools (6.5), comparando la 1.4.0 con los cambios.
+
+| Medición | 1.4.0 | Con los cambios |
+|---|---|---|
+| Recorrido: cuadros/s en las transiciones | 15–30, con tirones de 100–400 ms | 60 (peor cuadro 16,7 ms) |
+| Capa del velo del recorrido | 25.287 × 25.907 px | 1.923 × 1.020 px (la ventana) |
+| Avisos "tile violates memory policy" / "Swap throttled" en el recorrido | 226 / 325 | 0 / 6 |
+| Tareas de rasterizado en el recorrido | 1.391 | 538 |
+| Recorrido sin GPU (`--disable-gpu`) | 43–58 cuadros/s | 60 |
+| Primer cuadro de Otto 3D al arrancar | 114 ms | ~65 ms |
+| Bloqueo total al cargar Otto 3D | ~237 ms | ~190 ms |
+
+- **Causa del recorrido lento:** el velo era una capa gigante (por la sombra de 9999 px) que se invalidaba entera en cada cuadro. La GPU integrada se quedaba sin memoria para las teselas y la pantalla esperaba a la GPU. Detalle en `BITACORA.md`.
+- **Consumo en reposo (sin cambios; medido para decidir):** con Otto visible la app usa ~9 % de un núcleo con la gráfica integrada, y entre 9 % y 19 % sin GPU (mucha variación entre muestras). Con Otto en pausa usa ~0,15 %: casi todo es la animación de reposo de Otto (12 cuadros/s; 8 en modo económico). Memoria: ~60–70 MB privados por proceso (3 procesos) y ~12 MB de JavaScript.
+- **Arranque:** la carga de Otto 3D (decodificar el modelo, compilar sombreadores y subir ~9 MB a la GPU) empieza en `load` + 1,2 s y termina en ~`load` + 1,5 s. El recorrido de la primera vez espera a que termine.
+- **Funciones verificadas en la app instalada después de los cambios:** las 5 animaciones, paseo por la mesa, menú, colores, globo de consejos, esconder y volver a mostrar, botón "?" y teclas del recorrido, descenso completo → liviano y recorrido de la primera vez con sus botones. Sin excepciones nuevas y con las preferencias guardadas intactas.
