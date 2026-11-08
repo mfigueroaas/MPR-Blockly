@@ -21,15 +21,30 @@ var MPROtto3D = {
 	andarObj: 0,
 	fase: 0,              // fase del paso
 	mirada: { x: 0, y: 0, ax: 0, ay: 0 },
+	alLento: null,        // función a llamar si se mueve a menos de 17 cuadros/s durante 5 s seguidos
+	lentos: 0,
+	medA: { n: 0, t0: 0 },
 	prox: { cuadros: 0, desde: 0, fps: 0 }
 };
 
+function mprDecodificar(b64, Tipo) {
+	var bin = atob(b64), n = bin.length, u = new Uint8Array(n);
+	for (var k = 0; k < n; k++) u[k] = bin.charCodeAt(k);
+	return new Tipo(u.buffer);
+}
+
+// Lee una pieza de window.OTTO3D (posiciones Int16 en centésimas de mm, índices de 2 o 4 bytes)
 MPROtto3D.geometria = function(nombre, matriz) {
 	var p = window.OTTO3D.partes[nombre];
+	var enteros = mprDecodificar(p.p, Int16Array), pos = new Float32Array(enteros.length);
+	for (var k = 0; k < enteros.length; k++) pos[k] = enteros[k] / 100;
 	var g = new THREE.BufferGeometry();
-	g.setAttribute('position', new THREE.Float32BufferAttribute(p.p, 3));
-	g.setIndex(p.i);
+	g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+	g.setIndex(new THREE.BufferAttribute(mprDecodificar(p.i, p.w == 2 ? Uint16Array : Uint32Array), 1));
 	if (matriz) g.applyMatrix4(matriz);
+	// Sombreado plano: cada triángulo con su propia normal. Respeta las aristas vivas, los relieves y los logos
+	// (MeshLambertMaterial de esta versión de three.js ignora flatShading y suavizaba las caras grandes).
+	g = g.toNonIndexed();
 	g.computeVertexNormals();
 	return g;
 };
@@ -60,9 +75,28 @@ MPROtto3D.iniciar = function(canvas, colores) {
 		self.mat[n] = new THREE.MeshLambertMaterial({ color: (colores && colores[n]) || '#ff5700', flatShading: true });
 	});
 	// Materiales del sensor ultrasónico (no se personalizan: son parte del robot)
-	var matPlata = new THREE.MeshLambertMaterial({ color: 0xc7ccd4 });
-	var matOscuro = new THREE.MeshBasicMaterial({ color: 0x14142b });
+	self.matPlata = new THREE.MeshLambertMaterial({ color: 0xc7ccd4 });
+	self.matOscuro = new THREE.MeshBasicMaterial({ color: 0x14142b });
 
+	self.armar();
+
+	self.vivo = true;
+	self.estado = { nombre: 'reposo', inicio: performance.now() / 1000 };
+	self.prox.desde = performance.now();
+	window.addEventListener('mousemove', self.alMover);
+	document.addEventListener('visibilitychange', function() { if (!document.hidden) self.ultimo = 0; });
+	self.ultimo = 0;
+	requestAnimationFrame(self.bucle);
+	return true;
+};
+
+// Arma (o vuelve a armar, si se cambia de modelo) el robot con las piezas de window.OTTO3D
+MPROtto3D.armar = function() {
+	var self = MPROtto3D;
+	if (self.raiz) {   // libera el modelo anterior
+		self.raiz.traverse(function(o) { if (o.geometry) o.geometry.dispose(); });
+		self.escena.remove(self.raiz);
+	}
 	// Todas las piezas del 3MF tienen su altura en z y el frente de la cabeza en -y: se giran -90° en X
 	// (x, y, z) -> (x, z, -y). Ejes del robot: X derecha, Y arriba, Z hacia el frente. Medidas en mm.
 	var tumbar = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
@@ -87,15 +121,15 @@ MPROtto3D.iniciar = function(canvas, colores) {
 	self.ojos = [];
 	[-13.4, 13.4].forEach(function(x) {
 		var sensor = new THREE.Group();
-		var lata = new THREE.Mesh(new THREE.CylinderGeometry(7.9, 7.9, 14, 20), matPlata);
+		var lata = new THREE.Mesh(new THREE.CylinderGeometry(7.9, 7.9, 14, 20), self.matPlata);
 		lata.rotation.x = Math.PI / 2;
 		lata.position.z = -1;
 		sensor.add(lata);
-		var malla2 = new THREE.Mesh(new THREE.CircleGeometry(6.2, 20), matOscuro);
+		var malla2 = new THREE.Mesh(new THREE.CircleGeometry(6.2, 20), self.matOscuro);
 		malla2.position.z = 6.1;
 		sensor.add(malla2);
 		[-3.4, 0, 3.4].forEach(function(bx) {   // rejilla del transductor
-			var barra = new THREE.Mesh(new THREE.BoxGeometry(0.9, 9.5, 0.4), matPlata);
+			var barra = new THREE.Mesh(new THREE.BoxGeometry(0.9, 9.5, 0.4), self.matPlata);
 			barra.position.set(bx, 0, 6.3);
 			sensor.add(barra);
 		});
@@ -126,14 +160,6 @@ MPROtto3D.iniciar = function(canvas, colores) {
 		self.pies.push(tobillo);
 	});
 
-	self.vivo = true;
-	self.estado = { nombre: 'reposo', inicio: performance.now() / 1000 };
-	self.prox.desde = performance.now();
-	window.addEventListener('mousemove', self.alMover);
-	document.addEventListener('visibilitychange', function() { if (!document.hidden) self.ultimo = 0; });
-	self.ultimo = 0;
-	requestAnimationFrame(self.bucle);
-	return true;
 };
 
 MPROtto3D.alMover = function(e) {
@@ -258,6 +284,15 @@ MPROtto3D.bucle = function(ahora) {
 	var meta = self.animando() ? 33 : 80;
 	if (ahora - self.ultimo < meta - 4) return;
 	self.ultimo = ahora;
+	if (meta == 33) {   // mide los cuadros por segundo solo mientras se anima
+		self.medA.n++;
+		if (ahora - self.medA.t0 >= 2500) {
+			var f = self.medA.n * 1000 / (ahora - self.medA.t0);
+			self.medA = { n: 0, t0: ahora };
+			if (f < 17 && self.alLento) { if (++self.lentos >= 2) { var cb = self.alLento; self.alLento = null; cb(f); } }
+			else self.lentos = 0;
+		}
+	} else self.medA = { n: 0, t0: ahora };
 	self.pose(ahora / 1000);
 	self.renderer.render(self.escena, self.camara);
 	self.prox.cuadros++;
@@ -270,5 +305,5 @@ MPROtto3D.bucle = function(ahora) {
 MPROtto3D.estadisticas = function() {
 	var i = MPROtto3D.renderer ? MPROtto3D.renderer.info : null;
 	var mem = window.performance && performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB' : 'n/d';
-	return { triangulos: i ? i.render.triangles : 0, llamadas: i ? i.render.calls : 0, geometrias: i ? i.memory.geometries : 0, fps: MPROtto3D.prox.fps, memoriaJS: mem };
+	return { modelo: window.OTTO3D ? window.OTTO3D.nivel : '', triangulos: i ? i.render.triangles : 0, llamadas: i ? i.render.calls : 0, geometrias: i ? i.memory.geometries : 0, fps: MPROtto3D.prox.fps, memoriaJS: mem };
 };

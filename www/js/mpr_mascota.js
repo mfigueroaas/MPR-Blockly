@@ -9,7 +9,7 @@
 
 var MPRMascota = {
 	W: 150, H: 190,
-	CLAVES: { colores: 'mpr_masc_colores', pos: 'mpr_masc_pos', oculta: 'mpr_masc_oculta', silencio: 'mpr_masc_silencio', presentada: 'mpr_masc_presentada', pasea: 'mpr_masc_pasea' },
+	CLAVES: { colores: 'mpr_masc_colores', pos: 'mpr_masc_pos', oculta: 'mpr_masc_oculta', silencio: 'mpr_masc_silencio', presentada: 'mpr_masc_presentada', pasea: 'mpr_masc_pasea', calidad: 'mpr_masc_calidad' },
 	PARTES: [['todo', 'Todo'], ['cabeza', 'Cabeza'], ['cuerpo', 'Cuerpo'], ['piernas', 'Piernas'], ['pies', 'Pies']],
 	PALETA: ['#ff5700', '#e63946', '#ffc400', '#2bb673', '#19a7ce', '#3a5bd9', '#8e44ad', '#ff6fb5', '#f2f2f2', '#2b2b2b'],
 	PERMITIDOS: { variables_set_init: 1, base_define: 1, base_code: 1 },   // bloques raíz que no necesitan conectarse
@@ -119,6 +119,38 @@ MPRMascota.cargarScript = function(src, listo, falla) {
 	document.head.appendChild(s);
 };
 
+// ¿El navegador dibuja con la CPU (sin aceleración gráfica)? Entonces conviene el modelo liviano.
+MPRMascota.esSoftware = function() {
+	try {
+		var c = document.createElement('canvas');
+		var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+		if (!gl) return true;
+		var ext = gl.getExtension('WEBGL_debug_renderer_info');
+		var r = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+		var lose = gl.getExtension('WEBGL_lose_context');
+		if (lose) lose.loseContext();
+		return /swiftshader|llvmpipe|software|basic render|softpipe/i.test(r);
+	} catch (e) { return true; }
+};
+
+// Modelo completo (~123 mil triángulos) salvo en equipos sin aceleración gráfica. Se puede forzar con
+// localStorage.mpr_masc_calidad = 'liviana' o 'completa'.
+MPRMascota.nivelModelo = function() {
+	var q = MPRMascota.leer('calidad');
+	if (q == 'liviana') return 'liviano';
+	if (q == 'completa') return 'completo';
+	return MPRMascota.esSoftware() ? 'liviano' : 'completo';
+};
+
+// Si aun así va lento, baja al modelo liviano sin reiniciar
+MPRMascota.bajarCalidad = function() {
+	MPRMascota.cargarScript('media/otto3d_liviano.js', function() {
+		MPRMascota.nivel = 'liviano';
+		if (window.MPROtto3D && MPROtto3D.vivo) MPROtto3D.armar();
+		try { console.log('[Otto 3D] equipo lento: modelo liviano', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {}
+	}, function() {});
+};
+
 MPRMascota.iniciar3D = function() {
 	var canvas = document.getElementById('mpr_masc_canvas');
 	function aplicar() {
@@ -126,12 +158,14 @@ MPRMascota.iniciar3D = function() {
 		if (!MPRMascota.modo3d) MPRMascota.respaldo2D();
 		else {
 			MPRMascota.planificar(20000 + Math.random() * 20000);
+			MPROtto3D.alLento = function() { if (MPRMascota.nivel == 'completo') MPRMascota.bajarCalidad(); };
 			setTimeout(function() { try { console.log('[Otto 3D]', JSON.stringify(MPROtto3D.estadisticas())); } catch (e) {} }, 4000);
 		}
 	}
 	if (typeof THREE != 'undefined' && window.OTTO3D) return aplicar();
+	MPRMascota.nivel = MPRMascota.nivelModelo();
 	MPRMascota.cargarScript('js/three.min.js', function() {
-		MPRMascota.cargarScript('media/otto3d.js', aplicar, MPRMascota.respaldo2D);
+		MPRMascota.cargarScript(MPRMascota.nivel == 'liviano' ? 'media/otto3d_liviano.js' : 'media/otto3d.js', aplicar, MPRMascota.respaldo2D);
 	}, MPRMascota.respaldo2D);
 };
 

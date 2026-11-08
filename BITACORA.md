@@ -400,6 +400,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Qué se hizo:** modelo con `simplify` (colapso de aristas) a ~24.000 triángulos (16 llamadas de dibujo, ~500 KB): se ven los agujeros reales del sensor y los logos en relieve; los sensores quedan dentro de los agujeros. Cabeza 6 mm más abajo (metida en el borde del cuerpo). Se quitó el giro continuo: ahora cada 3080 s Otto camina a otro punto de la mesa girándose de perfil hacia donde va (caderas alternadas, tobillos levantan cada pie, cuerpo se balancea) y se vuelve de frente, o da una vuelta completa en su lugar. Se interrumpe si se le hace clic, se arrastra o va a hablar. Opción del menú "Quedarme en mi lugar / Pasear por la mesa".
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: paseo completo y regreso de frente)
 
+### 2026-11-08  Otto 3D: frente corregido y modelo completo
+- **Pedido / problema:** el frente del robot se veía raro; consulta sobre usar el modelo con todos los polígonos o uno que muestre bien los detalles.
+- **Archivos:** `tools/convertir_otto.js`, `www/media/otto3d.js` (ahora completo), `www/media/otto3d_liviano.js` (nuevo), `www/js/mpr_otto3d.js`, `www/js/mpr_mascota.js`, `DOCUMENTACION_TECNICA.md`.
+- **Causa:** `MeshLambertMaterial` de three r128 ignora `flatShading`: las caras grandes se veían suavizadas (efecto embudo alrededor de los sensores, cuerpo "inflado"), y la simplificación inclinaba un poco el frente.
+- **Qué se hizo:** sombreado plano real (geometría no indexada con normales por triángulo); modelo completo de ~123 mil triángulos en formato binario compacto (1,3 MB); modelo liviano de respaldo (~26 mil) para equipos sin aceleración gráfica o lentos, con cambio automático sin reiniciar.
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: ambos modelos, frente y 3/4 con logos en relieve)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto
