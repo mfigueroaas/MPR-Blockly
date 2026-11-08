@@ -46,3 +46,4 @@ Cada cambio se registra en `BITACORA.md` (pedido, archivos, qué se hizo, commit
 
 ## Documentación
 Visión completa del proyecto en `DOCUMENTACION_TECNICA.md` (arquitectura, versiones, mecanismos, instalador). Si un cambio altera algo de ahí, actualizarla junto con `BITACORA.md`.
+**Para retomar el trabajo (otro PC, sesión nueva): leer la sección 13 "Traspaso" de `DOCUMENTACION_TECNICA.md`** (estado, qué falta probar, trampas conocidas, cómo ver la mascota 3D sin instalar con `tools/servidor_local.js`).

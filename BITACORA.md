@@ -363,77 +363,83 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bit√°cora
 - Se ejecut√≥ `PREPARAR_CODIGO.bat` (clona `MPR_Blockly.bundle` y aplica `actualizacion.bundle`).
   Qued√≥ en `32ad6ed` (incluye `tools/probar.py`). El aviso "No such remote: 'origin'" es inofensivo.
 
-### 2026-11-08  Contorno verde del botÛn cargar y placeholder del buscador cortado
-- **Pedido / problema:** el botÛn de cargar cÛdigo (flecha) tenÌa un contorno verde; en el buscador (chat) el texto "Dile a Otto quÈ bloque buscas..." se cortaba.
+### 2026-11-08 ‚Äî Contorno verde del bot√≥n cargar y placeholder del buscador cortado
+- **Pedido / problema:** el bot√≥n de cargar c√≥digo (flecha) ten√≠a un contorno verde; en el buscador (chat) el texto "Dile a Otto qu√© bloque buscas..." se cortaba.
 - **Archivos:** `www/css/blocklino.css`.
-- **QuÈ se hizo:** `.btn-arduino` ahora fuerza `border-color: #FF5700` (el borde verde venÌa de bootstrap.min.3.3.6.css); `#buscar_bloques` pasa de 240 px a 330 px de ancho.
+- **Qu√© se hizo:** `.btn-arduino` ahora fuerza `border-color: #FF5700` (el borde verde ven√≠a de bootstrap.min.3.3.6.css); `#buscar_bloques` pasa de 240 px a 330 px de ancho.
 - **Commit:** (ver git log)  **Probado en la app:** no
 
-### 2026-11-08  Recorrido inicial "Conoce a Otto"
-- **Pedido / problema:** walkthrough corto y sencillo que muestre quÈ hace cada zona sin revelar demasiado, para fomentar la exploraciÛn.
+### 2026-11-08 ‚Äî Recorrido inicial "Conoce a Otto"
+- **Pedido / problema:** walkthrough corto y sencillo que muestre qu√© hace cada zona sin revelar demasiado, para fomentar la exploraci√≥n.
 - **Archivos:** `www/js/mpr_tour.js` (nuevo), `www/index.html`, `www/lang/msg_es.js`, `www/lang/code.js`, `www/css/blocklino.css`.
-- **QuÈ se hizo:** 7 pasos con globo de Otto y foco resaltado (men˙ de bloques, ·rea de trabajo, ejemplos, puerto USB, flecha de enviar, chat/cÛdigo). Aparece solo la primera vez (localStorage `mpr_tour_visto`), con botÛn Saltar siempre visible; el botÛn "?" de la barra lo abre de nuevo. Los pasos cuyo elemento no se ve se omiten.
+- **Qu√© se hizo:** 7 pasos con globo de Otto y foco resaltado (men√∫ de bloques, √°rea de trabajo, ejemplos, puerto USB, flecha de enviar, chat/c√≥digo). Aparece solo la primera vez (localStorage `mpr_tour_visto`), con bot√≥n Saltar siempre visible; el bot√≥n "?" de la barra lo abre de nuevo. Los pasos cuyo elemento no se ve se omiten.
 - **Commit:** (ver git log)  **Probado en la app:** pendiente
 
-### 2026-11-08  Mascota Otto 3D con consejos y colores personalizables
-- **Pedido / problema:** mascota 3D animada (tipo clip) que dÈ consejos y respuestas a errores comunes (bloques sueltos, puerto COM, errores de compilaciÛn); colores personalizables por pieza; modelo liviano. Adem·s, el avatar de Otto en el recorrido no se veÌa sobre fondo blanco.
+### 2026-11-08 ‚Äî Mascota Otto 3D con consejos y colores personalizables
+- **Pedido / problema:** mascota 3D animada (tipo clip) que d√© consejos y respuestas a errores comunes (bloques sueltos, puerto COM, errores de compilaci√≥n); colores personalizables por pieza; modelo liviano. Adem√°s, el avatar de Otto en el recorrido no se ve√≠a sobre fondo blanco.
 - **Archivos:** `www/js/mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` (nuevos), `www/media/otto3d.js` (generado), `tools/convertir_otto.js`, `www/index.html`, `lang/msg_es.js`, `css/blocklino.css`, `DOCUMENTACION_TECNICA.md`.
-- **QuÈ se hizo:** Otto 3D armado con las piezas del 3MF simplificadas (~4.300 tri·ngulos, 10 llamadas de dibujo); animaciones: reposo, saludo, celebrar, pensar, alerta; ojos que siguen el mouse; men˙, colores por pieza (guardados), esconder y avisos tranquilos. Consejos: bloques sueltos, sin puerto, placa Nano/Nano Old, puerto ocupado/desconectado, variable no declarada, repetidos, programa grande, error genÈrico, y Èxito al verificar/cargar. Avatar del recorrido con cÌrculo azul.
-- **Notas:** probado en Chrome moderno (men˙, colores, detectores). Pendiente probar en Electron 4 (three r128 y WebGL).
+- **Qu√© se hizo:** Otto 3D armado con las piezas del 3MF simplificadas (~4.300 tri√°ngulos, 10 llamadas de dibujo); animaciones: reposo, saludo, celebrar, pensar, alerta; ojos que siguen el mouse; men√∫, colores por pieza (guardados), esconder y avisos tranquilos. Consejos: bloques sueltos, sin puerto, placa Nano/Nano Old, puerto ocupado/desconectado, variable no declarada, repetidos, programa grande, error gen√©rico, y √©xito al verificar/cargar. Avatar del recorrido con c√≠rculo azul.
+- **Notas:** probado en Chrome moderno (men√∫, colores, detectores). Pendiente probar en Electron 4 (three r128 y WebGL).
 - **Commit:** (ver git log)  **Probado en la app:** no
 
-### 2026-11-08  Otto 3D: orientaciÛn de piezas y ojos como sensor ultrasÛnico
-- **Pedido / problema:** las piezas del Otto 3D estaban mal orientadas y armadas; los ojos blancos debÌan ser el sensor ultrasÛnico.
+### 2026-11-08 ‚Äî Otto 3D: orientaci√≥n de piezas y ojos como sensor ultras√≥nico
+- **Pedido / problema:** las piezas del Otto 3D estaban mal orientadas y armadas; los ojos blancos deb√≠an ser el sensor ultras√≥nico.
 - **Archivos:** `www/js/mpr_otto3d.js`, `DOCUMENTACION_TECNICA.md`.
-- **QuÈ se hizo:** con las fotos de `Fotos otto armado/` y la inspecciÛn de las piezas originales del 3MF se corrigiÛ el giro de todas las piezas (altura en z, frente de la cabeza en -y), las medidas del ensamblado, la posiciÛn de piernas (x = ±23) y pies (placa hacia afuera) y los pivotes de cuello, cadera y tobillo. Los ojos pasaron a ser dos sensores ultrasÛnicos (cilindro plateado, malla oscura y rejilla) que se agrandan un poco con alerta/celebrar; se quitaron pupilas y parpadeo.
+- **Qu√© se hizo:** con las fotos de `Fotos otto armado/` y la inspecci√≥n de las piezas originales del 3MF se corrigi√≥ el giro de todas las piezas (altura en z, frente de la cabeza en -y), las medidas del ensamblado, la posici√≥n de piernas (x = ¬±23) y pies (placa hacia afuera) y los pivotes de cuello, cadera y tobillo. Los ojos pasaron a ser dos sensores ultras√≥nicos (cilindro plateado, malla oscura y rejilla) que se agrandan un poco con alerta/celebrar; se quitaron pupilas y parpadeo.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno)
 
-### 2026-11-08  Otto 3D: cabeza fija al cuerpo y giro de 360∞
-- **Pedido / problema:** la cabeza se movÌa por separado y parecÌa flotar atravesando el cuerpo; el robot real la tiene fija. Adem·s se pidiÛ que el modelo gire para verlo por todos lados.
+### 2026-11-08 ‚Äî Otto 3D: cabeza fija al cuerpo y giro de 360¬∞
+- **Pedido / problema:** la cabeza se mov√≠a por separado y parec√≠a flotar atravesando el cuerpo; el robot real la tiene fija. Adem√°s se pidi√≥ que el modelo gire para verlo por todos lados.
 - **Archivos:** `www/js/mpr_otto3d.js`, `www/js/mpr_mascota.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md`.
-- **QuÈ se hizo:** cabeza, cuerpo, sensores y piernas cuelgan de un pivote en los tobillos; las animaciones inclinan/giran todo el bloque y solo las piernas se mueven aparte (caderas). Los pies quedan planos. Giro continuo de ~14 s por vuelta, que vuelve al frente al animar; el men˙ tiene "Quedarme quieto / Girar para verme" (se guarda). Girar sube el dibujo de 12 a 30 cuadros/s mientras la mascota est· visible.
+- **Qu√© se hizo:** cabeza, cuerpo, sensores y piernas cuelgan de un pivote en los tobillos; las animaciones inclinan/giran todo el bloque y solo las piernas se mueven aparte (caderas). Los pies quedan planos. Giro continuo de ~14 s por vuelta, que vuelve al frente al animar; el men√∫ tiene "Quedarme quieto / Girar para verme" (se guarda). Girar sube el dibujo de 12 a 30 cuadros/s mientras la mascota est√° visible.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno)
 
-### 2026-11-08  Otto 3D: m·s detalle, cabeza m·s baja y paseos naturales
-- **Pedido / problema:** los polÌgonos eran muy pocos y no se veÌan los logos; la cabeza dejaba un hueco con el cuerpo; el giro continuo era artificial (se querÌa que gire de forma natural al moverse por la mesa de trabajo, de vez en cuando).
+### 2026-11-08 ‚Äî Otto 3D: m√°s detalle, cabeza m√°s baja y paseos naturales
+- **Pedido / problema:** los pol√≠gonos eran muy pocos y no se ve√≠an los logos; la cabeza dejaba un hueco con el cuerpo; el giro continuo era artificial (se quer√≠a que gire de forma natural al moverse por la mesa de trabajo, de vez en cuando).
 - **Archivos:** `tools/convertir_otto.js`, `www/media/otto3d.js` (regenerado), `www/js/mpr_otto3d.js`, `www/js/mpr_mascota.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md`.
-- **QuÈ se hizo:** modelo con `simplify` (colapso de aristas) a ~24.000 tri·ngulos (16 llamadas de dibujo, ~500 KB): se ven los agujeros reales del sensor y los logos en relieve; los sensores quedan dentro de los agujeros. Cabeza 6 mm m·s abajo (metida en el borde del cuerpo). Se quitÛ el giro continuo: ahora cada 3080 s Otto camina a otro punto de la mesa gir·ndose de perfil hacia donde va (caderas alternadas, tobillos levantan cada pie, cuerpo se balancea) y se vuelve de frente, o da una vuelta completa en su lugar. Se interrumpe si se le hace clic, se arrastra o va a hablar. OpciÛn del men˙ "Quedarme en mi lugar / Pasear por la mesa".
+- **Qu√© se hizo:** modelo con `simplify` (colapso de aristas) a ~24.000 tri√°ngulos (16 llamadas de dibujo, ~500 KB): se ven los agujeros reales del sensor y los logos en relieve; los sensores quedan dentro de los agujeros. Cabeza 6 mm m√°s abajo (metida en el borde del cuerpo). Se quit√≥ el giro continuo: ahora cada 30‚Äî80 s Otto camina a otro punto de la mesa gir√°ndose de perfil hacia donde va (caderas alternadas, tobillos levantan cada pie, cuerpo se balancea) y se vuelve de frente, o da una vuelta completa en su lugar. Se interrumpe si se le hace clic, se arrastra o va a hablar. Opci√≥n del men√∫ "Quedarme en mi lugar / Pasear por la mesa".
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: paseo completo y regreso de frente)
 
-### 2026-11-08  Otto 3D: frente corregido y modelo completo
-- **Pedido / problema:** el frente del robot se veÌa raro; consulta sobre usar el modelo con todos los polÌgonos o uno que muestre bien los detalles.
+### 2026-11-08 ‚Äî Otto 3D: frente corregido y modelo completo
+- **Pedido / problema:** el frente del robot se ve√≠a raro; consulta sobre usar el modelo con todos los pol√≠gonos o uno que muestre bien los detalles.
 - **Archivos:** `tools/convertir_otto.js`, `www/media/otto3d.js` (ahora completo), `www/media/otto3d_liviano.js` (nuevo), `www/js/mpr_otto3d.js`, `www/js/mpr_mascota.js`, `DOCUMENTACION_TECNICA.md`.
-- **Causa:** `MeshLambertMaterial` de three r128 ignora `flatShading`: las caras grandes se veÌan suavizadas (efecto embudo alrededor de los sensores, cuerpo "inflado"), y la simplificaciÛn inclinaba un poco el frente.
-- **QuÈ se hizo:** sombreado plano real (geometrÌa no indexada con normales por tri·ngulo); modelo completo de ~123 mil tri·ngulos en formato binario compacto (1,3 MB); modelo liviano de respaldo (~26 mil) para equipos sin aceleraciÛn gr·fica o lentos, con cambio autom·tico sin reiniciar.
+- **Causa:** `MeshLambertMaterial` de three r128 ignora `flatShading`: las caras grandes se ve√≠an suavizadas (efecto embudo alrededor de los sensores, cuerpo "inflado"), y la simplificaci√≥n inclinaba un poco el frente.
+- **Qu√© se hizo:** sombreado plano real (geometr√≠a no indexada con normales por tri√°ngulo); modelo completo de ~123 mil tri√°ngulos en formato binario compacto (1,3 MB); modelo liviano de respaldo (~26 mil) para equipos sin aceleraci√≥n gr√°fica o lentos, con cambio autom√°tico sin reiniciar.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: ambos modelos, frente y 3/4 con logos en relieve)
 
-### 2026-11-08  Otto 3D: sensores centrados en los agujeros
+### 2026-11-08 ‚Äî Otto 3D: sensores centrados en los agujeros
 - **Pedido / problema:** los sensores (ojos) no quedaban bien centrados en su agujero.
 - **Archivos:** `www/js/mpr_otto3d.js`, `DOCUMENTACION_TECNICA.md`.
-- **Causa:** al bajar la cabeza 3 mm no se recalculÛ la altura de los sensores: quedaban ~2,6 mm m·s abajo que los agujeros.
-- **QuÈ se hizo:** se midieron los agujeros en la cabeza original (centros x = ±13,37 mm, 6,0 mm sobre el centro de la cabeza, 16,75 mm de di·metro) y se ajustÛ la posiciÛn (y = 109,5 del robot), el radio de la lata (8,1) y la malla (6,5).
+- **Causa:** al bajar la cabeza 3 mm no se recalcul√≥ la altura de los sensores: quedaban ~2,6 mm m√°s abajo que los agujeros.
+- **Qu√© se hizo:** se midieron los agujeros en la cabeza original (centros x = ¬±13,37 mm, 6,0 mm sobre el centro de la cabeza, 16,75 mm de di√°metro) y se ajust√≥ la posici√≥n (y = 109,5 del robot), el radio de la lata (8,1) y la malla (6,5).
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno con acercamiento a la cara)
 
-### 2026-11-08  Ventana principal siempre maximizada
-- **Pedido / problema:** que la app se abra siempre en ventana completa, sin tener que maximizarla cada vez, y evitar que se use en ventanas pequeÒas.
+### 2026-11-08 ‚Äî Ventana principal siempre maximizada
+- **Pedido / problema:** que la app se abra siempre en ventana completa, sin tener que maximizarla cada vez, y evitar que se use en ventanas peque√±as.
 - **Archivos:** `electronApp.js`, `www/index.html`, `DOCUMENTACION_TECNICA.md`.
-- **QuÈ se hizo:** la ventana se crea oculta y se muestra maximizada al estar lista; si se intenta restaurar (`unmaximize`) se vuelve a maximizar. El botÛn de maximizar queda oculto (el script `factory.js` necesita que exista). Minimizar y cerrar siguen igual.
-- **Notas:** requiere reabrir la app (cambia `electronApp.js`). El commit parte del `electronApp.js` de HEAD (mÌnimo 1100◊650); en el disco habÌa un cambio sin commit (mÌnimo 1060◊700) que no se incluyÛ.
+- **Qu√© se hizo:** la ventana se crea oculta y se muestra maximizada al estar lista; si se intenta restaurar (`unmaximize`) se vuelve a maximizar. El bot√≥n de maximizar queda oculto (el script `factory.js` necesita que exista). Minimizar y cerrar siguen igual.
+- **Notas:** requiere reabrir la app (cambia `electronApp.js`). El commit parte del `electronApp.js` de HEAD (m√≠nimo 1100√ó650); en el disco hab√≠a un cambio sin commit (m√≠nimo 1060√ó700) que no se incluy√≥.
 - **Commit:** (ver git log)  **Probado en la app:** no (no se pudo abrir una segunda instancia con la app en uso)
 
-### 2026-11-08  Otto 3D siempre visible, tambiÈn sin GPU dedicada
-- **Pedido / problema:** el modelo 3D debe verse siempre, tambiÈn en notebooks sin GPU dedicada (gr·fica integrada o sin aceleraciÛn).
+### 2026-11-08 ‚Äî Otto 3D siempre visible, tambi√©n sin GPU dedicada
+- **Pedido / problema:** el modelo 3D debe verse siempre, tambi√©n en notebooks sin GPU dedicada (gr√°fica integrada o sin aceleraci√≥n).
 - **Archivos:** `tools/convertir_otto.js`, `www/media/otto3d_minimo.js` (nuevo), `www/js/mpr_mascota.js`, `www/js/mpr_otto3d.js`, `electronApp.js`, `DOCUMENTACION_TECNICA.md`.
-- **QuÈ se hizo:** tercer modelo "mÌnimo" (~5.500 tri·ngulos); si el equipo dibuja por CPU se parte del mÌnimo en modo econÛmico (sin suavizado de bordes, menos cuadros/s); si va lento baja solo completo í liviano í mÌnimo sin reiniciar; `ignore-gpu-blacklist` en Electron para aprovechar gr·ficas integradas. El respaldo 2D queda solo para cuando WebGL no se puede crear.
-- **Notas:** el commit parte del `electronApp.js` de HEAD (no incluye el cambio previo sin commit de tamaÒos mÌnimos). Requiere reabrir la app.
-- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: nivel mÌnimo y descenso encadenado)
+- **Qu√© se hizo:** tercer modelo "m√≠nimo" (~5.500 tri√°ngulos); si el equipo dibuja por CPU se parte del m√≠nimo en modo econ√≥mico (sin suavizado de bordes, menos cuadros/s); si va lento baja solo completo ‚Üí liviano ‚Üí m√≠nimo sin reiniciar; `ignore-gpu-blacklist` en Electron para aprovechar gr√°ficas integradas. El respaldo 2D queda solo para cuando WebGL no se puede crear.
+- **Notas:** el commit parte del `electronApp.js` de HEAD (no incluye el cambio previo sin commit de tama√±os m√≠nimos). Requiere reabrir la app.
+- **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: nivel m√≠nimo y descenso encadenado)
 
-### 2026-11-08  Instalador 1.4.0
+### 2026-11-08 ‚Äî Instalador 1.4.0
 - **Pedido / problema:** generar el instalador con los cambios nuevos para probarlo en un notebook sin GPU.
-- **Archivos:** `package.json` (versiÛn 1.4.0), `DOCUMENTACION_TECNICA.md`; salida `distMPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA-256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`).
-- **QuÈ se hizo:** se instalaron 7-Zip 26.06 y NSIS 3.13 con winget; se descargÛ `ottoblockly.Setup.1.5.0.exe` (259 MB, SHA-256 verificado) a una carpeta temporal; `python tools/build_installer.py --official ...`. Verificado que el contenido incluya mascota, recorrido, los tres modelos 3D, `three.min.js` y `electronApp.js` con maximizado y `ignore-gpu-blacklist`.
-- **Notas:** el `electronApp.js` incluido es el del disco (con el cambio previo sin commit de tamaÒo mÌnimo 1060◊700). En el notebook sin GPU, abrir F12 y buscar `[Otto 3D]` para ver quÈ modelo eligiÛ y cu·ntos cuadros/s.
+- **Archivos:** `package.json` (versi√≥n 1.4.0), `DOCUMENTACION_TECNICA.md`; salida `distMPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA-256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`).
+- **Qu√© se hizo:** se instalaron 7-Zip 26.06 y NSIS 3.13 con winget; se descarg√≥ `ottoblockly.Setup.1.5.0.exe` (259 MB, SHA-256 verificado) a una carpeta temporal; `python tools/build_installer.py --official ...`. Verificado que el contenido incluya mascota, recorrido, los tres modelos 3D, `three.min.js` y `electronApp.js` con maximizado y `ignore-gpu-blacklist`.
+- **Notas:** el `electronApp.js` incluido es el del disco (con el cambio previo sin commit de tama√±o m√≠nimo 1060√ó700). En el notebook sin GPU, abrir F12 y buscar `[Otto 3D]` para ver qu√© modelo eligi√≥ y cu√°ntos cuadros/s.
 - **Commit:** (ver git log)  **Probado en la app:** no (pendiente: notebook sin GPU)
+
+### 2026-11-08 ‚Äî Documentaci√≥n de traspaso y reparaci√≥n de la bit√°cora
+- **Pedido / problema:** dejar todo anotado para seguir trabajando desde el notebook, donde se revisar√°n algunos temas pendientes.
+- **Archivos:** `DOCUMENTACION_TECNICA.md` (secci√≥n 13 nueva; los bloques 4.6 y 4.7 se movieron a su lugar dentro de la secci√≥n 4), `CLAUDE.md`, `tools/servidor_local.js` (nuevo), `BITACORA.md`.
+- **Qu√© se hizo:** estado actual, qu√© no est√° en git, checklist de pruebas en el notebook, pendientes, c√≥mo preparar otro PC y trampas conocidas. `tools/servidor_local.js` sirve `www/` en 127.0.0.1 para ver la mascota en un navegador. Se repar√≥ la codificaci√≥n de las entradas del 2026-11-08 de esta bit√°cora (33 l√≠neas escritas por error en `latin1`: acentos, rayas y flechas).
+- **Commit:** (ver git log)  **Probado en la app:** no aplica
 
 ## Plantilla para nuevas entradas
 ```

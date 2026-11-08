@@ -188,6 +188,16 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - **Resultados:** `toolbox_.flyout_.show(lista)` con etiquetas (`<label>`) y bloques; antes se desmarca la categoría elegida (`clearSelection`). `Blockly.hideChaff` se envuelve para que un clic en el área de trabajo cierre el panel de resultados; al abrir la búsqueda se llama `Blockly.hideChaff(true)` para cerrar listas desplegables abiertas.
 - `blockly.min.js` no se modifica. Si se actualiza Blockly, revisar `getOptions_`, `toolbox_.flyout_`, `tree_.getSelectedItem` y `hideChaff`.
 
+### 4.6 Ventana principal siempre maximizada (noviembre 2026)
+- `electronApp.js` (`createWindow`): la ventana se crea con `show: false` y se muestra maximizada en `ready-to-show` (con un respaldo a los 5 s); el evento `unmaximize` la vuelve a maximizar, así no se usa en ventanas pequeñas donde la barra de botones no cabe. El botón de maximizar de `index.html` queda oculto (`display:none`) pero debe existir, porque `factory.js` le asigna un `onclick`. Minimizar y cerrar siguen funcionando. Cambia `electronApp.js`: hay que cerrar y volver a abrir la app (F5 no basta).
+
+### 4.7 Recorrido inicial y mascota Otto 3D (noviembre 2026)
+- **Recorrido** (`www/js/mpr_tour.js`, objeto `MPRTour`): 7 pasos con globo y foco resaltado; se abre solo la primera vez (`localStorage.mpr_tour_visto`) y con el botón "?" (`#btn_tour`). Textos en `msg_es.js` (`tour_*`).
+- **Mascota** (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` r128, `media/otto3d.js`): Otto 3D en una esquina, arrastrable (posición en `mpr_masc_pos`), con menú (consejo, colores, avisos tranquilos, esconderse). Colores por pieza (cabeza, cuerpo, piernas, pies) en `mpr_masc_colores`; naranja por defecto.
+- **Modelo:** `tools/convertir_otto.js <carpeta_3mf> www/media` convierte las piezas del 3MF (Bambu Studio) a un formato binario compacto (posiciones Int16 en centésimas de mm + índices, en base64) y genera dos modelos: `media/otto3d.js` **completo** (~123 mil triángulos en la pose, 1,3 MB) y `media/otto3d_liviano.js` (~26 mil, 284 KB; simplificado con `simplify` de meshoptimizer, conserva agujeros y logos). Hay un tercer modelo, `media/otto3d_minimo.js` (~5.500 triángulos, 59 KB), y la mascota **siempre intenta mostrarse en 3D**: se usa el completo (también en gráficas integradas); si el navegador dibuja por CPU (SwiftShader/llvmpipe, `MPRMascota.esSoftware`) se parte del mínimo y con `MPROtto3D.economia` (sin suavizado de bordes, pixel ratio 1, 20 cuadros/s al moverse y 8 en reposo); y si algún nivel va a menos de 17 cuadros/s (12 en modo económico) durante 5 s, baja solo completo → liviano → mínimo (`MPROtto3D.alLento` → `bajarCalidad`, sin reiniciar). `electronApp.js` agrega `app.commandLine.appendSwitch('ignore-gpu-blacklist')` para que Chromium use también las gráficas integradas o antiguas que descarta por defecto. Solo si WebGL no se puede crear queda el respaldo 2D. Se puede forzar con `localStorage.mpr_masc_calidad = "completa"`, `"liviana"` o `"minima"`. Sombreado plano real: `MPROtto3D.geometria` pasa a no indexada y calcula normales por triángulo (el `MeshLambertMaterial` de three r128 ignora `flatShading`). Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`. La pose está en `mpr_otto3d.js` y se calculó con fotos del Otto armado: todas las piezas del 3MF tienen su altura en `z` y el frente de la cabeza (agujeros del sensor) en `-y`, por eso se giran -90° en X; medidas en mm: pies y 0–26, piernas y 8–50 (a x = ±23), cuerpo y 50–89, cabeza y 84–123 (6 mm metida en el borde del cuerpo). Cada pie lleva la placa hacia afuera (`pieIzq` bajo la pierna derecha y `pieDer` bajo la izquierda). Como en el robot real, la cabeza va fija al cuerpo: forman un solo tronco que se inclina desde los tobillos (`inclinacion`, pivote y = 8) junto con las piernas; solo las piernas tienen movimiento propio (caderas) y los pies quedan planos. Las caderas giran las piernas sobre su eje vertical y los tobillos inclinan los pies (como los servos reales). De vez en cuando (cada 30–80 s, si no hay globo, cuadro de mensaje ni recorrido) Otto camina a otro punto de la mesa de trabajo girándose de perfil hacia donde va, o da una vuelta completa en su lugar (`MPRMascota.planificar/pasear`; `MPROtto3D.caminar/pararCaminar`, animación `vuelta`). La opción del menú "Quedarme en mi lugar / Pasear por la mesa" se guarda en `mpr_masc_pasea`. El paseo no se guarda como posición: al reabrir vuelve a la posición elegida por el niño. Los "ojos" son dos sensores ultrasónicos (cilindro plateado con malla oscura) en x = ±13,37 y a 6,0 mm sobre el centro de la cabeza (medidos en los agujeros de la cabeza original: 16,75 mm de diámetro); si se cambia la altura de la cabeza hay que recalcular la altura de los sensores. No son personalizables. Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`.
+- **Detectores:** bloques sueltos (bloques de la mesa con `previousConnection` u `outputConnection` sin conectar), y lectura del cuadro `#messageDIV` con un `MutationObserver` (rojo = error, verde = éxito) sin modificar `index.js`. Para agregar un error común basta una línea en `MPRConsejos.ERRORES` (`mpr_consejos.js`, texto en minúsculas).
+- **Por verificar en Electron 4:** `three.min.js` r128 y WebGL en Chromium 69 (se probó solo en un Chrome moderno). Si falla, queda el respaldo 2D.
+
 ---
 
 ## 5. Cambios de MPR sobre Otto Blockly (inventario)
@@ -348,16 +358,6 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 Después de cualquiera: `python tools/probar.py` y F5.
 
 
-### 4.x Ventana principal siempre maximizada (noviembre 2026)
-- `electronApp.js` (`createWindow`): la ventana se crea con `show: false` y se muestra maximizada en `ready-to-show` (con un respaldo a los 5 s); el evento `unmaximize` la vuelve a maximizar, así no se usa en ventanas pequeñas donde la barra de botones no cabe. El botón de maximizar de `index.html` queda oculto (`display:none`) pero debe existir, porque `factory.js` le asigna un `onclick`. Minimizar y cerrar siguen funcionando. Cambia `electronApp.js`: hay que cerrar y volver a abrir la app (F5 no basta).
-
-### 4.x Recorrido inicial y mascota Otto 3D (noviembre 2026)
-- **Recorrido** (`www/js/mpr_tour.js`, objeto `MPRTour`): 7 pasos con globo y foco resaltado; se abre solo la primera vez (`localStorage.mpr_tour_visto`) y con el botón "?" (`#btn_tour`). Textos en `msg_es.js` (`tour_*`).
-- **Mascota** (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` r128, `media/otto3d.js`): Otto 3D en una esquina, arrastrable (posición en `mpr_masc_pos`), con menú (consejo, colores, avisos tranquilos, esconderse). Colores por pieza (cabeza, cuerpo, piernas, pies) en `mpr_masc_colores`; naranja por defecto.
-- **Modelo:** `tools/convertir_otto.js <carpeta_3mf> www/media` convierte las piezas del 3MF (Bambu Studio) a un formato binario compacto (posiciones Int16 en centésimas de mm + índices, en base64) y genera dos modelos: `media/otto3d.js` **completo** (~123 mil triángulos en la pose, 1,3 MB) y `media/otto3d_liviano.js` (~26 mil, 284 KB; simplificado con `simplify` de meshoptimizer, conserva agujeros y logos). Hay un tercer modelo, `media/otto3d_minimo.js` (~5.500 triángulos, 59 KB), y la mascota **siempre intenta mostrarse en 3D**: se usa el completo (también en gráficas integradas); si el navegador dibuja por CPU (SwiftShader/llvmpipe, `MPRMascota.esSoftware`) se parte del mínimo y con `MPROtto3D.economia` (sin suavizado de bordes, pixel ratio 1, 20 cuadros/s al moverse y 8 en reposo); y si algún nivel va a menos de 17 cuadros/s (12 en modo económico) durante 5 s, baja solo completo → liviano → mínimo (`MPROtto3D.alLento` → `bajarCalidad`, sin reiniciar). `electronApp.js` agrega `app.commandLine.appendSwitch('ignore-gpu-blacklist')` para que Chromium use también las gráficas integradas o antiguas que descarta por defecto. Solo si WebGL no se puede crear queda el respaldo 2D. Se puede forzar con `localStorage.mpr_masc_calidad = "completa"`, `"liviana"` o `"minima"`. Sombreado plano real: `MPROtto3D.geometria` pasa a no indexada y calcula normales por triángulo (el `MeshLambertMaterial` de three r128 ignora `flatShading`). Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`. La pose está en `mpr_otto3d.js` y se calculó con fotos del Otto armado: todas las piezas del 3MF tienen su altura en `z` y el frente de la cabeza (agujeros del sensor) en `-y`, por eso se giran -90° en X; medidas en mm: pies y 0–26, piernas y 8–50 (a x = ±23), cuerpo y 50–89, cabeza y 84–123 (6 mm metida en el borde del cuerpo). Cada pie lleva la placa hacia afuera (`pieIzq` bajo la pierna derecha y `pieDer` bajo la izquierda). Como en el robot real, la cabeza va fija al cuerpo: forman un solo tronco que se inclina desde los tobillos (`inclinacion`, pivote y = 8) junto con las piernas; solo las piernas tienen movimiento propio (caderas) y los pies quedan planos. Las caderas giran las piernas sobre su eje vertical y los tobillos inclinan los pies (como los servos reales). De vez en cuando (cada 30–80 s, si no hay globo, cuadro de mensaje ni recorrido) Otto camina a otro punto de la mesa de trabajo girándose de perfil hacia donde va, o da una vuelta completa en su lugar (`MPRMascota.planificar/pasear`; `MPROtto3D.caminar/pararCaminar`, animación `vuelta`). La opción del menú "Quedarme en mi lugar / Pasear por la mesa" se guarda en `mpr_masc_pasea`. El paseo no se guarda como posición: al reabrir vuelve a la posición elegida por el niño. Los "ojos" son dos sensores ultrasónicos (cilindro plateado con malla oscura) en x = ±13,37 y a 6,0 mm sobre el centro de la cabeza (medidos en los agujeros de la cabeza original: 16,75 mm de diámetro); si se cambia la altura de la cabeza hay que recalcular la altura de los sensores. No son personalizables. Se carga de forma perezosa; si está escondida no se carga el 3D. Reposo a 12 cuadros/s, animando a 30, pausa con la ventana oculta. Si no hay WebGL, usa `media/otto_emoji.png`.
-- **Detectores:** bloques sueltos (bloques de la mesa con `previousConnection` u `outputConnection` sin conectar), y lectura del cuadro `#messageDIV` con un `MutationObserver` (rojo = error, verde = éxito) sin modificar `index.js`. Para agregar un error común basta una línea en `MPRConsejos.ERRORES` (`mpr_consejos.js`, texto en minúsculas).
-- **Por verificar en Electron 4:** `three.min.js` r128 y WebGL en Chromium 69 (se probó solo en un Chrome moderno). Si falla, queda el respaldo 2D.
-
 ---
 
 ## 10. Pendientes, riesgos y puntos a vigilar
@@ -399,3 +399,70 @@ Después de cualquiera: `python tools/probar.py` y F5.
 - Instalador oficial 1.5.0: https://github.com/OttoDIY/blockly/releases/tag/v1.5.0
 - Librería Otto original: https://github.com/OttoDIY/OttoDIYLib
 - Más contexto: `LEEME_MPR.md`, `CLAUDE.md`, `BITACORA.md`, `ANALISIS_SERVOS.md`, `git log`
+- **Para retomar el trabajo (por ejemplo en otro PC): sección 13 (Traspaso).**
+
+---
+
+## 13. Traspaso: estado al 2026-11-08 y cómo continuar (por ejemplo, desde el notebook)
+
+Esta sección resume la sesión del 8 de noviembre de 2026 para retomar el trabajo sin el contexto de la conversación. Detalle cambio a cambio en `BITACORA.md` (entradas "2026-11-08") y mecanismos en 4.6 y 4.7.
+
+### 13.1 Estado actual
+- **Rama `main`, último commit `afd7b0e` ("Versión 1.4.0 e instalador generado").** `package.json`: 1.4.0.
+- **Instalador generado:** `dist\MPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`). `dist/` está en `.gitignore`: el `.exe` no está en git, solo en la carpeta (OneDrive).
+- **Instalado en el PC principal** (`C:\MPRBlockly`) con `python tools/probar.py`, no con el instalador. El instalador 1.4.0 se está probando en un notebook **sin GPU dedicada**; ese es el motivo de este traspaso.
+- **Novedades de la 1.4.0** (todas probadas solo en un Chrome moderno, no en la app instalada):
+  1. Arreglos visuales: contorno verde del botón de cargar (`.btn-arduino` en `blocklino.css`) y placeholder cortado del buscador (ancho 330 px).
+  2. Recorrido inicial "Conoce a Otto" (`mpr_tour.js`, botón "?").
+  3. Mascota Otto 3D (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`): consejos, errores comunes, colores por pieza, paseos y vueltas, menú. Detalle en 4.7.
+  4. Ventana principal siempre maximizada (`electronApp.js`, 4.6).
+  5. Opción `ignore-gpu-blacklist` en `electronApp.js` para aprovechar gráficas integradas.
+
+### 13.2 Lo que NO está en git (en la carpeta del proyecto, sin commit)
+| Elemento | Qué es | Nota |
+|---|---|---|
+| `Otto DIY 2026.3mf.zip` (1,3 MB) | Piezas 3D del Otto (Bambu Studio). **Es la fuente de los modelos 3D** | Hace falta descomprimirlo para regenerar `www/media/otto3d*.js` con `tools/convertir_otto.js`. Conviene commitearlo |
+| `Fotos otto armado/` (7 fotos, 0,9 MB) | Fotos del robot armado, usadas para orientar y armar las piezas | Referencia visual; conviene commitearla |
+| `Logo Crecer en Renca.svg` | Logo, sin usar aún | |
+| `versiones/` (354 MB) | Instaladores y bundles antiguos | No commitear |
+| `electronApp.js` (modificado) | En el disco los tamaños mínimos de ventana son **1060×700**; en el último commit son **1100×650**. Los commits de este día partieron del archivo de HEAD para no mezclar ese cambio | Decidir cuál queda. El instalador 1.4.0 lleva el del disco (1060×700). Con la ventana siempre maximizada casi no influye |
+| Borrados sin commit | `www/media/Thumbs.db` y dos PNG de ejemplo de la librería Firebase | Inofensivo |
+
+### 13.3 Probar en el notebook (checklist)
+1. Instalar `MPR_Blockly_Setup_1.4.0.exe` (encima de la versión anterior o desinstalando antes).
+2. **Ventana:** debe abrir maximizada y no poder restaurarse. Sin botón de maximizar; minimizar y cerrar funcionan.
+3. **Recorrido** (primera vez): 7 pasos; el paso del puerto USB solo aparece en la app instalada. Se repite con "?".
+4. **Mascota 3D:** abrir F12 (consola) y buscar `[Otto 3D]`. Muestra el modelo elegido (`completo`, `liviano` o `minimo`), triángulos, llamadas, cuadros/s y memoria. Si baja de nivel por lentitud aparece `[Otto 3D] equipo lento: modelo ...`.
+   - Sin aceleración gráfica debería partir en `minimo` (modo económico). Con gráfica integrada, en `completo`.
+   - Si Otto sale en 2D (imagen plana con globos), WebGL no se pudo crear: anotar el error de la consola. Es el caso más importante por confirmar (three.js r128 en Chromium 69).
+5. **Menú de la mascota** (clic en Otto): consejo, colores, avisos tranquilos, quedarme en mi lugar / pasear, esconderme. Arrastrarla; recargar (F5) y ver que recuerda posición y colores.
+6. **Consejos con mensajes reales:** provocar errores reales (sin puerto, puerto ocupado, placa equivocada, código con error) y ver qué mensaje de Otto sale. Las expresiones de `MPRConsejos.ERRORES` se escribieron suponiendo los mensajes típicos de `arduino-cli`/`avrdude`; ajustarlas con los textos reales (están en `www/js/mpr_consejos.js`, en minúsculas).
+7. **Bloques sueltos:** dejar 1–2 bloques sin conectar en la mesa y esperar ~4 s.
+8. **Paseo:** cada 30–80 s (si no hay globo ni cuadro de mensaje) camina de perfil a otro punto de la mesa y vuelve de frente; a veces da una vuelta. Comprobar fluidez en el notebook.
+
+### 13.4 Temas pendientes o por revisar
+- **Verificar en Electron 4 / equipo sin GPU:** `three.min.js` r128 y WebGL en Chromium 69 (nunca probado ahí). Si falla, evaluar un `three` más antiguo o el respaldo 2D animado.
+- **Revisión del usuario en el notebook:** el usuario dijo que "se ve bien pero tiene unos temas que quiere revisar"; anotar aquí cuáles son: _(completar)_.
+- **Textos de error reales** para `MPRConsejos.ERRORES` (ver 13.3, punto 6) y más errores comunes (el usuario aún no tiene una lista definida: "puerto COM" y "bloques sueltos" fueron los ejemplos).
+- **Cara del cuerpo:** se desconoce cuál cara es el frente real del cuerpo; como es casi simétrico no se nota, pero el texto en relieve ("lafábrica", "Renca") podría quedar en una cara distinta a la real.
+- **Animaciones aproximadas:** caderas giran las piernas sobre el eje vertical y los tobillos inclinan los pies (como los servos reales), pero las amplitudes y fases son una estimación visual. Ajustar en `MPROtto3D.pose`.
+- **Frecuencia de paseos** (30–80 s) y velocidad (~55 px/s): constantes en `MPRMascota.planificar/pasear`.
+- **Ideas conversadas, no hechas:** más detectores (sensor sin conexión, programa vacío al presionar la flecha, etc.); que el recorrido presente a la mascota; documentar una lista de consejos más completa; ofrecer elegir calidad del 3D en el menú.
+- **Pendientes anteriores** siguen en la sección 10 (instalador sin validar en otros PC, `overflow: hidden`, textos mezclados en inglés, etc.).
+
+### 13.5 Preparar el notebook (o cualquier PC) para seguir trabajando
+- Trabajar con la carpeta del proyecto (OneDrive) y `claude` desde ella; Claude lee `CLAUDE.md` y esta documentación.
+- **Python:** en Windows el comando `python` puede apuntar a la tienda de Microsoft; usar **`py`** (`py tools/probar.py`, `py tools/build_installer.py ...`). `probar.py` abre una ventana de permisos de administrador.
+- **Para generar instaladores:** `winget install 7zip.7zip NSIS.NSIS` (en el PC principal ya están instalados desde el 2026-11-08) y el instalador oficial 1.5.0 (259 MB, SHA‑256 en el script; se descargó a una carpeta temporal: `https://github.com/OttoDIY/blockly/releases/download/v1.5.0/ottoblockly.Setup.1.5.0.exe`). Comando: `py tools/build_installer.py --official <ruta>\ottoblockly.Setup.1.5.0.exe`. Salida en `dist\`.
+- **Para regenerar los modelos 3D:** descomprimir `Otto DIY 2026.3mf.zip` en una carpeta, `npm i meshoptimizer@0.20.0` (en una carpeta aparte) y `NODE_PATH=<esa carpeta>\node_modules node tools/convertir_otto.js <carpeta_3mf> www/media`. Genera `otto3d.js`, `otto3d_liviano.js` y `otto3d_minimo.js`.
+- **Para ver la interfaz sin instalar:** `node tools/servidor_local.js` y abrir `http://127.0.0.1:8765/index.html` en Chrome (sin Electron: no hay USB ni compilación). Útil para la mascota y el recorrido. Una herramienta de IA puede necesitar que el usuario apruebe expresamente el servidor local.
+- Claves de `localStorage` útiles para pruebas (en la consola F12): `mpr_tour_visto` (borrar para ver el recorrido de nuevo), `mpr_masc_presentada` (presentación de Otto), `mpr_masc_colores`, `mpr_masc_pos`, `mpr_masc_oculta`, `mpr_masc_silencio`, `mpr_masc_pasea` (`no` = quieto) y `mpr_masc_calidad` (`completa`, `liviana` o `minima` fuerza el modelo 3D).
+
+### 13.6 Trampas y aprendizajes de esta sesión
+- **`MeshLambertMaterial` de three r128 ignora `flatShading`**: las caras grandes se veían suavizadas. Solución: geometría no indexada con normales por triángulo (`MPROtto3D.geometria`).
+- **Ejes del modelo 3MF:** en todas las piezas la altura está en `z` y el frente de la cabeza en `-y`; se giran -90° en X. Los agujeros del sensor están a x = ±13,37 y 6,0 mm sobre el centro de la cabeza (16,75 mm). Si se cambia la altura de la cabeza hay que recalcular la de los sensores (ya pasó una vez).
+- **Fin de línea:** `index.html` es CRLF y `blocklino.css` mezcla CRLF/LF. La herramienta Edit reescribe fines de línea; se usó `node` leyendo/escribiendo en `latin1` con `replace` exacto. `msg_es.js` y los `.js` nuevos son LF.
+- **Una sola instancia:** `electronApp.js` usa `requestSingleInstanceLock`; no se puede abrir una segunda copia (ni con `--user-data-dir`) para probar mientras la app está abierta. Cerrar la app y reabrirla.
+- **Commitear un archivo con cambios ajenos pendientes** (como `electronApp.js`): se parte de `git show HEAD:...`, se aplica el cambio, `git hash-object -w` y `git update-index --cacheinfo`, para no incluir el resto.
+- **Codificación:** `BITACORA.md`, `DOCUMENTACION_TECNICA.md`, `CLAUDE.md`, `msg_es.js` y los `.js` son **UTF-8**. Al editarlos con `node` leer y escribir en `utf8`; usar `latin1` solo en archivos donde lo que se reemplaza es ASCII puro (por ejemplo `index.html`, `blocklino.css`), porque `latin1` destruye acentos y rayas (—, →). Ese error ocurrió con `BITACORA.md` el 2026-11-08 y se reparó.
+- **Mensajes de la app:** la mascota lee el cuadro `#messageDIV` con un `MutationObserver` (color rojo = error, verde = éxito); no modifica `index.js`.
