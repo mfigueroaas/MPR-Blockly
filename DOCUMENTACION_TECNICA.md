@@ -347,6 +347,9 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 Después de cualquiera: `python tools/probar.py` y F5.
 
 
+### 4.x Ventana principal siempre maximizada (noviembre 2026)
+- `electronApp.js` (`createWindow`): la ventana se crea con `show: false` y se muestra maximizada en `ready-to-show` (con un respaldo a los 5 s); el evento `unmaximize` la vuelve a maximizar, así no se usa en ventanas pequeñas donde la barra de botones no cabe. El botón de maximizar de `index.html` queda oculto (`display:none`) pero debe existir, porque `factory.js` le asigna un `onclick`. Minimizar y cerrar siguen funcionando. Cambia `electronApp.js`: hay que cerrar y volver a abrir la app (F5 no basta).
+
 ### 4.x Recorrido inicial y mascota Otto 3D (noviembre 2026)
 - **Recorrido** (`www/js/mpr_tour.js`, objeto `MPRTour`): 7 pasos con globo y foco resaltado; se abre solo la primera vez (`localStorage.mpr_tour_visto`) y con el botón "?" (`#btn_tour`). Textos en `msg_es.js` (`tour_*`).
 - **Mascota** (`mpr_mascota.js`, `mpr_otto3d.js`, `mpr_consejos.js`, `three.min.js` r128, `media/otto3d.js`): Otto 3D en una esquina, arrastrable (posición en `mpr_masc_pos`), con menú (consejo, colores, avisos tranquilos, esconderse). Colores por pieza (cabeza, cuerpo, piernas, pies) en `mpr_masc_colores`; naranja por defecto.

@@ -64,7 +64,18 @@ function indexUrlFor(file) {
 	return file ? INDEX_URL + '?url=' + encodeURIComponent(file) : INDEX_URL
 }
 function createWindow () {
-	mainWindow = new BrowserWindow({width: 1240, height: 700, minWidth: 1100, minHeight: 650, icon: APP_ICON, title: 'MPR Blockly', frame: false, movable: true})
+	mainWindow = new BrowserWindow({width: 1240, height: 700, minWidth: 1100, minHeight: 650, icon: APP_ICON, title: 'MPR Blockly', frame: false, movable: true, show: false})
+	// MPR: la ventana siempre se abre maximizada y no se puede dejar pequeña (los botones de la barra de bloques no caben)
+	function mostrarMaximizada() {
+		if (!mainWindow || mainWindow.isVisible()) return
+		mainWindow.maximize()
+		mainWindow.show()
+	}
+	mainWindow.once('ready-to-show', mostrarMaximizada)
+	setTimeout(mostrarMaximizada, 5000)   // por si 'ready-to-show' no llega
+	mainWindow.on('unmaximize', function () {
+		if (mainWindow) mainWindow.maximize()
+	})
 	mainWindow.loadURL(indexUrlFor(fileFromArgv(process.argv)))
 	mainWindow.setMenu(null)
 	protectNavigation(mainWindow)

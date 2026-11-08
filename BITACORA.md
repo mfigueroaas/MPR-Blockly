@@ -414,6 +414,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Qué se hizo:** se midieron los agujeros en la cabeza original (centros x = ±13,37 mm, 6,0 mm sobre el centro de la cabeza, 16,75 mm de diámetro) y se ajustó la posición (y = 109,5 del robot), el radio de la lata (8,1) y la malla (6,5).
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno con acercamiento a la cara)
 
+### 2026-11-08  Ventana principal siempre maximizada
+- **Pedido / problema:** que la app se abra siempre en ventana completa, sin tener que maximizarla cada vez, y evitar que se use en ventanas pequeñas.
+- **Archivos:** `electronApp.js`, `www/index.html`, `DOCUMENTACION_TECNICA.md`.
+- **Qué se hizo:** la ventana se crea oculta y se muestra maximizada al estar lista; si se intenta restaurar (`unmaximize`) se vuelve a maximizar. El botón de maximizar queda oculto (el script `factory.js` necesita que exista). Minimizar y cerrar siguen igual.
+- **Notas:** requiere reabrir la app (cambia `electronApp.js`). El commit parte del `electronApp.js` de HEAD (mínimo 1100×650); en el disco había un cambio sin commit (mínimo 1060×700) que no se incluyó.
+- **Commit:** (ver git log)  **Probado en la app:** no (no se pudo abrir una segunda instancia con la app en uso)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto
