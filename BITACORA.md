@@ -428,6 +428,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitÃ¡cora
 - **Notas:** el commit parte del `electronApp.js` de HEAD (no incluye el cambio previo sin commit de tamaños mínimos). Requiere reabrir la app.
 - **Commit:** (ver git log)  **Probado en la app:** no (probado en Chrome moderno: nivel mínimo y descenso encadenado)
 
+### 2026-11-08  Instalador 1.4.0
+- **Pedido / problema:** generar el instalador con los cambios nuevos para probarlo en un notebook sin GPU.
+- **Archivos:** `package.json` (versión 1.4.0), `DOCUMENTACION_TECNICA.md`; salida `distMPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA-256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`).
+- **Qué se hizo:** se instalaron 7-Zip 26.06 y NSIS 3.13 con winget; se descargó `ottoblockly.Setup.1.5.0.exe` (259 MB, SHA-256 verificado) a una carpeta temporal; `python tools/build_installer.py --official ...`. Verificado que el contenido incluya mascota, recorrido, los tres modelos 3D, `three.min.js` y `electronApp.js` con maximizado y `ignore-gpu-blacklist`.
+- **Notas:** el `electronApp.js` incluido es el del disco (con el cambio previo sin commit de tamaño mínimo 1060×700). En el notebook sin GPU, abrir F12 y buscar `[Otto 3D]` para ver qué modelo eligió y cuántos cuadros/s.
+- **Commit:** (ver git log)  **Probado en la app:** no (pendiente: notebook sin GPU)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD â€” TÃ­tulo corto
