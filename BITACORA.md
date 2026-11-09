@@ -532,6 +532,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** bloque "⏹️ Detener a Otto": `Otto.home();` y `while (true) { }`. No admite bloques debajo porque no se ejecutarían.
 - **Commit:** (ver git log)  **Probado en la app:** sí (se subió al Otto del usuario un programa con Gesto + Detener; el código generado es el esperado)
 
+### 2026-11-08 — Etapa 1 instalada en el notebook y documentada
+- **Pedido / problema:** cerrar la Etapa 1 de mejoras de aprendizaje de la versión del evento.
+- **Archivos:** `DOCUMENTACION_TECNICA.md` (13.4, 13.6, 13.8 nueva), `Manuales/Manual Programación Otto DIY MPR2025.pdf` (panfleto de programación 2025 que entregó el usuario; referencia para textos, ejemplos y las misiones de la Etapa 2).
+- **Qué se hizo:** `py tools/probar.py` copió los 14 archivos a `C:\MPRBlockly` (se comprobó que quedaron iguales al repositorio). En la app instalada, con el Otto del usuario: subida en 11,5 s, las 9 categorías abren, los ejemplos nuevos aparecen. Se restauró la mesa y las preferencias del usuario.
+- **Commit:** (ver git log)  **Probado en la app:** sí (app instalada del notebook)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
