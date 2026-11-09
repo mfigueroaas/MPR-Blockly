@@ -18,6 +18,10 @@
 	<script type="text/javascript" src="js/mpr_consejos.js"></script>
 	<script type="text/javascript" src="js/mpr_mascota.js"></script>
 	<script type="text/javascript" src="js/mpr_subida.js"></script>
+	<script type="text/javascript" src="js/mpr_otto_lib.js"></script>
+	<script type="text/javascript" src="js/mpr_simulador.js"></script>
+	<script type="text/javascript" src="js/mpr_misiones.js"></script>
+	<script type="text/javascript" src="js/mpr_calibracion.js"></script>
 	<script type="text/javascript" src="js/boards.js"></script>
 	<script src="js/jquery.min.2.1.3.js" onload="window.$ = window.jQuery = module.exports;"></script>
 	<script type="text/javascript" src="js/bootstrap.toggle.min.js"></script>
@@ -172,12 +176,18 @@
 				<button id="btn_flash" class="btn btn-arduino electron-only" data-toggle="modal" data-target="#message">
 					<span class="fa fa-arrow-right fa-1_5x"> </span>
 				</button>
+				<!-- MPR: probar el programa en pantalla con Otto 3D (js/mpr_simulador.js) -->
+				<button id="btn_simular" class="btn btn-arduino">
+					<span class="fa fa-play fa-1_5x"> </span>
+				</button>
 				
 				<span id="survol" style="color:#fff"></span>
 		</div>
 		<div id="btn_group" class="btn-group" role="group">
 			<!-- MPR: el globo de chat (hablar con Otto) busca bloques (js/mpr_buscar.js). El monitor serie que abría quedó oculto: -->
 			<!-- OCULTO: <button id="btn_term" class="btn btn-arduino-rect"><span class="fa fa-search"></span></button> -->
+			<!-- MPR: misiones guiadas según el manual de programación (js/mpr_misiones.js) -->
+			<button id="btn_misiones" class="btn btn-arduino-rect"><span class="mpr-emoji">🏁</span></button>
 			<button id="btn_tour" class="btn btn-arduino-rect"><span class="fa fa-question"></span></button>
 			<button id="btn_buscar" class="btn btn-arduino-rect"><span class="fa fa-comments"></span></button>
 			<button id="btn_preview" class="btn btn-arduino-rect"><span class="fa fa-code "> </span>	</button>

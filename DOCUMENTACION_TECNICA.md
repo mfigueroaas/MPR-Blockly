@@ -214,6 +214,38 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - **Precompilación:** 8 s después de abrir (sin recorrido ni carga de Otto 3D en curso), si en `%TEMP%` no está lo compilado para ese programa y esa placa (`build.options.json` de las carpetas `arduino-sketch-*` y su carpeta `libraries\Otto`), compila un programa de Otto con prioridad "por debajo de lo normal" (la heredan avr-g++ y cc1plus; comprobado). Si el niño sube mientras tanto, espera a que termine. En el notebook la primera subida bajó de ~26 s a 11 s.
 - Los procesos se lanzan con `execFile` y `windowsHide` (sin consola ni comillas).
 
+### 4.10 Probar en pantalla: Otto 3D en un escenario (noviembre 2026)
+- **Dónde:** `www/js/mpr_simulador.js` (`MPRSimulador`) y `www/js/mpr_otto_lib.js` (`MPROttoLib`). Botón verde ▶ `#btn_simular`, a la derecha de la flecha naranja. El escenario ocupa el 48 % derecho de la ventana y deja visible la mesa de bloques.
+- **El mismo Otto de la mascota:** su canvas se muda al escenario mientras está abierto, sin cargar otro modelo. `MPROtto3D.escenario = { pose, camara, animando }` hace que su bucle use la pose y la cámara del simulador. Al cerrar, Otto vuelve a su esquina y a su tamaño. Si la mascota estaba escondida, se enciende el 3D solo para el escenario.
+- **Movimientos fieles:** `mpr_otto_lib.js` es una traducción a JavaScript de la librería Otto del robot (oscilador, `_moveServos` con el limitador de 240 °/s, todas las canciones de `sing` y todos los gestos). Se comparó contra el firmware real ejecutado en un emulador: duraciones y ángulos iguales al milisegundo o casi. La librería manda los 4 ángulos con `hw.escribir`, avisa los desplazamientos con `hw.movimiento` y suena con `hw.tono`.
+- **Pose:** los ángulos de los servos mueven caderas y tobillos. Los dos tobillos están montados igual: el mismo cambio en los dos balancea a Otto, y cambios opuestos lo suben en los cantos ("updown"). Con los ángulos fijos, el robot es un cuerpo rígido. `apoyo()` busca los dos puntos de las suelas que dejan el centro de masa entre ellos, sin otro punto bajo el suelo, y se queda con la postura más parecida a la anterior. "Inclinar a la izquierda" lo inclina 28° hacia su izquierda.
+- **Mesa:**
+  - Medidas: 1400 × 700 mm, con cuadrícula de 5 cm.
+  - Desplazamientos aproximados: caminar avanza 25 mm por paso, girar gira 20° por paso, y moonwalker y crusaito lo mueven 12 mm de lado.
+  - Si Otto llega al borde, la prueba se detiene con el aviso "el robot de verdad se caería".
+- **Caja y sensor:** la caja se arrastra con el mouse y se puede quitar. El bloque de distancia mide hasta ella con tres rayos (como el cono del sensor) y la distancia se ve siempre arriba. Si Otto choca con la caja, hay un aviso.
+- **Cámara:** sigue a Otto y se aleja sola para mostrar también la caja. La rueda del mouse acerca o aleja.
+- **Intérprete:** recorre los bloques de forma asíncrona e ilumina el que se ejecuta. Configuración corre una vez y Bucle se repite, con un máximo de 3 minutos. Soporta Otto, Zumbador (canciones latinoamericanas desde `Blockly.MPR_CANCIONES`; las extranjeras se leen de `PlayRtttl.h`), Tiempo, Lógica, Matemática (con `map` entero de Arduino), Variables y Funciones. Lo que no puede simular lo avisa una vez y lo salta. Si el niño cambia el programa durante la prueba, se detiene.
+- **Sonido:** zumbador con WebAudio, onda cuadrada a volumen bajo, con botón de silencio (`localStorage.mpr_sim_silencio`). Sin prueba en curso, el audio se suspende.
+- **Rendimiento (notebook):** 30 cuadros/s con la gráfica integrada y el modelo completo. Sin GPU (`--disable-gpu`), 20 cuadros/s con el modelo mínimo en modo económico, igual que la mascota.
+
+### 4.11 Misiones (noviembre 2026)
+- **Dónde:** `www/js/mpr_misiones.js` (`MPRMisiones`). Botón 🏁 `#btn_misiones` en el grupo de la derecha; la fuente de íconos de la app no trae bandera, por eso es un emoji. La tarjeta aparece abajo, junto al menú de bloques, para no tapar Configuración + Bucle.
+- **10 misiones**, siguiendo el manual: ¡Hola, Otto!, ¿Cuántas veces sonó?, Un paso, Cinco pasos, ¡Más rápido!, Camina y gira, ¡A bailar! (con Detener), Te veo (sensor), Esquiva la caja y Sube el Cerro Renca. Cada una tiene objetivo, pista, "▶ Probar" (abre el escenario) y "✅ Revisar". Revisar mira los bloques de Configuración y Bucle, también los que están dentro de Repetir o Si. "Sube el Cerro Renca" se marca a mano.
+- **Al cumplir una:** Otto celebra, la tarjeta se anima y pasa a la siguiente. El avance se guarda en `localStorage.mpr_misiones` y el botón muestra el conteo (por ejemplo, 3/10). Para el siguiente niño, Mayúscula + doble clic en "Misión N / 10" reinicia el avance.
+- **Textos:** `msg_es.js` (`mis_*`). Las revisiones están en `MPRMisiones.LISTA`.
+
+### 4.12 Calibración para monitores (noviembre 2026)
+- **Dónde:** `www/js/mpr_calibracion.js` (`MPRCalibracion`). Se abre con **Ctrl + Mayús + O**: no tiene botón, para que los niños no la abran por accidente.
+- **Funcionamiento:**
+  1. "Preparar Otto" sube un programa de calibración (`MPRCalibracion.PROGRAMA`) con la subida normal (`MPRSubida.cargar(codigo, alTerminar)`) y abre el puerto serie a 9600 baudios.
+  2. El robot informa `MPR_CAL G a b c d`: los ajustes ("trims") de su EEPROM, en las direcciones 0 a 3.
+  3. Cuatro deslizadores de ±40 mandan `T a b c d` y Otto se mueve al instante. Mantiene los servos firmes con `_moveServos`, porque `home()` los suelta.
+  4. "Guardar en Otto" manda `S` (guarda en la EEPROM), "Probar caminando" manda `W` y "Volver a como estaba" regresa a los valores leídos al empezar.
+- **Después:** todos los programas usan esos ajustes solos, porque Configuración Otto genera `Otto.init(..., true, ...)`, que los lee al encender.
+- **Probado con el Otto del usuario:** tenía −1, −1, −1, −1 (EEPROM nunca calibrada). Se guardó un ajuste de prueba y se restauraron los originales, verificados al reiniciar.
+- **Trampa:** el programa lee cada orden como una línea completa (`readStringUntil` + `sscanf`); con `Serial.parseInt` los números se desfasaban entre órdenes.
+
 ---
 
 ## 5. Cambios de MPR sobre Otto Blockly (inventario)
@@ -501,7 +533,7 @@ Ya están en git (commit `d8558f9`): `Otto DIY 2026.3mf.zip` (1,3 MB; **fuente d
 - **Verificado el 2026-11-08:** `three.min.js` r128 y WebGL funcionan en Electron 4 en el notebook, tanto con la gráfica integrada (ANGLE/Direct3D 11, modelo completo, 12 cuadros/s en reposo) como simulando un PC sin GPU con `--disable-gpu` (SwiftShader, modelo mínimo, modo económico). Falta probarlo en un PC del colegio con gráfica Intel (`tools/medir_app.mjs`, 6.5).
 - **Revisión del usuario en el notebook:** el 3D funcionaba bien; el recorrido iba muy lento (corregido, ver 13.7). Regla del usuario: los PCs no tienen GPU dedicada sino la gráfica integrada del procesador, y las optimizaciones **no pueden bajar gráficos, calidad de animaciones ni quitar funciones** del programa ni de Otto 3D.
 - **Instalador 1.4.1:** generado y probado en el notebook. Falta probarlo en un PC del colegio (gráfica Intel, quizás con el Control inteligente de aplicaciones activo).
-- **Mejoras de aprendizaje (13.8):** la Etapa 1 está hecha e instalada en el notebook con `probar.py` (aún no hay instalador con ella). La Etapa 2 está aprobada y pendiente.
+- **Mejoras de aprendizaje (13.8):** la Etapa 1 está hecha e instalada en el notebook con `probar.py` (aún no hay instalador con ella). La Etapa 2 también está hecha (13.9).
 - **Certificado de firma de código:** hoy Windows muestra "editor desconocido" y, si el archivo viene de Internet, "Windows protegió su PC". Con el Control inteligente de aplicaciones activo, bloquearía el programa. Opciones y costos en 7.5; el script ya firma todo con `--firma`.
 - **Consumo en reposo de Otto:** ~9 % de un núcleo en el notebook; la app con Otto en pausa usa ~0,15 %. Bajarlo cambiaría lo que se ve o cómo se comporta (menos cuadros, pausar a Otto sin foco o tras minutos sin actividad), así que queda a decisión del usuario (13.7).
 - **Error heredado al cargar** (ya estaba en la 1.4.0 y en la base de Otto Blockly): `index.html` pide `blocs&generateurs/microbit.js` y `code.js` pide `lang/microbit_es.js`, que no existen. Además, `typing.js:95` lanza `TypeError` porque `Blockly.Blocks.digital_read` no existe, así que las líneas 95–161 de `typing.js` (tipos de dato de algunos bloques) nunca se ejecutan. Si se corrige, hacerlo con cuidado: afecta los tipos de las variables en el código generado.
@@ -568,3 +600,12 @@ Equipo: Ryzen 5 4600H con gráfica Radeon integrada (ANGLE/Direct3D 11), 16 GB, 
 
 - **Para el próximo panfleto de programación:** el paso 1 dice "selecciona el puerto COM" (ahora se elige solo; se sigue viendo COM y un número); los pasos 3 y 4 piden arrastrar Configuración + Bucle y Configuración Otto (ya vienen en la mesa; si los arrastran, Otto explica); las capturas son de Otto Blockly antiguo (niveles, inglés).
 - **Pendiente:** Etapa 2; generar un instalador con la Etapa 1 (hoy está solo en el notebook, con `probar.py`); probar en un PC del colegio.
+
+### 13.9 Etapa 2 de mejoras de aprendizaje (hecha el 2026-11-09)
+- **Qué incluye:** Probar en pantalla (4.10), Misiones (4.11) y Calibración para monitores (4.12). El recorrido suma los pasos "Pruébalo en pantalla" y "Misiones" (9 pasos). Decisiones del usuario: escenario grande y calibración autorizada en su Otto, dejando sus ajustes como estaban.
+- **Probado en la copia de prueba `C:\mprbp` con el Otto del usuario:**
+  - **Escenario:** caminar hasta chocar con la caja, el ejemplo Esquivar obstáculos, gestos con Detener, el borde de la mesa y el cierre (Otto vuelve a su esquina).
+  - **Misiones y recorrido:** las 10 misiones fallan con la mesa inicial y aprueban con su solución; el recorrido tiene sus 9 pasos con foco y texto.
+  - **Calibración:** se leyeron los ajustes del robot, se guardó uno de prueba y se restauraron los originales, verificados.
+  - **Cuadros/s:** 30 con la gráfica integrada y 20 sin GPU.
+- **Pendiente:** instalador con las etapas 1 y 2; probar en un PC del colegio. Para el próximo panfleto, ver 13.8.

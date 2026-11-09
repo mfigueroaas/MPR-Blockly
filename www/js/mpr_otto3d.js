@@ -23,6 +23,9 @@ var MPROtto3D = {
 	fase: 0,              // fase del paso
 	mirada: { x: 0, y: 0, ax: 0, ay: 0 },
 	alLento: null,        // función a llamar si se mueve a menos de 17 cuadros/s durante 5 s seguidos
+	// Modo escenario ("Probar en pantalla", js/mpr_simulador.js): { pose(ahoraMs), camara, animando() }. Mientras está
+	// puesto, el simulador mueve las piezas y elige la cámara; las animaciones y la mirada de la mascota no actúan.
+	escenario: null,
 	lentos: 0,
 	medA: { n: 0, t0: 0 },
 	prox: { cuadros: 0, desde: 0, fps: 0 }
@@ -168,7 +171,7 @@ MPROtto3D.armar = function() {
 
 MPROtto3D.alMover = function(e) {
 	var c = MPROtto3D.renderer && MPROtto3D.renderer.domElement;
-	if (!c) return;
+	if (!c || MPROtto3D.escenario) return;
 	var r = c.getBoundingClientRect();
 	var dx = (e.clientX - (r.left + r.width / 2)) / (window.innerWidth / 2);
 	var dy = (e.clientY - (r.top + r.height / 2)) / (window.innerHeight / 2);
@@ -181,7 +184,7 @@ MPROtto3D.colorear = function(parte, hex) {
 };
 
 MPROtto3D.animar = function(nombre) {
-	if (!MPROtto3D.vivo || !MPROtto3D.ANIMACIONES[nombre]) return;
+	if (!MPROtto3D.vivo || MPROtto3D.escenario || !MPROtto3D.ANIMACIONES[nombre]) return;
 	MPROtto3D.estado = { nombre: nombre, inicio: performance.now() / 1000 };
 };
 
@@ -284,11 +287,12 @@ MPROtto3D.bucle = function(ahora) {
 	if (!self.vivo) return;
 	requestAnimationFrame(self.bucle);
 	if (document.hidden) return;
-	// Ahorro de recursos: 30 cuadros/s al moverse, 12 en reposo
-	var meta = self.animando() ? (self.economia ? 50 : 33) : (self.economia ? 125 : 80);
+	// Ahorro de recursos: 30 cuadros/s al moverse, 12 en reposo (también en el escenario)
+	var esc = self.escenario, anima = esc ? esc.animando() : self.animando();
+	var meta = anima ? (self.economia ? 50 : 33) : (self.economia ? 125 : 80);
 	if (ahora - self.ultimo < meta - 4) return;
 	self.ultimo = ahora;
-	if (self.animando()) {   // mide los cuadros por segundo solo mientras se anima
+	if (anima) {   // mide los cuadros por segundo solo mientras se anima
 		self.medA.n++;
 		if (ahora - self.medA.t0 >= 2500) {
 			var f = self.medA.n * 1000 / (ahora - self.medA.t0);
@@ -297,8 +301,13 @@ MPROtto3D.bucle = function(ahora) {
 			else self.lentos = 0;
 		}
 	} else self.medA = { n: 0, t0: ahora };
-	self.pose(ahora / 1000);
-	self.renderer.render(self.escena, self.camara);
+	if (esc) {
+		esc.pose(ahora);
+		self.renderer.render(self.escena, esc.camara);
+	} else {
+		self.pose(ahora / 1000);
+		self.renderer.render(self.escena, self.camara);
+	}
 	self.prox.cuadros++;
 	if (ahora - self.prox.desde >= 2000) {
 		self.prox.fps = Math.round(self.prox.cuadros * 1000 / (ahora - self.prox.desde));

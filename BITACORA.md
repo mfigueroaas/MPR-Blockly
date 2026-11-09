@@ -538,6 +538,23 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** `py tools/probar.py` copió los 14 archivos a `C:\MPRBlockly` (se comprobó que quedaron iguales al repositorio). En la app instalada, con el Otto del usuario: subida en 11,5 s, las 9 categorías abren, los ejemplos nuevos aparecen. Se restauró la mesa y las preferencias del usuario.
 - **Commit:** (ver git log)  **Probado en la app:** sí (app instalada del notebook)
 
+### 2026-11-09 — Etapa 2: Probar en pantalla, Misiones y Calibración para monitores
+- **Pedido / problema:** Etapa 2 de mejoras de aprendizaje de la versión del evento, aprobada por el usuario: escenario grande para probar el programa en Otto 3D, misiones según el manual y calibración autorizada en su Otto (dejando sus ajustes como estaban). Se pausó el 2026-11-08 y se retomó el 2026-11-09.
+- **Archivos:**
+  - **Nuevos:** `www/js/mpr_simulador.js`, `mpr_otto_lib.js` (traducción de la librería Otto, hecha por un subagente y comparada contra el firmware en un emulador), `mpr_misiones.js` y `mpr_calibracion.js`.
+  - **Cambiados:** `mpr_otto3d.js` (modo escenario), `mpr_mascota.js` (no se arrastra en el escenario), `mpr_subida.js` (`cargar(codigo, alTerminar)`), `index.html` (botones ▶ y 🏁, scripts), `blocklino.css`, `msg_es.js` (`sim_*`, `mis_*`, `cal_*`, recorrido) y `mpr_tour.js` (9 pasos); también `DOCUMENTACION_TECNICA.md` (4.10, 4.11, 4.12 y 13.9).
+- **Qué se hizo:** ver `DOCUMENTACION_TECNICA.md` 4.10 a 4.12.
+- **Notas:**
+  - **Corregido al probar:**
+    - signo de los tobillos (van montados igual; "updown" debía subir sin inclinar);
+    - cálculo de apoyo de cuerpo rígido que conserva la postura;
+    - cámara que encuadra a Otto y la caja;
+    - tarjeta de misiones movida abajo (tapaba el programa);
+    - ícono de misiones (la fuente no traía bandera);
+    - calibración: `Serial.parseInt` desfasaba los números (ahora lee líneas completas) y "Volver a como estaba" vuelve a los valores iniciales.
+  - **Robot:** la calibración de prueba dejó los ajustes del Otto del usuario en sus valores originales (−1 en los cuatro), verificado al reiniciar.
+- **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba con el robot real; luego app instalada)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

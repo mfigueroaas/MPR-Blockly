@@ -212,14 +212,16 @@ MPRSubida.mostrarError = function(etapa, texto) {
 };
 
 // ---------------------------------------------------------------- subir (flecha naranja)
-MPRSubida.cargar = function(codigo) {
-	var self = MPRSubida;
-	if (self.ocupada) return;
+// alTerminar(ok), opcional: la usa la calibración (js/mpr_calibracion.js) para seguir cuando el programa ya está en Otto
+MPRSubida.cargar = function(codigo, alTerminar) {
+	var self = MPRSubida, subio = false;
+	if (self.ocupada) { if (alTerminar) alTerminar(false); return; }
 	var com = self.o.portserie.value, carte = localStorage.getItem('card');
 	if (com == 'com') {
 		self.o.messageDiv.style.color = '#ff0000';
 		self.o.messageDiv.innerHTML = Blockly.Msg.com2 + self.o.quitDiv;
 		$('#message').modal('show');
+		if (alTerminar) alTerminar(false);
 		return;
 	}
 	self.ocupada = true;
@@ -252,12 +254,14 @@ MPRSubida.cargar = function(codigo) {
 			if (!s.ok) { self.mostrarError('sube', s.texto); return; }
 			self.recordar('sube', s.ms);
 			if (!prueba.saltada) localStorage.setItem('mpr_placa_' + com, carte);
+			subio = true;
 			self.o.alSubir(aviso);
 		});
 	}).catch(function(e) {
 		self.mostrarError('sube', String(e && e.stack || e));
 	}).then(function() {
 		self.ocupada = false;
+		if (alTerminar) { try { alTerminar(subio, com); } catch (e) { console.log(e); } }
 	});
 };
 

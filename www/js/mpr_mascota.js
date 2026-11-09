@@ -85,6 +85,7 @@ MPRMascota.acomodar = function() {
 
 MPRMascota.empezarArrastre = function(e) {
 	if (e.button !== 0) return;
+	if (typeof MPRSimulador != 'undefined' && MPRSimulador.abierto) return;   // Otto está en el escenario (js/mpr_simulador.js)
 	var caja = document.getElementById('mpr_masc');
 	MPRMascota.cancelarPaseo();
 	var ini = { x: e.clientX, y: e.clientY, l: parseInt(caja.style.left, 10), t: parseInt(caja.style.top, 10), movio: false };

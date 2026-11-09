@@ -592,3 +592,124 @@ html, body { overflow: hidden; }
 #messageDIV .mpr-detalle summary { cursor: pointer; outline: none; }
 #messageDIV .mpr-detalle pre { max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 11px; margin: 6px 0 0; }
 #portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }
+
+/* MPR: "Probar en pantalla" (js/mpr_simulador.js). Botón verde junto a la flecha naranja y escenario a la derecha:
+   la mesa de bloques queda visible a la izquierda para ver qué bloque se ilumina. */
+#btn_simular.btn-arduino { background-color: #1FA855 !important; border-color: #1FA855 !important; margin-left: 4px; }
+#btn_simular.btn-arduino.activo { background-color: #12713a !important; border-color: #12713a !important; box-shadow: 0 0 0 3px #ffffff; }
+#mpr_esc {
+	display: none;
+	flex-direction: column;
+	position: fixed;
+	z-index: 1000;            /* bajo los cuadros de mensajes (1050), sobre la mesa de bloques */
+	top: 96px;
+	right: 10px;
+	bottom: 10px;
+	width: 48vw;
+	min-width: 480px;
+	border: 3px solid #2d2d64;
+	border-radius: 10px;
+	overflow: hidden;
+	background: #2d2d64;
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+	font-family: 'Poppins', sans-serif;
+	-webkit-app-region: no-drag;
+	user-select: none;
+	-webkit-user-select: none;
+}
+#mpr_esc_barra { display: flex; align-items: center; gap: 6px; padding: 6px 8px; color: #ffffff; }
+#mpr_esc_titulo { flex: 1; font-weight: bold; font-size: 16px; }
+#mpr_esc_barra button {
+	border: 0;
+	border-radius: 6px;
+	padding: 5px 12px;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+	background: #e4e6f0;
+	color: #2d2d64;
+	outline: none;
+}
+#mpr_esc_barra #mpr_esc_probar { background: #1FA855; color: #ffffff; min-width: 108px; }
+#mpr_esc_barra #mpr_esc_probar.detener { background: #e63946; }
+#mpr_esc_barra #mpr_esc_cerrar { background: transparent; color: #ffffff; font-size: 18px; padding: 2px 8px; }
+#mpr_esc_vista { position: relative; flex: 1; background: linear-gradient(#f4f7ff, #c9d3ec); overflow: hidden; }
+#mpr_esc_distancia {
+	position: absolute; z-index: 1; top: 10px; left: 10px;
+	padding: 4px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.9); color: #2d2d64; font-weight: bold; font-size: 15px;
+}
+#mpr_esc_aviso {
+	display: none; position: absolute; z-index: 1; top: 10px; right: 10px; max-width: 58%;
+	padding: 6px 10px; border-radius: 6px; background: #fff3cd; color: #5c4400; font-size: 14px;
+}
+#mpr_esc_estado {
+	position: absolute; z-index: 1; left: 10px; right: 10px; bottom: 10px;
+	padding: 6px 10px; border-radius: 6px; background: rgba(45, 45, 100, 0.88); color: #ffffff; font-size: 14px;
+}
+#mpr_esc_estado:empty { display: none; }
+#mpr_esc_pie { padding: 4px 10px 6px; color: #d6daf0; font-size: 12px; }
+
+/* MPR: misiones (js/mpr_misiones.js): tarjeta a la derecha del menú de bloques */
+#btn_misiones { position: relative; }
+#btn_misiones .mpr-emoji { font-size: 17px; line-height: 1; }   /* la fuente de íconos de la app no trae bandera */
+#btn_misiones.activo { box-shadow: inset 0 0 0 2px #FF5700; }
+#btn_misiones[data-hechas]:not([data-hechas=""])::after {
+	content: attr(data-hechas);
+	position: absolute; right: -6px; bottom: -6px;
+	padding: 0 4px; border-radius: 8px; background: #1FA855; color: #ffffff; font-size: 10px; line-height: 15px;
+}
+#mpr_mis {
+	display: none;
+	position: fixed;
+	z-index: 1001;
+	bottom: 14px;              /* abajo: arriba a la izquierda est� el programa (Configuraci�n + Bucle) */
+	left: 215px;
+	width: 360px;
+	border: 3px solid #2d2d64;
+	border-radius: 10px;
+	overflow: hidden;
+	background: #ffffff;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+	font-family: 'Poppins', sans-serif;
+	-webkit-app-region: no-drag;
+}
+#mpr_mis.hecha { border-color: #1FA855; }
+#mpr_mis.festeja { animation: mpr-festeja 0.9s ease-out; }
+@keyframes mpr-festeja { 0% { transform: scale(1); } 30% { transform: scale(1.06) rotate(-1.5deg); } 60% { transform: scale(0.98) rotate(1deg); } 100% { transform: scale(1); } }
+#mpr_mis_cab { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #2d2d64; color: #ffffff; cursor: default; user-select: none; }
+#mpr_mis_num { font-weight: bold; font-size: 14px; white-space: nowrap; }
+#mpr_mis_puntos { flex: 1; color: #ffc400; font-size: 12px; letter-spacing: 1px; overflow: hidden; white-space: nowrap; }
+#mpr_mis_cab button { border: 0; background: transparent; color: #ffffff; font-size: 16px; padding: 0 6px; cursor: pointer; outline: none; }
+#mpr_mis.mini #mpr_mis_cuerpo { display: none; }
+#mpr_mis_cuerpo { padding: 10px 12px 12px; }
+#mpr_mis_titulo { font-weight: bold; font-size: 17px; color: #2d2d64; margin-bottom: 4px; }
+#mpr_mis_texto { font-size: 14px; color: #222222; line-height: 1.35; }
+#mpr_mis_pista { display: none; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: #fff3cd; color: #5c4400; font-size: 13px; }
+#mpr_mis_res { margin-top: 8px; font-size: 14px; font-weight: bold; min-height: 4px; }
+#mpr_mis_res.ok { color: #1FA855; }
+#mpr_mis_res.falta { color: #c0392b; }
+#mpr_mis_acc { display: flex; gap: 6px; margin-top: 10px; }
+#mpr_mis_acc button { border: 0; border-radius: 6px; padding: 5px 9px; font-size: 13px; font-weight: bold; cursor: pointer; background: #e4e6f0; color: #2d2d64; outline: none; }
+#mpr_mis_acc button:disabled { opacity: 0.35; cursor: default; }
+#mpr_mis_acc #mpr_mis_revisar { flex: 1; background: #FF5700; color: #ffffff; }
+#mpr_mis_acc #mpr_mis_probar { background: #1FA855; color: #ffffff; }
+
+/* MPR: calibración para monitores (js/mpr_calibracion.js, Ctrl + Mayús + O) */
+#mpr_cal { display: none; position: fixed; z-index: 1040; left: 0; top: 0; right: 0; bottom: 0; background: rgba(20, 20, 50, 0.45); -webkit-app-region: no-drag; font-family: 'Poppins', sans-serif; }
+#mpr_cal_caja { position: absolute; left: 50%; top: 110px; width: 500px; margin-left: -250px; border-radius: 10px; overflow: hidden; background: #ffffff; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
+#mpr_cal_cab { display: flex; align-items: center; padding: 8px 12px; background: #2d2d64; color: #ffffff; font-weight: bold; font-size: 16px; }
+#mpr_cal_cab button { margin-left: auto; border: 0; background: transparent; color: #ffffff; font-size: 18px; cursor: pointer; outline: none; }
+#mpr_cal_cuerpo { padding: 12px 16px 14px; font-size: 14px; color: #222222; }
+#mpr_cal_cuerpo p { margin: 0 0 10px; line-height: 1.35; }
+#mpr_cal_cuerpo button { border: 0; border-radius: 6px; padding: 6px 12px; font-weight: bold; cursor: pointer; background: #e4e6f0; color: #2d2d64; outline: none; }
+#mpr_cal_cuerpo button.principal { background: #FF5700; color: #ffffff; }
+#mpr_cal_ajustes { display: none; margin-top: 12px; }
+#mpr_cal_ajustes .fila { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+#mpr_cal_ajustes .nom { width: 120px; font-weight: bold; }
+#mpr_cal_ajustes .fila button { padding: 2px 10px; }
+#mpr_cal_ajustes input[type=range] { flex: 1; }
+#mpr_cal_ajustes .val { width: 36px; text-align: right; font-weight: bold; }
+#mpr_cal_ajustes .acciones { display: flex; gap: 6px; margin-top: 10px; }
+#mpr_cal_estado { margin-top: 10px; min-height: 18px; }
+#mpr_cal_estado.ok { color: #1FA855; font-weight: bold; }
+#mpr_cal_estado.error { color: #c0392b; font-weight: bold; }

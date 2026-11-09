@@ -14,6 +14,8 @@ var MPRTour = {
 		{ id: 'ejemplos', sel: '#btn_example' },
 		{ id: 'puerto', sel: '#portserie' },
 		{ id: 'enviar', sel: '#btn_flash' },
+		{ id: 'probar', sel: '#btn_simular' },
+		{ id: 'misiones', sel: '#btn_misiones' },
 		{ id: 'ayudas', sel: '#btn_group' }
 	],
 	pasos: [],
