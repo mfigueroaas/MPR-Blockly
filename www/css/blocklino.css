@@ -577,3 +577,18 @@ html, body { overflow: hidden; }
 	-webkit-app-region: no-drag;
 }
 #mpr_masc_volver img { width: 100%; height: 100%; }
+
+/* MPR: subida a Otto (js/mpr_subida.js): pasos con barra de avance, errores explicados y puerto encontrado */
+#messageDIV .mpr-paso-titulo { font-weight: bold; font-size: 16px; }
+#messageDIV .mpr-paso-sub { color: #333333; margin: 6px 0 10px; font-size: 14px; }
+#messageDIV .mpr-progreso { height: 10px; border-radius: 5px; background: #e4e6f0; overflow: hidden; }
+/* la barra crece con transform (solo el compositor la mueve, sin recalcular el diseño en cada cuadro) */
+#messageDIV .mpr-progreso div { width: 100%; height: 100%; background: #FF5700; transform-origin: left center; transform: scaleX(0.03); }
+#messageDIV .mpr-ok-sub { color: #222222; margin-top: 6px; font-size: 14px; }
+#messageDIV .mpr-ok-placa { color: #555555; margin-top: 6px; font-size: 13px; }
+#messageDIV .mpr-error-titulo { font-weight: bold; font-size: 15px; }
+#messageDIV .mpr-error-texto { color: #222222; margin: 8px 0; font-size: 14px; }
+#messageDIV .mpr-detalle { color: #666666; font-size: 12px; }
+#messageDIV .mpr-detalle summary { cursor: pointer; outline: none; }
+#messageDIV .mpr-detalle pre { max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 11px; margin: 6px 0 0; }
+#portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }

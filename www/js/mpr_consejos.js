@@ -12,13 +12,13 @@
 var MPRConsejos = {
 	ERRORES: [
 		{ re: /not in sync|not responding|stk500|no responde/,
-		  texto: 'Otto no me responde. Prueba cambiar la placa de "Nano" a "Nano Old" (o al revés) en la lista de arriba y vuelve a mandar tu programa.',
+		  texto: 'Otto no me responde. Revisa que el cable USB esté bien conectado (algunos cables solo cargan y no sirven para programar) y que en la lista de arriba esté el puerto de Otto. Luego vuelve a mandar tu programa.',
 		  anim: 'pensar' },
 		{ re: /access is denied|acceso denegado|can't open device|cannot open|ser_open|permission denied|busy/,
-		  texto: 'No puedo hablar con el puerto USB. Tal vez otro programa lo está usando. Desenchufa y vuelve a enchufar el cable de Otto y elige el puerto otra vez.',
+		  texto: 'No puedo hablar con el puerto USB. Tal vez otro programa lo está usando. Desenchufa y vuelve a enchufar el cable de Otto, y espera a que aparezca su puerto.',
 		  anim: 'alerta' },
 		{ re: /cannot find the file specified|no se puede encontrar el archivo|no se encuentra el archivo|no such file or directory.*(com|tty)/,
-		  texto: 'Parece que Otto se desconectó. Revisa el cable USB y elige el puerto de nuevo en la lista.',
+		  texto: 'Parece que Otto se desconectó. Revisa el cable USB: cuando lo conectes, su puerto aparecerá solo en la lista de arriba.',
 		  anim: 'pensar' },
 		{ re: /was not declared|not declared in this scope|no se declar/,
 		  texto: 'Un bloque usa algo que todavía no existe. ¿Falta crear la variable o poner el bloque de configuración de Otto al principio?',
@@ -45,9 +45,18 @@ var MPRConsejos = {
 	REPETIDO_ESTRUCTURA: 'Tu mesa ya tiene el bloque Configuración + Bucle, y solo puede haber uno. Pon tus bloques dentro del que ya está.',
 	REPETIDO_CONFIG: 'Ya tienes Configuración Otto en tu programa: con uno basta. Puedes llevar este a la papelera.',
 
-	SIN_PUERTO: 'Primero elige el puerto USB de Otto en la lista de arriba. Si no aparece, revisa que el cable esté bien conectado.',
+	SIN_PUERTO: 'Conéctame con el cable USB: cuando te encuentre, mi puerto (COM y un número) aparecerá solo en la lista de arriba. Si hay varios, elige el mío.',
 	EXITO_CARGA: '¡Listo! Tu programa ya está en Otto. ¡A probarlo!',
 	EXITO_VERIFICA: '¡Sin errores! Ahora mándaselo a Otto con la flecha naranja.',
+
+	// Busca la explicación para un mensaje de error (la usan la mascota y el cuadro de subida, js/mpr_subida.js)
+	explicar: function(texto) {
+		var t = String(texto || '').toLowerCase();
+		for (var i = 0; i < MPRConsejos.ERRORES.length; i++) {
+			if (MPRConsejos.ERRORES[i].re.test(t)) return MPRConsejos.ERRORES[i];
+		}
+		return null;
+	},
 
 	AZAR: [
 		'Si te equivocas, presiona Ctrl + Z para deshacer.',

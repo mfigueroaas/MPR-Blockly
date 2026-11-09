@@ -26,25 +26,29 @@ window.addEventListener('load', function load(event) {
 	localStorage.setItem("verif",false)
 	document.getElementById('versionapp').textContent = " MPR Blockly V" + appVersion
 	// MPR: al subir el programa se revela el nombre real de las "canciones misteriosas" que usa
-	function revelarCanciones(){
+	// MPR: además del "OK code uploaded" que muestra el manual, una línea para el niño y, si la placa se cambió sola, el aviso
+	function textoOK(extra){
+		return '<div class="mpr-ok-sub">' + ((typeof MSG != 'undefined' && MSG.sub_ok) || '') + '</div>' + (extra || '')
+	}
+	function revelarCanciones(extra){
 		var usadas = []
 		try { usadas = Blockly.MPR_cancionesUsadas(Blockly.getMainWorkspace()) } catch (e) { console.log(e) }
 		if (!usadas.length) return false
 		messageDiv.style.color = '#009000'
-		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK' + quitDiv + '<div style="color:#000;margin-top:8px">🎵 ' +
+		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK' + quitDiv + textoOK(extra) + '<div style="color:#000;margin-top:8px">🎵 ' +
 			usadas.map(function(u){ return '<b>Canción ' + u[0].split(':')[0].toLowerCase() + '</b> era: ' + u[1] }).join('<br>🎵 ') + '</div>'
 		$('#message').modal('show')
 		setTimeout(function() { $('#message').modal('hide') }, 10000)
 		return true
 	}
-	function uploadOK(){
-		if (revelarCanciones()) return
+	function uploadOK(extra){
+		if (revelarCanciones(extra)) return
 		messageDiv.style.color = '#009000'
-		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK code uploaded' + quitDiv
+		messageDiv.innerHTML = Blockly.Msg.upload + ': ✅ OK code uploaded' + quitDiv + textoOK(extra)
 		$('#message').modal('show');
 		setTimeout(function() {
 		$('#message').modal('hide');
-		}, 3000);
+		}, extra ? 6000 : 3000);
 	}
 	$('#btn_forum').on('click', function(){
 		shell.openExternal('https://discord.gg/CZZytnw')
@@ -55,7 +59,8 @@ window.addEventListener('load', function load(event) {
 	$('#btn_contact').on('click', function(){
 		shell.openExternal('https://github.com/OttoDIY/blockly/issues')
 	})
-	$('#portserie').mouseover(function(){
+	// MPR: con www/js/mpr_subida.js la lista de puertos se revisa sola (cada 2 s y al pasar el mouse); esto queda de respaldo
+	if (typeof MPRSubida == 'undefined') $('#portserie').mouseover(function(){
 		sp.list(function(err,ports) {
 			var nb_com = localStorage.getItem("nb_com"), menu_opt = portserie.getElementsByTagName('option')
 			if(ports.length > nb_com){
@@ -121,7 +126,10 @@ window.addEventListener('load', function load(event) {
 			})
 		}
 	})
-	sp.list(function(err,ports){
+	// MPR: puerto y placa automáticos, pasos de la subida y precompilación (www/js/mpr_subida.js)
+	if (typeof MPRSubida != 'undefined') MPRSubida.iniciar({ sp: sp, basepath: arduino_basepath, portserie: portserie,
+		messageDiv: messageDiv, quitDiv: quitDiv, alSubir: uploadOK })
+	else sp.list(function(err,ports){
 		var opt = document.createElement('option')
 		opt.value = "com"
 		opt.text = Blockly.Msg.com1
@@ -245,6 +253,8 @@ window.addEventListener('load', function load(event) {
 		var data = $('#pre_previewArduino').text()
 		var carte = localStorage.getItem('card')
 		var prog = profile[carte].prog
+		// MPR: placas Arduino: pasos claros, placa automática y errores explicados (www/js/mpr_subida.js)
+		if (prog != "python" && typeof MPRSubida != 'undefined' && MPRSubida.listo) { MPRSubida.cargar(data); return }
 		var speed = profile[carte].speed
 		var cpu = profile[carte].cpu
 		var com = portserie.value

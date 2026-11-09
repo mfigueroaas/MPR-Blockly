@@ -512,6 +512,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** el manual de programación 2025 (`Manuales/`) dice "Toma un bloque de Configuración + Bucle, un bloque de Configuración Otto..."; conviene ajustar ese paso en el próximo panfleto.
 - **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba con el `www` del repo: "Nuevo" deja la plantilla; avisos de los dos repetidos)
 
+### 2026-11-08 — Subir a Otto: puerto y placa automáticos, pasos claros, errores explicados y precompilación
+- **Pedido / problema:** Etapa 1, puntos 2 a 5. El puerto solo se elegía solo si el robot estaba enchufado al abrir la app; había que acertar entre Nano y Nano Old (con la equivocada avrdude tarda ~103 s en fallar, medido con el Otto del usuario); al subir solo se veía "Verificando ..." con una ruedita; los errores salían en texto técnico en inglés, y la primera compilación tardaba 21 s en el notebook (5,5 s las siguientes).
+- **Archivos:** `www/js/mpr_subida.js` (nuevo), `index.js` (inicia el módulo; la flecha lo usa; `uploadOK` con una línea para el niño), `www/index.html`, `www/css/blocklino.css`, `www/lang/msg_es.js` (`sub_*`, `tour_puerto`), `www/lang/Arduino_es.js` (`com2`), `www/js/mpr_consejos.js` (`explicar`, textos de puerto sin "elige la placa"), `www/js/mpr_mascota.js` (lee el detalle técnico), `DOCUMENTACION_TECNICA.md` (3.2, 4.7, 4.9), `LEEME_MPR.md`.
+- **Qué se hizo:** ver `DOCUMENTACION_TECNICA.md` 4.9. Se mantienen las palabras que muestra el manual (Verificando, Cargando, OK code uploaded).
+- **Notas:** probado con el Otto del usuario en COM7 (cargador nuevo, "Nano"): subida en 17 s; con "Nano Old" elegida detecta "Nano", cambia la lista y sube en 17 s (antes ~103 s y fallaba); después de precompilar, la primera subida tarda 11 s (antes ~26 s); con el puerto ocupado por otro programa, error claro en 7 s; error de compilación con explicación y detalle plegado. La precompilación corre con prioridad baja (comprobado en avr-g++ y cc1plus). Desenchufar y volver a enchufar se simuló reemplazando la lista de puertos.
+- **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba en `C:\mprbp` con el robot real)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

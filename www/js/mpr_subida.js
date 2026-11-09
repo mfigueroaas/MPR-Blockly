@@ -1,0 +1,299 @@
+'use strict';
+
+// MPR: subir el programa a Otto con menos tropiezos (DOCUMENTACION_TECNICA.md 4.8). Lo inicia index.js.
+//  - Puerto automático: revisa los puertos USB cada 2 s; si aparece un solo robot y no hay puerto elegido, lo elige.
+//    Si el puerto elegido desaparece, la lista vuelve a "Seleccionar puerto USB".
+//  - Placa automática: mientras compila, pregunta al robot a qué velocidad responde su cargador (avrdude -n: solo lee
+//    la firma del chip, no escribe nada): 115200 = "Nano", 57600 = "Nano Old". Con la placa equivocada avrdude tarda
+//    ~100 s en rendirse; la pregunta tarda ~2,5 s. Lo compilado sirve para las dos (mismo chip): no se recompila.
+//    La respuesta se recuerda por puerto (localStorage mpr_placa_<COM>).
+//  - Pasos claros con las palabras del manual: "Verificando ..." (paso 1 de 2) y "Cargando ..." (paso 2 de 2), con
+//    barra de avance; si falla, la explicación para niños (MPRConsejos) y el detalle técnico plegado.
+//  - Precompila al abrir, con prioridad baja, si lo compilado en %TEMP% no está (primera vez o carpeta temporal
+//    limpia): la primera subida tarda como las siguientes (en el notebook, 21 s frente a 5,5 s).
+// En el navegador (sin Node) no hace nada: index.js usa su código original.
+
+var MPRSubida = {
+	PLACAS_NANO: ['nanooptiboot', 'nano'],       // solo se prueba entre estas dos
+	VID_ROBOT: /^(1a86|0403|2341|2a03|10c4)$/i,   // CH340, FTDI, Arduino, Arduino.org, CP210x
+	ESPERA_PRUEBA_MS: 6000,
+	CADA_MS_PUERTOS: 2000,
+	ESTIMADO: { compila: 25000, sube: 8000 },     // primera estimación de la barra; luego se usa la última duración
+	PROGRAMA_PRECOMPILA: '// MPR: programa de precalentamiento que escribe la app al abrir; se reemplaza al subir.\n' +
+		'#include <Otto.h>\nOtto Otto;\n\nvoid setup() {\n  Otto.init(2, 3, 4, 5, true, 13);\n  Otto.home();\n}\n\n' +
+		'void loop() {\n  Otto.walk(1, 2000, 1);\n  Otto.playGesture(OttoHappy);\n  Otto.sing(S_happy);\n}\n',
+	listo: false,
+	ocupada: false,
+	precompilando: null
+};
+
+MPRSubida.msg = function(clave, defecto) {
+	return (typeof MSG != 'undefined' && MSG[clave]) || defecto || clave;
+};
+
+MPRSubida.escapar = function(t) {
+	return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+};
+
+// o: { sp, basepath, portserie, messageDiv, quitDiv, alSubir(avisoHtml) }
+MPRSubida.iniciar = function(o) {
+	var self = MPRSubida;
+	if (typeof require != 'function' || !o || !o.sp) return;
+	self.o = o;
+	self.cp = require('child_process');
+	self.fs = require('fs');
+	self.path = require('path');
+	self.os = require('os');
+	self.cli = self.path.resolve(o.basepath, 'arduino-cli.exe');
+	self.avrdude = self.buscarAvrdude();
+	self.listo = true;
+	self.actualizarPuertos(true);
+	setInterval(function() { self.actualizarPuertos(false); }, self.CADA_MS_PUERTOS);
+	$(o.portserie).on('mouseover focus', function() { self.actualizarPuertos(false); });
+	setTimeout(self.precompilarCuandoListo, 8000);
+};
+
+// ---------------------------------------------------------------- puertos
+MPRSubida.actualizarPuertos = function(inicial) {
+	var self = MPRSubida, sel = self.o.portserie;
+	if (self.ocupada) return;
+	self.o.sp.list(function(err, ports) {
+		if (err || !ports || self.ocupada) return;
+		if (!sel.options.length || sel.options[0].value != 'com') {
+			var p = document.createElement('option');
+			p.value = 'com';
+			p.text = Blockly.Msg.com1;
+			sel.insertBefore(p, sel.firstChild);
+		}
+		var usb = ports.filter(function(p) { return p.vendorId; });
+		var nombres = usb.map(function(p) { return p.comName; });
+		var antes = [];
+		for (var i = 1; i < sel.options.length; i++) antes.push(sel.options[i].value);
+		var elegido = sel.value;
+		if (nombres.join('|') != antes.join('|')) {
+			while (sel.options.length > 1) sel.removeChild(sel.options[1]);
+			nombres.forEach(function(c) {
+				var op = document.createElement('option');
+				op.value = c;
+				op.text = c;
+				sel.appendChild(op);
+			});
+			sel.value = nombres.indexOf(elegido) >= 0 ? elegido : 'com';
+		}
+		if (sel.value == 'com' && usb.length) {
+			// un solo puerto USB, o un solo robot conocido; al abrir la app, como antes, el primero
+			var robots = usb.filter(function(p) { return self.VID_ROBOT.test(p.vendorId || ''); });
+			var auto = usb.length == 1 ? usb[0] : robots.length == 1 ? robots[0] : inicial ? usb[0] : null;
+			if (auto) {
+				sel.value = auto.comName;
+				if (!inicial && antes.indexOf(auto.comName) < 0) self.avisarConexion(auto.comName);
+			}
+		}
+		localStorage.setItem('com', sel.value);
+		localStorage.setItem('nb_com', ports.length);
+		$(sel).toggleClass('mpr-puerto-listo', sel.value != 'com');
+	});
+};
+
+MPRSubida.avisarConexion = function(com) {
+	if (typeof MPRMascota == 'undefined' || !MPRMascota.decir) return;
+	if (typeof MPRTour != 'undefined' && MPRTour.activo) return;
+	MPRMascota.decir(MPRSubida.msg('sub_conectado', '¡Me conectaste! Estoy en el puerto {com}.').replace('{com}', com),
+		{ anim: 'saludo', prio: 1, ms: 6000 });
+};
+
+// ---------------------------------------------------------------- procesos
+MPRSubida.buscarAvrdude = function() {
+	var self = MPRSubida, base = self.path.resolve(self.o.basepath, 'packages', 'arduino', 'tools', 'avrdude');
+	try {
+		var vers = self.fs.readdirSync(base).sort().reverse();
+		for (var i = 0; i < vers.length; i++) {
+			var exe = self.path.join(base, vers[i], 'bin', 'avrdude.exe');
+			var conf = self.path.join(base, vers[i], 'etc', 'avrdude.conf');
+			if (self.fs.existsSync(exe) && self.fs.existsSync(conf)) return { exe: exe, conf: conf };
+		}
+	} catch (e) {}
+	console.log('[MPR] no encontré avrdude: la placa no se revisa antes de subir');
+	return null;
+};
+
+// Sin consola ni comillas: execFile directo. baja = prioridad "por debajo de lo normal" (la heredan avr-gcc y compañía)
+MPRSubida.ejecutar = function(exe, args, op) {
+	var self = MPRSubida;
+	op = op || {};
+	return new Promise(function(listo) {
+		var t0 = Date.now();
+		var hijo = self.cp.execFile(exe, args, { cwd: op.cwd || self.o.basepath, timeout: op.timeout || 0, windowsHide: true, maxBuffer: 8 * 1024 * 1024 },
+			function(err, stdout, stderr) {
+				var texto = err ? String(err.message || err) : String(stdout || '');
+				if (err && stderr && texto.indexOf(String(stderr).trim()) < 0) texto += '\n' + stderr;
+				listo({ ok: !err, texto: texto, ms: Date.now() - t0, matado: !!(err && err.killed) });
+			});
+		if (op.baja && hijo && hijo.pid && self.os.setPriority) {
+			try { self.os.setPriority(hijo.pid, self.os.constants.priority.PRIORITY_BELOW_NORMAL); } catch (e) {}
+		}
+	});
+};
+
+MPRSubida.compilar = function(fqbn, baja) {
+	return MPRSubida.ejecutar(MPRSubida.cli, ['compile', '--fqbn', fqbn, 'sketch/sketch.ino'], { baja: baja });
+};
+
+MPRSubida.enviar = function(fqbn, com) {
+	return MPRSubida.ejecutar(MPRSubida.cli, ['upload', '--port', com, '--fqbn', fqbn, 'sketch/sketch.ino']);
+};
+
+// Devuelve { placa } con la que responde, { placa: null, texto } si no responde, o { placa, saltada } si no aplica
+MPRSubida.averiguarPlaca = function(com) {
+	var self = MPRSubida, actual = localStorage.getItem('card');
+	if (self.PLACAS_NANO.indexOf(actual) < 0 || !self.avrdude) return Promise.resolve({ placa: actual, saltada: true });
+	var guardada = localStorage.getItem('mpr_placa_' + com);
+	var orden = [guardada, actual].concat(self.PLACAS_NANO).filter(function(c, i, a) {
+		return c && self.PLACAS_NANO.indexOf(c) >= 0 && window.profile[c] && a.indexOf(c) == i;
+	});
+	var textos = [];
+	function probar(i) {
+		if (i >= orden.length) return Promise.resolve({ placa: null, texto: textos.join('\n') });
+		var c = orden[i];
+		var args = ['-C', self.avrdude.conf, '-p', 'atmega328p', '-c', 'arduino', '-P', com, '-b', String(window.profile[c].speed), '-n'];
+		return self.ejecutar(self.avrdude.exe, args, { timeout: self.ESPERA_PRUEBA_MS }).then(function(r) {
+			if (r.ok) return { placa: c, ms: r.ms };
+			textos.push('[' + window.profile[c].description + ', ' + window.profile[c].speed + ' baudios] ' +
+				(r.matado ? 'Otto no responde (' + self.ESPERA_PRUEBA_MS / 1000 + ' s sin respuesta). ' : '') + r.texto.trim());
+			// puerto ocupado o inexistente: la otra velocidad tampoco va a funcionar
+			if (/access is denied|acceso denegado|can't open device|cannot find the file|no se puede encontrar el archivo/i.test(r.texto)) {
+				return { placa: null, texto: textos.join('\n') };
+			}
+			return probar(i + 1);
+		});
+	}
+	return probar(0);
+};
+
+MPRSubida.cambiarPlaca = function(placa) {
+	$('#boards').val(placa);
+	if (window.BlocklyDuino && BlocklyDuino.change_card) BlocklyDuino.change_card();   // mismo chip: no recarga nada
+	else localStorage.setItem('card', placa);
+};
+
+// ---------------------------------------------------------------- mensajes
+MPRSubida.estimado = function(etapa) {
+	var v = parseInt(localStorage.getItem('mpr_t_' + etapa), 10);
+	return v > 0 ? v : MPRSubida.ESTIMADO[etapa];
+};
+
+MPRSubida.recordar = function(etapa, ms) {
+	try { localStorage.setItem('mpr_t_' + etapa, String(ms)); } catch (e) {}
+};
+
+MPRSubida.paso = function(titulo, sub, estimadoMs) {
+	var self = MPRSubida, div = self.o.messageDiv;
+	div.style.color = '#000000';
+	div.innerHTML = '<div class="mpr-paso-titulo">' + titulo + ' <i class="fa fa-spinner fa-pulse fa-fw"></i></div>' +
+		'<div class="mpr-paso-sub">' + self.escapar(sub) + '</div><div class="mpr-progreso"><div></div></div>';
+	$('#message').modal('show');
+	// La barra avanza sola con una transición (sin temporizadores): llega a ~90 % en el tiempo estimado y nunca al 100 %
+	var barra = div.querySelector('.mpr-progreso div');
+	void barra.offsetWidth;
+	barra.style.transition = 'transform ' + Math.round(estimadoMs * 1.6) + 'ms cubic-bezier(0.2, 0.6, 0.35, 1)';
+	barra.style.transform = 'scaleX(0.95)';
+};
+
+MPRSubida.mostrarError = function(etapa, texto) {
+	var self = MPRSubida, div = self.o.messageDiv;
+	var e = (typeof MPRConsejos != 'undefined' && MPRConsejos.explicar) ? MPRConsejos.explicar(texto) : null;
+	var titulo = etapa == 'compila' ? self.msg('sub_err_compila', 'No pude preparar tu programa') : self.msg('sub_err_sube', 'No pude enviar el programa a Otto');
+	div.style.color = '#ff0000';   // rojo: la mascota lo lee como error
+	div.innerHTML = '<div class="mpr-error-titulo">🛑 ' + self.escapar(titulo) + '</div>' +
+		(e ? '<div class="mpr-error-texto">' + self.escapar(e.texto) + '</div>' : '') +
+		'<details class="mpr-detalle"><summary>' + self.escapar(self.msg('sub_detalle', 'Ver detalle técnico')) + '</summary><pre>' +
+		self.escapar(texto) + '</pre></details>' + self.o.quitDiv;
+	$('#message').modal('show');
+};
+
+// ---------------------------------------------------------------- subir (flecha naranja)
+MPRSubida.cargar = function(codigo) {
+	var self = MPRSubida;
+	if (self.ocupada) return;
+	var com = self.o.portserie.value, carte = localStorage.getItem('card');
+	if (com == 'com') {
+		self.o.messageDiv.style.color = '#ff0000';
+		self.o.messageDiv.innerHTML = Blockly.Msg.com2 + self.o.quitDiv;
+		$('#message').modal('show');
+		return;
+	}
+	self.ocupada = true;
+	var verificado = localStorage.getItem('verif') == 'true';   // modo código: "Verificar" ya compiló
+	localStorage.setItem('verif', false);
+	var esperando = self.precompilando;
+	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0));
+	(esperando || Promise.resolve()).then(function() {
+		var compilacion;
+		if (verificado) compilacion = Promise.resolve({ ok: true, saltada: true });
+		else {
+			self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
+			compilacion = self.compilar(window.profile[carte].upload_arg, false);
+		}
+		return Promise.all([compilacion, self.averiguarPlaca(com)]);
+	}).then(function(r) {
+		var comp = r[0], prueba = r[1];
+		if (!comp.ok) { self.mostrarError('compila', comp.texto); return; }
+		if (!comp.saltada) self.recordar('compila', comp.ms);
+		if (!prueba.placa) { self.mostrarError('sube', prueba.texto); return; }
+		var aviso = '';
+		if (prueba.placa != carte) {
+			self.cambiarPlaca(prueba.placa);
+			carte = prueba.placa;
+			aviso = '<div class="mpr-ok-placa">' + self.escapar(self.msg('sub_placa', 'Tu Otto usa la placa "{placa}": la cambié en la lista.')
+				.replace('{placa}', $('#boards option:selected').text().replace(/^\W+/, '').trim())) + '</div>';
+		}
+		self.paso(Blockly.Msg.upload, self.msg('sub_paso2'), self.estimado('sube'));
+		return self.enviar(window.profile[carte].upload_arg, com).then(function(s) {
+			if (!s.ok) { self.mostrarError('sube', s.texto); return; }
+			self.recordar('sube', s.ms);
+			if (!prueba.saltada) localStorage.setItem('mpr_placa_' + com, carte);
+			self.o.alSubir(aviso);
+		});
+	}).catch(function(e) {
+		self.mostrarError('sube', String(e && e.stack || e));
+	}).then(function() {
+		self.ocupada = false;
+	});
+};
+
+// ---------------------------------------------------------------- precompilar al abrir
+MPRSubida.precompilarCuandoListo = function() {
+	var self = MPRSubida;
+	var ocupado = self.ocupada || (typeof MPRTour != 'undefined' && MPRTour.activo) ||
+		(typeof MPRMascota != 'undefined' && MPRMascota.cargando3D);
+	if (ocupado) { setTimeout(self.precompilarCuandoListo, 3000); return; }
+	self.precompilar();
+};
+
+MPRSubida.precompilar = function() {
+	var self = MPRSubida, carte = localStorage.getItem('card'), perfil = window.profile && window.profile[carte];
+	if (!perfil || perfil.prog != 'arduino' || self.compiladoListo(perfil.upload_arg)) return;
+	try {
+		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), self.PROGRAMA_PRECOMPILA);
+	} catch (e) { return; }
+	self.precompilando = self.compilar(perfil.upload_arg, true).then(function(r) {
+		console.log('[MPR] precompilación ' + (r.ok ? 'lista' : 'con error') + ' en ' + r.ms + ' ms');
+		self.precompilando = null;
+	});
+};
+
+// arduino-cli 0.14 deja lo compilado en %TEMP%\arduino-sketch-<hash>; build.options.json dice de qué programa y placa
+MPRSubida.compiladoListo = function(fqbn) {
+	var self = MPRSubida, tmp = self.os.tmpdir();
+	var boceto = self.path.resolve(self.o.basepath, 'sketch', 'sketch.ino').toLowerCase();
+	try {
+		return self.fs.readdirSync(tmp).some(function(d) {
+			if (d.indexOf('arduino-sketch-') != 0) return false;
+			try {
+				var op = JSON.parse(self.fs.readFileSync(self.path.join(tmp, d, 'build.options.json'), 'utf8'));
+				return op.fqbn == fqbn && String(op.sketchLocation).toLowerCase() == boceto &&
+					self.fs.existsSync(self.path.join(tmp, d, 'libraries', 'Otto'));
+			} catch (e) { return false; }
+		});
+	} catch (e) { return true; }   // ante la duda, no precompila
+};

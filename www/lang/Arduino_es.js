@@ -3,7 +3,7 @@ goog.provide ('Blockly.Msg.es');
 goog.require ('Blockly.Msg');
 // Electron window
 Blockly.Msg.com1 = "⚠️ Seleccionar puerto USB";
-Blockly.Msg.com2 = "⚠️ Seleccione un puerto USB por favor";
+Blockly.Msg.com2 = "⚠️ No encuentro a Otto. Conéctalo con el cable USB: su puerto (COM y un número) aparecerá solo en la lista de arriba.";
 Blockly.Msg.check = "Verificando ...";
 Blockly.Msg.upload = "Cargando ...";
 Blockly.Msg.error = "🛑 ERROR: bloques no estan conectados";
