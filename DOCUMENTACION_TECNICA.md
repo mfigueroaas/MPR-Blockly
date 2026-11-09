@@ -608,4 +608,5 @@ Equipo: Ryzen 5 4600H con gráfica Radeon integrada (ANGLE/Direct3D 11), 16 GB, 
   - **Misiones y recorrido:** las 10 misiones fallan con la mesa inicial y aprueban con su solución; el recorrido tiene sus 9 pasos con foco y texto.
   - **Calibración:** se leyeron los ajustes del robot, se guardó uno de prueba y se restauraron los originales, verificados.
   - **Cuadros/s:** 30 con la gráfica integrada y 20 sin GPU.
-- **Pendiente:** instalador con las etapas 1 y 2; probar en un PC del colegio. Para el próximo panfleto, ver 13.8.
+- **Instalada en el notebook** con `probar.py` el 2026-11-09 (los 11 archivos verificados). En la app instalada se probaron el escenario (gestos con Detener; al cerrar, Otto vuelve a su esquina), las misiones y los menús.
+- **Pendiente:** el instalador con las etapas 1 y 2 se generará cuando termine el desarrollo (pedido del usuario: "todavía estamos desarrollando"). Falta probar en un PC del colegio. Para el próximo panfleto, ver 13.8.

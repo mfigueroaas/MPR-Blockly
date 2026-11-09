@@ -553,7 +553,7 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
     - ícono de misiones (la fuente no traía bandera);
     - calibración: `Serial.parseInt` desfasaba los números (ahora lee líneas completas) y "Volver a como estaba" vuelve a los valores iniciales.
   - **Robot:** la calibración de prueba dejó los ajustes del Otto del usuario en sus valores originales (−1 en los cuatro), verificado al reiniciar.
-- **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba con el robot real; luego app instalada)
+- **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba con el robot real; instalada en el notebook con `probar.py` el 2026-11-09 y probada ahí). Instalador: todavía no, por pedido del usuario (sigue el desarrollo).
 
 ## Plantilla para nuevas entradas
 ```
