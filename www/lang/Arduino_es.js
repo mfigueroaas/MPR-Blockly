@@ -624,7 +624,7 @@ Blockly.Msg.OTTO9_RL="Pie Izq";
 Blockly.Msg.OTTO9_RR="Pie Derecho";
 Blockly.Msg.OTTO9_BUZZER="Buzzer";
 Blockly.Msg.OTTO_HOME_TOOLTIP = "Otto va al origen";
-Blockly.Msg.OTTO_HOME_TEXT = "Configuracion";
+Blockly.Msg.OTTO_HOME_TEXT = "Configuración";
 Blockly.Msg.OTTO_BIPED_TEXT = " Otto";
 
 ////////////ESCORNABOT Robot////////// ONLY TRANSLATE THE LEFT PART INSIDE ["THIS YES" ,NOT]

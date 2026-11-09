@@ -145,7 +145,7 @@ return code;
 Blockly.Blocks['otto_moveservos'] = {init: function() {
   this.appendDummyInput("") .appendField("🦿 "+ Blockly.Msg.OTTO9_MOVE_TEXT);
   this.appendValueInput("Period") .setCheck("Number").appendField(Blockly.Msg.OTTO9_MOVE_SPEED_TEXT)
-  this.appendValueInput("Pos") .setCheck("Number").appendField("Positions")
+  this.appendValueInput("Pos") .setCheck("Number").appendField("Posiciones")
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);

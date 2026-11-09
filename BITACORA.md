@@ -519,6 +519,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** probado con el Otto del usuario en COM7 (cargador nuevo, "Nano"): subida en 17 s; con "Nano Old" elegida detecta "Nano", cambia la lista y sube en 17 s (antes ~103 s y fallaba); después de precompilar, la primera subida tarda 11 s (antes ~26 s); con el puerto ocupado por otro programa, error claro en 7 s; error de compilación con explicación y detalle plegado. La precompilación corre con prioridad baja (comprobado en avr-g++ y cc1plus). Desenchufar y volver a enchufar se simuló reemplazando la lista de puertos.
 - **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba en `C:\mprbp` con el robot real)
 
+### 2026-11-08 — Textos, bloque Hz y ejemplos en español para el evento
+- **Pedido / problema:** Etapa 1, punto 6: corregir textos y sumar 3 o 4 ejemplos en español que sirvan al evento, sin esconder los en inglés (el usuario quiere el menú como está).
+- **Archivos:** `www/lang/Arduino_es.js` ("Configuración Otto" con tilde, como el manual), `www/blocs&generateurs/ottoesp.js` ("Posiciones"), `www/toolbox/toolbox_arduino_all.xml` (bloque Hz), `www/examples/examples.json`, `www/examples/mpr_meneito.xml` y `mpr_salto.xml` (comentario en español), `DOCUMENTACION_TECNICA.md` (5.2, 5.3, 5.7).
+- **Qué se hizo:** el bloque "Hz" del Zumbador venía con 10 Hz (no suena) y 261 en la duración: ahora 262 Hz (Do4), 500 ms y 100 ms de silencio. En "Ejemplos Mi Primer Robot" se agregan Baile completo, Me alejo si te acercas, Sigue mi mano y Esquivar obstáculos (los tres últimos con el ultrasonido del kit); siguen también en la lista en inglés.
+- **Notas:** no se cambiaron "Inicio", "Mover", "Sonido", "Velocidad Normal" ni el orden de las velocidades porque el manual los muestra así. Un comentario XML dentro de un `<block>` del menú rompe la categoría al abrirla (pasó con el del bloque Hz y se corrigió): van entre bloques.
+- **Commit:** (ver git log)  **Probado en la app:** sí (las 9 categorías abren; los 4 ejemplos y Meneito compilan; Hz y "Configuración Otto" se ven bien)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

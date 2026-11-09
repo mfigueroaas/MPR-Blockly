@@ -6,6 +6,10 @@
     {"source_url": "mpr_meneito.xml","source_text": "💃 Meneito","visible": true},
     {"source_url": "mpr_balance.xml","source_text": "⚖️ Equilibrio","visible": true},
     {"source_url": "mpr_cerro.xml","source_text": "⛰️ Subir el Cerro Renca","visible": true},
+    {"source_url": "Ottodance.xml","source_text": "🕺 Baile completo","visible": true},
+    {"source_url": "Ottoavoidpeople.xml","source_text": "🙈 Me alejo si te acercas","visible": true},
+    {"source_url": "Ottofollow.xml","source_text": "🖐️ Sigue mi mano","visible": true},
+    {"source_url": "Ottoavoid.xml","source_text": "🚧 Esquivar obstáculos","visible": true},
 
     {"text":"Explora otros ejemplos","visible": true},
     {"source_url": "cutesounds.xml","source_text": "🔈 Cute sounds  ","visible": true},

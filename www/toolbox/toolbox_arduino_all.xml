@@ -889,10 +889,12 @@
 		<category name="CAT_BUZZER" colour="#FF63BB">
 			<block type="otto_sound"></block>
 			<block type="otto_tone"></block>
+			<!-- MPR: el bloque Hz venía con 10 Hz (no suena) y 261 en la duración: ahora Do4 (262 Hz) por medio segundo.
+			     Los comentarios van fuera de <block>: dentro, Blockly falla al abrir la categoría. -->
 			<block type="otto_tonehz">
-				<value name="Hz1"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
-				<value name="duration"><shadow type="math_number">	<field name="NUM">261</field>	</shadow></value>
-				<value name="silent"><shadow type="math_number"><field name="NUM">500</field></shadow></value>
+				<value name="Hz1"><shadow type="math_number"><field name="NUM">262</field></shadow></value>
+				<value name="duration"><shadow type="math_number">	<field name="NUM">500</field>	</shadow></value>
+				<value name="silent"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
 			</block>
 			<block type="otto_bendtone">
 				<value name="Hz1"><shadow type="math_number"><field name="NUM">880</field></shadow></value>
