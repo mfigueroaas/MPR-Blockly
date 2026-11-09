@@ -580,7 +580,7 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Archivos:** `www/css/blocklino.css` (`#mpr_esc_barra`, `#mpr_mis_cab`, `#mpr_mis_acc`, `#mpr_cal_ajustes`), `CLAUDE.md` (regla nueva en "Verificar antes de entregar").
 - **Qué se hizo:**
   - Las separaciones van con márgenes (`> * + * { margin-left }`).
-  - En la calibración, los dos botones secundarios quedan del ancho de su texto a la izquierda y "3. Guardar en Otto" a la derecha.
+  - En la calibración, los tres botones de abajo quedan centrados, del ancho de su texto y con la misma separación (12 px, medida en la app).
   - `CLAUDE.md` exige revisar en la app real y evitar en CSS `gap` en flex, `clamp()`, `min()`/`max()`, `:is()` y `aspect-ratio`.
 - **Commit:** (ver git log)  **Probado en la app:** sí (fotos de la app instalada: calibración, escenario y misiones)
 ## Plantilla para nuevas entradas

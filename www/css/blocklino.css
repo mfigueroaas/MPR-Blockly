@@ -715,9 +715,8 @@ html, body { overflow: hidden; }
 #mpr_cal_ajustes input[type=range] { flex: 1; }
 #mpr_cal_ajustes .val { width: 36px; text-align: right; font-weight: bold; }
 /* abajo: dos acciones secundarias en una fila y "Guardar" grande, de ancho completo */
-#mpr_cal_ajustes .acciones { margin-top: 16px; overflow: hidden; }
-#mpr_cal_ajustes .acciones button { float: left; margin-right: 10px; }
-#mpr_cal_ajustes .acciones #mpr_cal_guardar { float: right; margin-right: 0; }
+#mpr_cal_ajustes .acciones { margin-top: 16px; text-align: center; }   /* los tres centrados, con la misma separación */
+#mpr_cal_ajustes .acciones button { display: inline-block; margin: 0 6px; }
 #mpr_cal_estado { margin-top: 12px; min-height: 18px; line-height: 1.35; }
 #mpr_cal_estado.ok { color: #1FA855; font-weight: bold; }
 #mpr_cal_estado.error { color: #c0392b; font-weight: bold; }
