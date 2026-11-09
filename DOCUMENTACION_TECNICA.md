@@ -244,6 +244,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
   4. "Guardar en Otto" manda `S` (guarda en la EEPROM), "Probar caminando" manda `W` y "Volver a como estaba" regresa a los valores leídos al empezar.
 - **Después:** todos los programas usan esos ajustes solos, porque Configuración Otto genera `Otto.init(..., true, ...)`, que los lee al encender.
 - **Probado con el Otto del usuario:** tenía −1, −1, −1, −1 (EEPROM nunca calibrada). Se guardó un ajuste de prueba y se restauraron los originales, verificados al reiniciar.
+- **Confirmación:** cada cambio que Otto aplica se muestra en el panel ("Otto aplicó: ... todavía no está guardado"); si no responde al guardar en 4 s, se avisa. Cada marca de la barra es 1°: los cambios pequeños casi no se ven en el robot.
 - **Trampa:** el programa lee cada orden como una línea completa (`readStringUntil` + `sscanf`); con `Serial.parseInt` los números se desfasaban entre órdenes.
 
 ---

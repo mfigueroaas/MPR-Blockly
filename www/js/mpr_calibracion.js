@@ -118,7 +118,13 @@ MPRCalibracion.crear = function() {
 	document.getElementById('mpr_cal_preparar').addEventListener('click', self.preparar);
 	document.getElementById('mpr_cal_caminar').addEventListener('click', function() { self.enviar('W'); self.estado(m('cal_caminando', 'Otto camina para probar...')); });
 	document.getElementById('mpr_cal_volver').addEventListener('click', function() { if (self.iniciales) { self.trims = self.iniciales.slice(); self.mostrarValores(); self.mandarTrims(); } });
-	document.getElementById('mpr_cal_guardar').addEventListener('click', function() { self.enviar('S'); self.estado(m('cal_guardando', 'Guardando en Otto...')); });
+	document.getElementById('mpr_cal_guardar').addEventListener('click', function() {
+		if (!self.puerto || !self.puerto.isOpen) { self.estado(m('cal_primero', 'Primero presiona «1. Preparar Otto».'), 'error'); return; }
+		self.enviar('S');
+		self.estado(m('cal_guardando', 'Guardando en Otto...'));
+		clearTimeout(self.tGuardar);
+		self.tGuardar = setTimeout(function() { self.estado(m('cal_sin_respuesta', 'Otto no respondió. Revisa el cable y vuelve a presionar «1. Preparar Otto».'), 'error'); }, 4000);
+	});
 	Array.prototype.forEach.call(e.querySelectorAll('#mpr_cal_ajustes input[type=range]'), function(r) {
 		r.addEventListener('input', function() { self.trims[+r.getAttribute('data-i')] = +r.value; self.mostrarValores(); self.mandarTrims(); });
 	});
@@ -216,7 +222,12 @@ MPRCalibracion.alRecibir = function(linea) {
 		self.mostrarValores();
 		document.getElementById('mpr_cal_ajustes').style.display = 'block';
 		self.estado(self.msg('cal_listo', 'Otto tiene guardado: {v}. Ajusta y presiona «Guardar en Otto».').replace('{v}', v.join(', ')));
+	} else if (m[1] == 'T') {
+		// Confirmación de Otto: así se sabe que el cambio llegó (aunque sea de 1 grado y casi no se note)
+		var igual = self.guardados && v.join() == self.guardados.join();
+		self.estado(self.msg(igual ? 'cal_aplicado_igual' : 'cal_aplicado', 'Otto aplicó: {v}').replace('{v}', v.map(function(x) { return (x > 0 ? '+' : '') + x; }).join(', ')));
 	} else if (m[1] == 'S') {
+		clearTimeout(self.tGuardar);
 		self.guardados = v.slice();
 		self.estado(self.msg('cal_guardado', '✅ Guardado en Otto: {v}. Ya lo usan todos los programas.').replace('{v}', v.join(', ')), 'ok');
 	} else if (m[1] == 'W') {

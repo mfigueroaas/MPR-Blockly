@@ -555,6 +555,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - **Robot:** la calibración de prueba dejó los ajustes del Otto del usuario en sus valores originales (−1 en los cuatro), verificado al reiniciar.
 - **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba con el robot real; instalada en el notebook con `probar.py` el 2026-11-09 y probada ahí). Instalador: todavía no, por pedido del usuario (sigue el desarrollo).
 
+### 2026-11-09 — Calibración: Otto confirma cada cambio y avisa si no responde
+- **Pedido / problema:** el usuario probó la calibración y le pareció que las piernas no se movían; presionó "Guardar en Otto" y el panel se quedó en "Guardando...". Repetida con él mirando a Otto: +15° en la pierna izquierda sí la gira. El panel no confirmaba nada y cada marca de la barra es solo 1°, así que los cambios pequeños no se notaban. Lo guardado no cambió (seguía en −1 en los cuatro).
+- **Archivos:** `www/js/mpr_calibracion.js`, `www/lang/msg_es.js` (`cal_aplicado*`, `cal_primero`, `cal_sin_respuesta` y `cal_como`).
+- **Qué se hizo:**
+  - Cada respuesta `T` de Otto se muestra: "Otto aplicó: +9, −1, −1, −1. Todavía no está guardado..." (o "está con lo que tiene guardado").
+  - "Guardar" sin preparar antes pide presionar «1. Preparar Otto».
+  - Si Otto no responde al guardar en 4 s, lo avisa en vez de quedarse en "Guardando...".
+  - La ayuda dice que cada marca es 1 grado.
+- **Commit:** (ver git log)  **Probado en la app:** sí (app instalada, con el Otto del usuario; sus ajustes siguen en −1 y quedó con un programa normal)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
