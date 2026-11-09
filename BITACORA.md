@@ -526,6 +526,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** no se cambiaron "Inicio", "Mover", "Sonido", "Velocidad Normal" ni el orden de las velocidades porque el manual los muestra así. Un comentario XML dentro de un `<block>` del menú rompe la categoría al abrirla (pasó con el del bloque Hz y se corrigió): van entre bloques.
 - **Commit:** (ver git log)  **Probado en la app:** sí (las 9 categorías abren; los 4 ejemplos y Meneito compilan; Hz y "Configuración Otto" se ven bien)
 
+### 2026-11-08 — Bloque "Detener a Otto"
+- **Pedido / problema:** Etapa 1, punto 7: que Otto no siga caminando para siempre (en el evento se caen de la mesa).
+- **Archivos:** `www/blocs&generateurs/ottoesp.js` (`otto_detener`), `www/lang/Arduino_es.js` (`OTTO_DETENER_TEXT`, `OTTO_DETENER_TOOLTIP`), `www/toolbox/toolbox_arduino_all.xml` (después de Gesto), `DOCUMENTACION_TECNICA.md` (5.3).
+- **Qué se hizo:** bloque "⏹️ Detener a Otto": `Otto.home();` y `while (true) { }`. No admite bloques debajo porque no se ejecutarían.
+- **Commit:** (ver git log)  **Probado en la app:** sí (se subió al Otto del usuario un programa con Gesto + Detener; el código generado es el esperado)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

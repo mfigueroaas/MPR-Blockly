@@ -28,6 +28,7 @@
 			<block type="otto_do"></block>
 			<!-- OCULTO: <block type="otto9_smooth"></block> -->
 			<block type="otto_gesture"></block>
+			<block type="otto_detener"></block>
 			<!-- OCULTO: <block type="otto9_app"></block> -->
 			<block type="otto_movelegs">
 				<value name="PIN_YL"><shadow type="inout_angle_maths"><field name="NUM">90</field></shadow></value>

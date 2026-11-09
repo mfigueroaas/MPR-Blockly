@@ -232,6 +232,7 @@ Ocultos (sin borrar): categoría **Texto**; bloques Otto `App code` (`otto9_app`
   Además genera `const int buzzer = <pin>;` (minúscula) con la clave `definitions_['setup_buzzer']`, la misma que usa el bloque `buzzer_init`, para que los bloques de sonido de `audio.js` (que escriben `buzzer`) compilen. C++ distingue mayúsculas. **Verificado por el usuario: compila y suena.**
 - Bloques de sonido de Otto (`otto_sound` = `Otto.sing`, `otto_tone` y `otto_tonehz` = `Otto._tone`, `otto_bendtone` = `Otto.bendTones`) se muestran ahora en **Zumbador**, no en Otto.
 - Bloque "Hz" (`otto_tonehz`, Zumbador): en el menú trae 262 Hz (Do4), 500 ms y 100 ms de silencio; venía con 10 Hz (no suena) y 261 en la duración. `otto_moveservos` dice "Posiciones" (decía "Positions").
+- **"⏹️ Detener a Otto"** (`otto_detener`, categoría Otto, después de Gesto): genera `Otto.home();` y `while (true) { }`: Otto vuelve a la posición inicial y el programa termina ahí, para que no siga caminando para siempre y se caiga de la mesa. No admite bloques debajo (no se ejecutarían).
 - Textos que **no se cambian** porque el manual de programación los muestra así: "Inicio", "Mover ↑ Adelante", "Velocidad Normal" (el orden Normal, Lento, Rápido, Muy rápido deja Normal como valor por defecto; ese menú lo usan 6 bloques), "Sonido 😃 Feliz", "Repetir". "Ola" (`OttoWave`) es una onda de sonido y boca, no un saludo.
 
 ### 5.4 Ultrasonido

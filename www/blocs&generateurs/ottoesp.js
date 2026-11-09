@@ -297,6 +297,21 @@ Blockly.Arduino['otto_gesture'] = function(block) {
   return code;
 };
 
+// MPR: "Detener a Otto": vuelve a la posición inicial y el programa termina ahí (para que Otto no siga caminando para
+// siempre y se caiga de la mesa). No admite bloques debajo porque no se ejecutarían.
+Blockly.Blocks['otto_detener'] = {init: function() {
+    this.appendDummyInput().appendField(Blockly.Msg.OTTO_DETENER_TEXT);
+    this.setPreviousStatement(true);
+    this.setNextStatement(false);
+    this.setColour("#4759F5");
+    this.setTooltip(Blockly.Msg.OTTO_DETENER_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.OTTO9_DIY_URL); }
+};
+
+Blockly.Arduino['otto_detener'] = function(block) {
+  return 'Otto.home();\nwhile (true) { }  // Otto se detiene aquí\n';
+};
+
 Blockly.Blocks['otto_sound'] = {init: function() {
     this.appendDummyInput() .appendField(new Blockly.FieldImage('media/otto_music.png', 22, 22, "*")) .appendField(Blockly.Msg.OTTO9_SOUND_TEXT) .appendField(new Blockly.FieldDropdown(Blockly.Msg.OTTO9_SOUND_CHOICE), "otto_sound");
     this.setInputsInline(true);
