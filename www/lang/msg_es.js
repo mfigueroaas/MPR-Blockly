@@ -40,7 +40,7 @@ var MSG = {
   tour_enviar_t: "¡Mándame tu programa!",
   tour_enviar: "Cuando tu programa esté listo, presiona la flecha naranja.",
   tour_probar_t: "Pruébalo en pantalla",
-  tour_probar: "Con este botón verde hago tu programa aquí mismo, antes de que me lo mandes. ¡Así lo pruebas rápido!",
+  tour_probar: "Con este botón ▶ hago tu programa aquí mismo, antes de que me lo mandes. ¡Así lo pruebas rápido!",
   tour_misiones_t: "Misiones",
   tour_misiones: "Aquí hay retos para aprender paso a paso. Cuando termines uno, presiona Revisar y ¡a la siguiente misión!",
   tour_ayudas_t: "Más ayudas",

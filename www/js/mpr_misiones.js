@@ -197,8 +197,9 @@ MPRMisiones.mostrar = function() {
 	if (!e) return;
 	e.className = (self.minimizado ? 'mini ' : '') + (hecha ? 'hecha' : '');
 	document.getElementById('mpr_mis_num').textContent = '🏁 ' + self.msg('mis_mision', 'Misión') + ' ' + (self.progreso.actual + 1) + ' / ' + self.LISTA.length;
-	document.getElementById('mpr_mis_puntos').textContent = self.LISTA.map(function(x, i) {
-		return self.progreso.hechas[x.id] ? '★' : (i == self.progreso.actual ? '●' : '○');
+	// puntos como los del recorrido: naranja = cumplida, anillo = la actual, lavanda = pendiente
+	document.getElementById('mpr_mis_puntos').innerHTML = self.LISTA.map(function(x, i) {
+		return '<span class="' + (self.progreso.hechas[x.id] ? 'hecha' : (i == self.progreso.actual ? 'actual' : '')) + '"></span>';
 	}).join('');
 	document.getElementById('mpr_mis_titulo').textContent = (hecha ? '✅ ' : '') + self.msg('mis_' + m.id + '_t', m.id);
 	document.getElementById('mpr_mis_texto').textContent = self.msg('mis_' + m.id, '');

@@ -583,6 +583,18 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - En la calibración, los tres botones de abajo quedan centrados, del ancho de su texto y con la misma separación (12 px, medida en la app).
   - `CLAUDE.md` exige revisar en la app real y evitar en CSS `gap` en flex, `clamp()`, `min()`/`max()`, `:is()` y `aspect-ratio`.
 - **Commit:** (ver git log)  **Probado en la app:** sí (fotos de la app instalada: calibración, escenario y misiones)
+### 2026-11-09 — Pulido de la interfaz: todas las piezas MPR con el mismo estilo
+- **Pedido / problema:** el usuario quería que todo se viera homogéneo y profesional, sin parecer agregados (por ejemplo, el escenario de "Probar en pantalla"), apegado a la forma y los colores del programa original.
+- **Archivos:** `www/css/blocklino.css` (bloque "piezas agregadas" reescrito), `www/js/mpr_misiones.js` (puntos de avance), `www/lang/msg_es.js` (recorrido: "botón ▶" en vez de "botón verde"), `DOCUMENTACION_TECNICA.md` (4.9b, 4.10).
+- **Qué se hizo:**
+  - El escenario, las misiones, la calibración y el cuadro de subida toman el lenguaje del recorrido y del globo de Otto, que ya calzaban con la app (4.9b): tarjeta blanca con borde naranja, título naranja, botón principal naranja y secundarios lavanda.
+  - Se quitaron el verde de los botones y las barras azul oscuro.
+  - El ▶ de la barra pasa a un círculo azul oscuro.
+  - Deslizadores de la calibración con el punto naranja.
+  - En el cuadro de subida, la ✕ va arriba a la derecha.
+  - Se corrigió el botón "siguiente" de las misiones, que se salía de la tarjeta.
+- **Commit:** (ver git log)  **Probado en la app:** sí (fotos antes y después en la app real: barra, escenario, misiones, calibración, subida en curso, error y éxito, recorrido y mascota)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

@@ -578,25 +578,88 @@ html, body { overflow: hidden; }
 }
 #mpr_masc_volver img { width: 100%; height: 100%; }
 
-/* MPR: subida a Otto (js/mpr_subida.js): pasos con barra de avance, errores explicados y puerto encontrado */
-#messageDIV .mpr-paso-titulo { font-weight: bold; font-size: 16px; }
-#messageDIV .mpr-paso-sub { color: #333333; margin: 6px 0 10px; font-size: 14px; }
-#messageDIV .mpr-progreso { height: 10px; border-radius: 5px; background: #e4e6f0; overflow: hidden; }
+/* =====================================================================================================================
+   MPR: piezas agregadas (subida, Probar en pantalla, misiones, calibración) con el MISMO lenguaje visual del recorrido
+   y del globo de Otto: tarjeta blanca con borde naranja de 3 px y radio 18, título naranja, texto azul oscuro, botón
+   principal naranja y secundarios lavanda (radio 10). Colores de la app: naranja #FF5700, azul oscuro #2d2d64, azul de
+   la barra #7998ff, lavanda #e6e9f7 / #d4d8ee, texto suave #6f77a3.
+   Chromium 69 (Electron 4): sin gap en flex, clamp(), min()/max(), :is() ni aspect-ratio (separaciones con márgenes).
+   ===================================================================================================================== */
+.mpr-btn, #mpr_esc_barra button, #mpr_mis_acc button, #mpr_cal_cuerpo button {
+	border: none;
+	border-radius: 10px;
+	padding: 7px 14px;
+	background: #e6e9f7;
+	color: #2d2d64;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: bold;
+	white-space: nowrap;
+	cursor: pointer;
+	outline: none;
+}
+#mpr_esc_barra button:hover, #mpr_mis_acc button:hover, #mpr_cal_cuerpo button:hover { background: #d4d8ee; }
+#mpr_esc_barra button:disabled, #mpr_mis_acc button:disabled { opacity: 0.35; cursor: default; background: #e6e9f7; }
+#mpr_esc_barra #mpr_esc_probar, #mpr_mis_acc #mpr_mis_revisar, #mpr_cal_cuerpo button.principal { background: #FF5700; color: #ffffff; }
+#mpr_esc_barra #mpr_esc_probar:hover, #mpr_mis_acc #mpr_mis_revisar:hover, #mpr_cal_cuerpo button.principal:hover { background: #ff7a2e; }
+/* cerrar / achicar: como el "Saltar" del recorrido, discretos */
+#mpr_esc_barra #mpr_esc_cerrar, #mpr_mis_cab button, #mpr_cal_cab button {
+	background: transparent;
+	color: #6f77a3;
+	font-size: 20px;
+	line-height: 1;
+	padding: 2px 6px;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	outline: none;
+}
+#mpr_esc_barra #mpr_esc_cerrar:hover, #mpr_mis_cab button:hover, #mpr_cal_cab button:hover { background: #e6e9f7; color: #2d2d64; }
+
+/* ---------------------------------------------------------------- subida a Otto (js/mpr_subida.js) */
+#message .modal-content {
+	border: 3px solid #FF5700;
+	border-radius: 18px;
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+	font-family: 'Poppins', sans-serif;
+}
+#message .modal-body { padding: 16px 18px; }
+#messageDIV { position: relative; line-height: 1.35; padding-right: 22px; }
+/* la  va arriba a la derecha, como en los dem�s paneles (index.js la agrega al final del mensaje) */
+#messageDIV .close { position: absolute; top: -6px; right: -6px; color: #6f77a3; opacity: 1; text-shadow: none; font-size: 22px; font-weight: normal; }
+#messageDIV .close:hover { color: #2d2d64; }
+#messageDIV .mpr-paso-titulo { font-weight: bold; font-size: 17px; color: #2d2d64; }
+#messageDIV .mpr-paso-titulo .fa { color: #FF5700; }
+#messageDIV .mpr-paso-sub { color: #2d2d64; margin: 6px 0 12px; font-size: 14px; }
+#messageDIV .mpr-progreso { height: 9px; border-radius: 5px; background: #e6e9f7; overflow: hidden; }
 /* la barra crece con transform (solo el compositor la mueve, sin recalcular el diseño en cada cuadro) */
 #messageDIV .mpr-progreso div { width: 100%; height: 100%; background: #FF5700; transform-origin: left center; transform: scaleX(0.03); }
-#messageDIV .mpr-ok-sub { color: #222222; margin-top: 6px; font-size: 14px; }
-#messageDIV .mpr-ok-placa { color: #555555; margin-top: 6px; font-size: 13px; }
-#messageDIV .mpr-error-titulo { font-weight: bold; font-size: 15px; }
-#messageDIV .mpr-error-texto { color: #222222; margin: 8px 0; font-size: 14px; }
-#messageDIV .mpr-detalle { color: #666666; font-size: 12px; }
+#messageDIV .mpr-ok-sub { color: #2d2d64; margin-top: 6px; font-size: 14px; }
+#messageDIV .mpr-ok-placa { color: #6f77a3; margin-top: 6px; font-size: 13px; }
+#messageDIV .mpr-error-titulo { font-weight: bold; font-size: 17px; }
+#messageDIV .mpr-error-texto { color: #2d2d64; margin: 8px 0; font-size: 14px; }
+#messageDIV .mpr-detalle { color: #6f77a3; font-size: 12px; }
 #messageDIV .mpr-detalle summary { cursor: pointer; outline: none; }
-#messageDIV .mpr-detalle pre { max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 11px; margin: 6px 0 0; }
-#portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }
+#messageDIV .mpr-detalle pre { max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 11px; margin: 6px 0 0; border-radius: 8px; background: #f4f5fb; border: 1px solid #e6e9f7; color: #2d2d64; }
+#portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }   /* verde = estado "Otto conectado" */
 
-/* MPR: "Probar en pantalla" (js/mpr_simulador.js). Botón verde junto a la flecha naranja y escenario a la derecha:
-   la mesa de bloques queda visible a la izquierda para ver qué bloque se ilumina. */
-#btn_simular.btn-arduino { background-color: #1FA855 !important; border-color: #1FA855 !important; margin-left: 4px; }
-#btn_simular.btn-arduino.activo { background-color: #12713a !important; border-color: #12713a !important; box-shadow: 0 0 0 3px #ffffff; }
+/* ---------------------------------------------------------------- botones de la barra */
+/* ▶ Probar en pantalla: círculo del mismo tamaño que la flecha naranja, en el azul oscuro de la app */
+#btn_simular.btn-arduino { background-color: #2d2d64 !important; border-color: #2d2d64 !important; margin-left: 4px; }
+#btn_simular.btn-arduino:hover { background-color: #3d3d85 !important; border-color: #3d3d85 !important; }
+#btn_simular.btn-arduino.activo { box-shadow: 0 0 0 3px #FF5700; }
+#btn_misiones { position: relative; }
+#btn_misiones .mpr-emoji { font-size: 17px; line-height: 1; }   /* la fuente de íconos de la app no trae bandera */
+#btn_misiones.activo { box-shadow: inset 0 0 0 2px #FF5700; }
+#btn_misiones[data-hechas]:not([data-hechas=""])::after {
+	content: attr(data-hechas);
+	position: absolute; right: -6px; bottom: -6px;
+	padding: 0 5px; border-radius: 8px; background: #FF5700; color: #ffffff; font-size: 10px; font-weight: bold; line-height: 15px;
+	box-shadow: 0 0 0 2px #ffffff;
+}
+
+/* ---------------------------------------------------------------- Probar en pantalla (js/mpr_simulador.js) */
+/* escenario a la derecha: la mesa de bloques queda visible a la izquierda para ver qué bloque se ilumina */
 #mpr_esc {
 	display: none;
 	flex-direction: column;
@@ -607,116 +670,106 @@ html, body { overflow: hidden; }
 	bottom: 10px;
 	width: 48vw;
 	min-width: 480px;
-	border: 3px solid #2d2d64;
-	border-radius: 10px;
+	box-sizing: border-box;
+	border: 3px solid #FF5700;
+	border-radius: 18px;
 	overflow: hidden;
-	background: #2d2d64;
-	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+	background: #ffffff;
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 	font-family: 'Poppins', sans-serif;
 	-webkit-app-region: no-drag;
 	user-select: none;
 	-webkit-user-select: none;
 }
-/* Chromium 69 (Electron 4) no soporta gap en flex: las separaciones van con m�rgenes */
-#mpr_esc_barra { display: flex; align-items: center; padding: 6px 8px; color: #ffffff; }
-#mpr_esc_barra > * + * { margin-left: 6px; }
-#mpr_esc_titulo { flex: 1; font-weight: bold; font-size: 16px; }
-#mpr_esc_barra button {
-	border: 0;
-	border-radius: 6px;
-	padding: 5px 12px;
-	font-size: 14px;
-	font-weight: bold;
-	cursor: pointer;
-	background: #e4e6f0;
-	color: #2d2d64;
-	outline: none;
-}
-#mpr_esc_barra #mpr_esc_probar { background: #1FA855; color: #ffffff; min-width: 108px; }
-#mpr_esc_barra #mpr_esc_probar.detener { background: #e63946; }
-#mpr_esc_barra #mpr_esc_cerrar { background: transparent; color: #ffffff; font-size: 18px; padding: 2px 8px; }
-#mpr_esc_vista { position: relative; flex: 1; background: linear-gradient(#f4f7ff, #c9d3ec); overflow: hidden; }
+#mpr_esc_barra { display: flex; align-items: center; padding: 10px 12px 10px 16px; }
+#mpr_esc_barra > * + * { margin-left: 8px; }
+#mpr_esc_titulo { flex: 1; color: #FF5700; font-weight: bold; font-size: 19px; }
+#mpr_esc_barra #mpr_esc_probar { min-width: 112px; }
+#mpr_esc_barra #mpr_esc_probar.detener { background: #2d2d64; }
+#mpr_esc_barra #mpr_esc_sonido { padding: 7px 10px; }
+#mpr_esc_vista { position: relative; flex: 1; margin: 0 12px; border-radius: 12px; background: linear-gradient(#f4f6ff, #d4dbf1); overflow: hidden; }
 #mpr_esc_distancia {
 	position: absolute; z-index: 1; top: 10px; left: 10px;
-	padding: 4px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.9); color: #2d2d64; font-weight: bold; font-size: 15px;
+	padding: 5px 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.92); color: #2d2d64; font-weight: bold; font-size: 15px;
+	box-shadow: 0 2px 8px rgba(45, 45, 100, 0.15);
 }
 #mpr_esc_aviso {
 	display: none; position: absolute; z-index: 1; top: 10px; right: 10px; max-width: 58%;
-	padding: 6px 10px; border-radius: 6px; background: #fff3cd; color: #5c4400; font-size: 14px;
+	padding: 8px 12px; border-radius: 12px; background: #ffffff; border: 2px solid #FF5700; color: #2d2d64; font-size: 14px;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 #mpr_esc_estado {
 	position: absolute; z-index: 1; left: 10px; right: 10px; bottom: 10px;
-	padding: 6px 10px; border-radius: 6px; background: rgba(45, 45, 100, 0.88); color: #ffffff; font-size: 14px;
+	padding: 8px 12px; border-radius: 10px; background: rgba(45, 45, 100, 0.88); color: #ffffff; font-size: 14px;
 }
 #mpr_esc_estado:empty { display: none; }
-#mpr_esc_pie { padding: 4px 10px 6px; color: #d6daf0; font-size: 12px; }
+#mpr_esc_pie { padding: 8px 16px 10px; color: #6f77a3; font-size: 12px; }
 
-/* MPR: misiones (js/mpr_misiones.js): tarjeta a la derecha del menú de bloques */
-#btn_misiones { position: relative; }
-#btn_misiones .mpr-emoji { font-size: 17px; line-height: 1; }   /* la fuente de íconos de la app no trae bandera */
-#btn_misiones.activo { box-shadow: inset 0 0 0 2px #FF5700; }
-#btn_misiones[data-hechas]:not([data-hechas=""])::after {
-	content: attr(data-hechas);
-	position: absolute; right: -6px; bottom: -6px;
-	padding: 0 4px; border-radius: 8px; background: #1FA855; color: #ffffff; font-size: 10px; line-height: 15px;
-}
+/* ---------------------------------------------------------------- misiones (js/mpr_misiones.js) */
+/* tarjeta abajo, junto al menú de bloques: arriba a la izquierda está el programa (Configuración + Bucle) */
 #mpr_mis {
 	display: none;
 	position: fixed;
 	z-index: 1001;
-	bottom: 14px;              /* abajo: arriba a la izquierda est� el programa (Configuraci�n + Bucle) */
+	bottom: 14px;
 	left: 215px;
-	width: 360px;
-	border: 3px solid #2d2d64;
-	border-radius: 10px;
-	overflow: hidden;
+	width: 370px;
+	box-sizing: border-box;
+	padding: 12px 16px 14px;
+	border: 3px solid #FF5700;
+	border-radius: 18px;
 	background: #ffffff;
-	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 	font-family: 'Poppins', sans-serif;
 	-webkit-app-region: no-drag;
 }
-#mpr_mis.hecha { border-color: #1FA855; }
 #mpr_mis.festeja { animation: mpr-festeja 0.9s ease-out; }
-@keyframes mpr-festeja { 0% { transform: scale(1); } 30% { transform: scale(1.06) rotate(-1.5deg); } 60% { transform: scale(0.98) rotate(1deg); } 100% { transform: scale(1); } }
-#mpr_mis_cab { display: flex; align-items: center; padding: 6px 8px; background: #2d2d64; color: #ffffff; cursor: default; user-select: none; }
-#mpr_mis_num { font-weight: bold; font-size: 14px; white-space: nowrap; }
-#mpr_mis_puntos { flex: 1; color: #ffc400; font-size: 12px; letter-spacing: 1px; overflow: hidden; white-space: nowrap; }
-#mpr_mis_cab button { border: 0; background: transparent; color: #ffffff; font-size: 16px; padding: 0 6px; cursor: pointer; outline: none; }
+@keyframes mpr-festeja { 0% { transform: scale(1); } 30% { transform: scale(1.05) rotate(-1.5deg); } 60% { transform: scale(0.98) rotate(1deg); } 100% { transform: scale(1); } }
+#mpr_mis_cab { display: flex; align-items: center; cursor: default; user-select: none; }
+#mpr_mis_cab > * + * { margin-left: 4px; }
+#mpr_mis_num { color: #6f77a3; font-weight: bold; font-size: 13px; white-space: nowrap; }
+#mpr_mis_puntos { flex: 1; padding-left: 6px; white-space: nowrap; overflow: hidden; }
+#mpr_mis_puntos span { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; background: #d4d8ee; vertical-align: middle; }
+#mpr_mis_puntos span.hecha { background: #FF5700; }
+#mpr_mis_puntos span.actual { background: #ffffff; box-shadow: 0 0 0 2px #FF5700; }
 #mpr_mis.mini #mpr_mis_cuerpo { display: none; }
-#mpr_mis_cuerpo { padding: 10px 12px 12px; }
-#mpr_mis_titulo { font-weight: bold; font-size: 17px; color: #2d2d64; margin-bottom: 4px; }
-#mpr_mis_texto { font-size: 14px; color: #222222; line-height: 1.35; }
-#mpr_mis_pista { display: none; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: #fff3cd; color: #5c4400; font-size: 13px; }
+#mpr_mis_cuerpo { padding-top: 6px; }
+#mpr_mis_titulo { color: #FF5700; font-weight: bold; font-size: 19px; margin-bottom: 4px; }
+#mpr_mis_texto { color: #2d2d64; font-size: 15px; line-height: 1.35; }
+#mpr_mis_pista { display: none; margin-top: 10px; padding: 8px 10px; border-radius: 10px; background: #f4f5fb; border: 1px solid #e6e9f7; color: #2d2d64; font-size: 14px; line-height: 1.35; }
 #mpr_mis_res { margin-top: 8px; font-size: 14px; font-weight: bold; min-height: 4px; }
-#mpr_mis_res.ok { color: #1FA855; }
-#mpr_mis_res.falta { color: #c0392b; }
-#mpr_mis_cab > * + * { margin-left: 6px; }
-#mpr_mis_acc { display: flex; margin-top: 10px; }
+#mpr_mis_res.ok { color: #1f9e4a; }
+#mpr_mis_res.falta { color: #FF5700; }
+#mpr_mis_acc { display: flex; align-items: center; margin-top: 12px; }
 #mpr_mis_acc > * + * { margin-left: 6px; }
-#mpr_mis_acc button { border: 0; border-radius: 6px; padding: 5px 9px; font-size: 13px; font-weight: bold; cursor: pointer; background: #e4e6f0; color: #2d2d64; outline: none; }
-#mpr_mis_acc button:disabled { opacity: 0.35; cursor: default; }
-#mpr_mis_acc #mpr_mis_revisar { flex: 1; background: #FF5700; color: #ffffff; }
-#mpr_mis_acc #mpr_mis_probar { background: #1FA855; color: #ffffff; }
+#mpr_mis_acc button { padding: 7px 11px; }
+#mpr_mis_acc #mpr_mis_ant, #mpr_mis_acc #mpr_mis_sig { padding: 7px 9px; }
+#mpr_mis_acc #mpr_mis_revisar { flex: 1 1 auto; min-width: 0; }
 
-/* MPR: calibración para monitores (js/mpr_calibracion.js, Ctrl + Mayús + O) */
-#mpr_cal { display: none; position: fixed; z-index: 1040; left: 0; top: 0; right: 0; bottom: 0; background: rgba(20, 20, 50, 0.45); -webkit-app-region: no-drag; font-family: 'Poppins', sans-serif; }
-#mpr_cal_caja { position: absolute; left: 50%; top: 100px; width: 560px; margin-left: -280px; border-radius: 10px; overflow: hidden; background: #ffffff; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
-#mpr_cal_cab { display: flex; align-items: center; padding: 8px 12px; background: #2d2d64; color: #ffffff; font-weight: bold; font-size: 16px; }
-#mpr_cal_cab button { margin-left: auto; border: 0; background: transparent; color: #ffffff; font-size: 18px; cursor: pointer; outline: none; }
-#mpr_cal_cuerpo { padding: 14px 18px 16px; font-size: 14px; color: #222222; }
-#mpr_cal_cuerpo p { margin: 0 0 10px; line-height: 1.35; }
-#mpr_cal_cuerpo button { border: 0; border-radius: 6px; padding: 8px 14px; white-space: nowrap; font-weight: bold; cursor: pointer; background: #e4e6f0; color: #2d2d64; outline: none; }
-#mpr_cal_cuerpo button.principal { background: #FF5700; color: #ffffff; }
-#mpr_cal_ajustes { display: none; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e4e6f0; }
-#mpr_cal_ajustes .fila { display: flex; align-items: center; margin: 8px 0; }
+/* ---------------------------------------------------------------- calibración para monitores (js/mpr_calibracion.js) */
+#mpr_cal { display: none; position: fixed; z-index: 1040; left: 0; top: 0; right: 0; bottom: 0; background: rgba(20, 22, 56, 0.6); -webkit-app-region: no-drag; font-family: 'Poppins', sans-serif; }
+#mpr_cal_caja {
+	position: absolute; left: 50%; top: 96px; width: 560px; margin-left: -280px; box-sizing: border-box;
+	border: 3px solid #FF5700; border-radius: 18px; background: #ffffff; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+#mpr_cal_cab { display: flex; align-items: center; padding: 14px 14px 0 18px; color: #FF5700; font-weight: bold; font-size: 19px; }
+#mpr_cal_cab button { margin-left: auto; }
+#mpr_cal_cuerpo { padding: 8px 18px 16px; font-size: 14px; color: #2d2d64; }
+#mpr_cal_cuerpo p { margin: 0 0 10px; line-height: 1.4; }
+#mpr_cal_ajustes { display: none; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e6e9f7; }
+#mpr_cal_ajustes .fila { display: flex; align-items: center; margin: 9px 0; }
 #mpr_cal_ajustes .fila > * + * { margin-left: 8px; }
 #mpr_cal_ajustes .nom { width: 130px; font-weight: bold; }
-#mpr_cal_ajustes .fila button { padding: 2px 11px; font-size: 16px; }
-#mpr_cal_ajustes input[type=range] { flex: 1; }
+#mpr_cal_ajustes .fila button { padding: 2px 10px; font-size: 16px; }
 #mpr_cal_ajustes .val { width: 36px; text-align: right; font-weight: bold; }
-/* abajo: dos acciones secundarias en una fila y "Guardar" grande, de ancho completo */
-#mpr_cal_ajustes .acciones { margin-top: 16px; text-align: center; }   /* los tres centrados, con la misma separaci�n */
-#mpr_cal_ajustes .acciones button { display: inline-block; margin: 0 6px; }
+#mpr_cal_ajustes .acciones { margin-top: 16px; text-align: center; }   /* los tres centrados, con la misma separación */
+#mpr_cal_ajustes .acciones button { display: inline-block; margin: 0 5px; }
 #mpr_cal_estado { margin-top: 12px; min-height: 18px; line-height: 1.35; }
-#mpr_cal_estado.ok { color: #1FA855; font-weight: bold; }
-#mpr_cal_estado.error { color: #c0392b; font-weight: bold; }
+#mpr_cal_estado.ok { color: #1f9e4a; font-weight: bold; }
+#mpr_cal_estado.error { color: #e63946; font-weight: bold; }
+/* barras de ajuste con los colores de la app (Chromium 69: -webkit-) */
+#mpr_cal_ajustes input[type=range] { -webkit-appearance: none; flex: 1; height: 6px; margin: 0; border-radius: 3px; background: #e6e9f7; outline: none; }
+#mpr_cal_ajustes input[type=range]::-webkit-slider-thumb {
+	-webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+	background: #FF5700; border: 3px solid #ffffff; box-shadow: 0 0 0 1px #d4d8ee, 0 1px 4px rgba(0, 0, 0, 0.25); cursor: pointer;
+}

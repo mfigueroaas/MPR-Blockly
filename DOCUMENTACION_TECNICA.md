@@ -214,8 +214,17 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - **Precompilación:** 8 s después de abrir (sin recorrido ni carga de Otto 3D en curso), si en `%TEMP%` no está lo compilado para ese programa y esa placa (`build.options.json` de las carpetas `arduino-sketch-*` y su carpeta `libraries\Otto`), compila un programa de Otto con prioridad "por debajo de lo normal" (la heredan avr-g++ y cc1plus; comprobado). Si el niño sube mientras tanto, espera a que termine. En el notebook la primera subida bajó de ~26 s a 11 s.
 - Los procesos se lanzan con `execFile` y `windowsHide` (sin consola ni comillas).
 
+### 4.9b Estilo común de las piezas MPR (pulido del 2026-11-09)
+- Todo lo agregado por MPR usa el lenguaje visual del recorrido y del globo de Otto, para que no parezcan agregados: el recorrido, la mascota, el cuadro de subida (`#message`), el escenario, las misiones y la calibración.
+- **Tarjeta:** fondo blanco, borde naranja de 3 px, radio de 18 px y sombra `0 8px 28px rgba(0,0,0,.35)`.
+- **Texto:** título naranja en negrita de 17 a 19 px; texto azul oscuro (`#2d2d64`) de 14 a 15 px.
+- **Botones:** el principal es naranja `#FF5700` (hover `#ff7a2e`) y los secundarios lavanda `#e6e9f7` (hover `#d4d8ee`), con radio de 10 px. Cerrar y achicar van discretos, en `#6f77a3`, arriba a la derecha.
+- **Colores de estado:** el verde se usa solo para indicar estado (puerto conectado, "OK code uploaded", misión cumplida, calibración guardada), no en botones. El botón ▶ de la barra es un círculo azul oscuro del tamaño de la flecha naranja.
+- **Puntos de avance:** como los del recorrido (naranja = hecho, anillo = actual, lavanda = pendiente).
+- **Dónde:** en `blocklino.css`, bloque "piezas agregadas". Separaciones con márgenes, porque Chromium 69 no soporta `gap` en flex. Revisado con fotos de la app real.
+
 ### 4.10 Probar en pantalla: Otto 3D en un escenario (noviembre 2026)
-- **Dónde:** `www/js/mpr_simulador.js` (`MPRSimulador`) y `www/js/mpr_otto_lib.js` (`MPROttoLib`). Botón verde ▶ `#btn_simular`, a la derecha de la flecha naranja. El escenario ocupa el 48 % derecho de la ventana y deja visible la mesa de bloques.
+- **Dónde:** `www/js/mpr_simulador.js` (`MPRSimulador`) y `www/js/mpr_otto_lib.js` (`MPROttoLib`). Botón ▶ `#btn_simular` (círculo azul oscuro), a la derecha de la flecha naranja. El escenario ocupa el 48 % derecho de la ventana y deja visible la mesa de bloques.
 - **El mismo Otto de la mascota:** su canvas se muda al escenario mientras está abierto, sin cargar otro modelo. `MPROtto3D.escenario = { pose, camara, animando }` hace que su bucle use la pose y la cámara del simulador. Al cerrar, Otto vuelve a su esquina y a su tamaño. Si la mascota estaba escondida, se enciende el 3D solo para el escenario.
 - **Movimientos fieles:** `mpr_otto_lib.js` es una traducción a JavaScript de la librería Otto del robot (oscilador, `_moveServos` con el limitador de 240 °/s, todas las canciones de `sing` y todos los gestos). Se comparó contra el firmware real ejecutado en un emulador: duraciones y ángulos iguales al milisegundo o casi. La librería manda los 4 ángulos con `hw.escribir`, avisa los desplazamientos con `hw.movimiento` y suena con `hw.tono`.
 - **Pose:** los ángulos de los servos mueven caderas y tobillos. Los dos tobillos están montados igual: el mismo cambio en los dos balancea a Otto, y cambios opuestos lo suben en los cantos ("updown"). Con los ángulos fijos, el robot es un cuerpo rígido. `apoyo()` busca los dos puntos de las suelas que dejan el centro de masa entre ellos, sin otro punto bajo el suelo, y se queda con la postura más parecida a la anterior. "Inclinar a la izquierda" lo inclina 28° hacia su izquierda.
