@@ -505,6 +505,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** `py tools/build_installer.py --official <Descargas>\ottoblockly.Setup.1.5.0.exe` en el notebook (tardó 14 min); el SHA-256 del instalador oficial coincidió.
 - **Commit:** (ver git log)  **Probado en la app:** sí (ver la entrada anterior; es la versión instalada en el notebook)
 
+### 2026-11-08 — Proyecto nuevo con la mesa lista y aviso de bloques repetidos
+- **Pedido / problema:** mejorar la experiencia de aprendizaje de la versión del evento (Etapa 1, punto 1). La mesa partía vacía (la primera vez y con "Nuevo") y el niño tenía que saber que primero van Configuración + Bucle y Configuración Otto. El usuario pidió que, si el niño borra la configuración, no se vuelva a poner sola salvo al empezar otro proyecto.
+- **Archivos:** `www/js/blocklino.js` (`BlocklyDuino.PLANTILLA`, `cargarPlantilla`, `loadBlocks`, `discard`), `www/js/mpr_mascota.js` (`UNICOS`, `revisarRepetidos`), `www/js/mpr_consejos.js` (`REPETIDO_ESTRUCTURA`, `REPETIDO_CONFIG`), `DOCUMENTACION_TECNICA.md` (4.7, 4.8).
+- **Qué se hizo:** al abrir sin trabajo guardado (o con la mesa vacía) y con "Nuevo", la mesa trae Configuración + Bucle con Configuración Otto (pines 2-5 y 13), como el paso 4 del manual. Como el manual pide arrastrar esos bloques, si el niño agrega un segundo Configuración + Bucle (el bloque lo quita solo, como antes) o un segundo Configuración Otto, Otto le explica que ya están.
+- **Notas:** el manual de programación 2025 (`Manuales/`) dice "Toma un bloque de Configuración + Bucle, un bloque de Configuración Otto..."; conviene ajustar ese paso en el próximo panfleto.
+- **Commit:** (ver git log)  **Probado en la app:** sí (copia de prueba con el `www` del repo: "Nuevo" deja la plantilla; avisos de los dos repetidos)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

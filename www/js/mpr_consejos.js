@@ -41,6 +41,10 @@ var MPRConsejos = {
 	SUELTOS_UNO: 'Tienes 1 bloque suelto en la mesa. Los bloques sueltos también cuentan como parte del programa de Otto. Únelo a tu programa o arrástralo a la papelera.',
 	SUELTOS_VARIOS: 'Tienes {n} bloques sueltos en la mesa. Los bloques sueltos también cuentan como parte del programa de Otto. Únelos a tu programa o arrástralos a la papelera.',
 
+	// Bloques que van una sola vez (la mesa de un proyecto nuevo ya los trae)
+	REPETIDO_ESTRUCTURA: 'Tu mesa ya tiene el bloque Configuración + Bucle, y solo puede haber uno. Pon tus bloques dentro del que ya está.',
+	REPETIDO_CONFIG: 'Ya tienes Configuración Otto en tu programa: con uno basta. Puedes llevar este a la papelera.',
+
 	SIN_PUERTO: 'Primero elige el puerto USB de Otto en la lista de arriba. Si no aparece, revisa que el cable esté bien conectado.',
 	EXITO_CARGA: '¡Listo! Tu programa ya está en Otto. ¡A probarlo!',
 	EXITO_VERIFICA: '¡Sin errores! Ahora mándaselo a Otto con la flecha naranja.',

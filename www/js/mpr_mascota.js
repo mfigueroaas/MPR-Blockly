@@ -455,12 +455,27 @@ MPRMascota.revisarSueltos = function() {
 	MPRMascota.decir(n == 1 ? MPRConsejos.SUELTOS_UNO : MPRConsejos.SUELTOS_VARIOS.replace('{n}', n), { anim: 'pensar', prio: 2, ms: 20000 });
 };
 
+// 1b) Bloques que van una sola vez. El manual pide arrastrar "Configuración + Bucle" y "Configuración Otto", y la mesa
+// de un proyecto nuevo ya los trae: si el niño agrega otro, Otto le explica. (Un segundo Configuración + Bucle lo quita
+// el propio bloque al instante; un segundo Configuración Otto no hace daño, pero sobra.)
+MPRMascota.UNICOS = { base_setup_loop: 'REPETIDO_ESTRUCTURA', otto_configuration: 'REPETIDO_CONFIG' };
+MPRMascota.revisarRepetidos = function(e) {
+	var ws = window.BlocklyDuino && BlocklyDuino.workspace;
+	var tipo = e.xml && e.xml.getAttribute ? e.xml.getAttribute('type') : '';
+	var clave = MPRMascota.UNICOS[tipo];
+	if (!ws || !clave || !MPRConsejos[clave]) return;
+	var otro = ws.getAllBlocks().some(function(b) { return b.type == tipo && b.id != e.blockId; });
+	if (!otro || (typeof MPRTour != 'undefined' && MPRTour.activo)) return;
+	MPRMascota.decir(MPRConsejos[clave], { anim: 'pensar', prio: 3, ms: 16000 });
+};
+
 MPRMascota.vigilarMesa = function() {
 	var ws = window.BlocklyDuino && BlocklyDuino.workspace;
 	if (!ws || !ws.addChangeListener) { setTimeout(MPRMascota.vigilarMesa, 1000); return; }
 	ws.addChangeListener(function(e) {
 		MPRMascota.ultimaActividad = Date.now();
 		if (e && e.type == Blockly.Events.UI) return;
+		if (e && e.type == Blockly.Events.CREATE) MPRMascota.revisarRepetidos(e);
 		clearTimeout(MPRMascota.temporizadorMesa);
 		MPRMascota.temporizadorMesa = setTimeout(MPRMascota.revisarSueltos, 3500);
 	});

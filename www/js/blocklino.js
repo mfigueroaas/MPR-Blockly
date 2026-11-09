@@ -93,6 +93,18 @@ BlocklyDuino.addReplaceParamToUrl = function(url, param, value) {
 		return url + separator + param + "=" + value;
 	}
 };
+// MPR: con lo que parte un proyecto nuevo (al abrir la app sin trabajo guardado y con el botón "Nuevo"):
+// Configuración + Bucle con la configuración de Otto adentro, como en el paso 4 del manual de programación.
+// Si el niño la borra no se vuelve a poner sola: solo aparece de nuevo al empezar otro proyecto.
+BlocklyDuino.PLANTILLA = '<xml xmlns="http://www.w3.org/1999/xhtml">' +
+	'<block type="base_setup_loop" x="40" y="40"><statement name="DO"><block type="otto_configuration">' +
+	'<field name="PIN_YL">2</field><field name="PIN_YR">3</field><field name="PIN_RL">4</field>' +
+	'<field name="PIN_RR">5</field><field name="PIN_Buzzer">13</field></block></statement></block></xml>';
+BlocklyDuino.cargarPlantilla = function() {
+	try {
+		Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(BlocklyDuino.PLANTILLA), BlocklyDuino.workspace);
+	} catch (e) { console.log(e); }
+};
 BlocklyDuino.loadBlocks = function(defaultXml) {
 	if (defaultXml) {
 		var xml = Blockly.Xml.textToDom(defaultXml);
@@ -107,6 +119,8 @@ BlocklyDuino.loadBlocks = function(defaultXml) {
 			var xml = Blockly.Xml.textToDom(loadOnce);
 			Blockly.Xml.domToWorkspace(xml,BlocklyDuino.workspace);
 		}
+		// MPR: sin trabajo guardado (primera vez) o con la mesa vacía, se parte con la plantilla
+		if (BlocklyDuino.workspace.getAllBlocks().length == 0) BlocklyDuino.cargarPlantilla();
 	}
 };
 BlocklyDuino.load = function(event) {
@@ -306,6 +320,7 @@ BlocklyDuino.discard = function() {
   var count = BlocklyDuino.workspace.getAllBlocks().length;
   if (count < 4 || window.confirm(MSG['discard'])) {
     BlocklyDuino.workspace.clear();
+    BlocklyDuino.cargarPlantilla();   // MPR: proyecto nuevo con Configuración + Bucle y Configuración Otto
     BlocklyDuino.workspace.render();
   }
 };
