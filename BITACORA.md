@@ -565,6 +565,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - La ayuda dice que cada marca es 1 grado.
 - **Commit:** (ver git log)  **Probado en la app:** sí (app instalada, con el Otto del usuario; sus ajustes siguen en −1 y quedó con un programa normal)
 
+### 2026-11-09 — Calibración: botones de abajo más ordenados
+- **Pedido / problema:** el usuario vio los botones de abajo del panel de calibración muy juntos y con el texto partido en dos líneas.
+- **Archivos:** `www/css/blocklino.css` (estilos de `#mpr_cal`).
+- **Qué se hizo:**
+  - El panel pasa a 560 px de ancho.
+  - "Probar caminando" y "Volver a como estaba" quedan en una fila, sin cortar el texto.
+  - "3. Guardar en Otto" es un botón grande de ancho completo debajo.
+  - Más espacio entre las filas y una línea que separa el paso 1 de los ajustes.
+- **Commit:** (ver git log)  **Probado en la app:** revisado en una foto de la interfaz (Chrome, versión de navegador). Instalado en el notebook con `probar.py` (F5 para verlo).
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
