@@ -652,6 +652,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - el ejemplo ya no está en la lista;
   - `Ottocalibration.xml` carga y genera `setTrims`.
 
+### 2026-11-09 — Fuera los ejemplos de servos
+- **Pedido / problema:** el usuario pidió sacar los ejemplos que dicen "Servo", porque son técnicos y no está claro para qué los usaría un niño.
+- **Archivos:** `www/examples/examples.json` y `DOCUMENTACION_TECNICA.md` (inventario 19 y sección 9).
+- **Qué se hizo:** "🦿 Servo centering" y "🦿 Servo sweep" quedan con `"visible": false`, sin borrarlos. Mueven un servo suelto y no a Otto. "Servo advanced control" ya estaba oculto.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la app instalada: la lista de ejemplos ya no muestra servos ni calibración.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
