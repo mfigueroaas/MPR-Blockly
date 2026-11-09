@@ -24,7 +24,7 @@
     {"source_url": "neopixelclockwisecounter.xml", "source_text": "🌈 RGB LED Clockfun  ","visible": false },
     {"source_url": "servo.xml","source_text": "🦿 Servo centering ","visible": true},
     {"source_url": "servosweep.xml","source_text": "🦿 Servo sweep ","visible": true},
-    {"source_url": "Ottocalibrationapp.xml","source_text": "🤖 Biped calibration ","visible": true },
+    {"source_url": "Ottocalibrationapp.xml","source_text": "🤖 Biped calibration ","visible": false },
     {"source_url": "Ottowalk.xml",  "source_text": "🤖 Biped walk ",  "visible": true  },
     {"source_url": "Ottodance.xml","source_text": "🤖 Biped dance ","visible": true},
     {"source_url": "Ottodancerandom.xml","source_text": "🤖 Biped random dancer ","visible": true},

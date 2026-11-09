@@ -41,12 +41,14 @@
 				<value name="Period"><shadow type="math_number">	<field name="NUM">10</field>	</shadow></value>
 				<value name="Pos"><shadow type="math_number">	<field name="NUM">90</field>	</shadow></value>
 			</block>
+			<!-- OCULTO (MPR: los monitores calibran con Ctrl + Mayús + O, js/mpr_calibracion.js):
 			<block type="otto_calibration">
 				<value name="LL"><shadow type="math_number">	<field name="NUM">0</field>	</shadow></value>
 				<value name="RL"><shadow type="math_number">	<field name="NUM">0</field>	</shadow></value>
 				<value name="LF"><shadow type="math_number">	<field name="NUM">0</field>	</shadow></value>
 				<value name="RF"><shadow type="math_number">	<field name="NUM">0</field>	</shadow></value>
 			</block>
+			-->
 			<!-- OCULTO: <block type="otto_eeprom"></block> -->
 		<!--</category>
 		

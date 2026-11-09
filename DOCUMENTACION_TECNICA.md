@@ -258,6 +258,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
   2. El robot informa `MPR_CAL G a b c d`: los ajustes ("trims") de su EEPROM, en las direcciones 0 a 3.
   3. Cuatro deslizadores de ±40 mandan `T a b c d` y Otto se mueve al instante. Mantiene los servos firmes con `_moveServos`, porque `home()` los suelta.
   4. "Guardar en Otto" manda `S` (guarda en la EEPROM), "Probar caminando" manda `W` y "Volver a como estaba" regresa a los valores leídos al empezar.
+- **Sin bloque para niños:** desde el 2026-11-09, el bloque "Calibrar" y el ejemplo "Biped calibration" están ocultos; la calibración queda solo aquí (ver 9 para reactivarlos).
 - **Después:** todos los programas usan esos ajustes solos, porque Configuración Otto genera `Otto.init(..., true, ...)`, que los lee al encender.
 - **Probado con el Otto del usuario:** tenía −1, −1, −1, −1 (EEPROM nunca calibrada). Se guardó un ajuste de prueba y se restauraron los originales, verificados al reiniciar.
 - **Confirmación:** cada cambio que Otto aplica se muestra en el panel ("Otto aplicó: ... todavía no está guardado"); si no responde al guardar en 4 s, se avisa. Cada marca de la barra es 1°: los cambios pequeños casi no se ven en el robot.
@@ -477,6 +478,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 15 | Menú de velocidades: nueva opción "Muy rápido" (1000 ms) | `Arduino_es.js` (`OTTO9_MOVE_SPEED_CHOICE`) | **Pendiente en el robot** |
 | 16 | Verificar/Subir: `arduino-cli.exe` con ruta completa (falla si Windows tiene `NoDefaultCurrentDirectoryInExePath`) | `index.js` | Error reproducido y corregido fuera de la app; en la app pendiente |
 | 17 | Zumbador: 6 canciones de 31 Minutos en "Tocar RTTTL" | `mpr_canciones.js` (nuevo), `RTTTL.js`, `index.html` | **Pendiente en el robot** (validadas y compiladas) |
+| 18 | Otto: oculto el bloque "Calibrar" y el ejemplo "Biped calibration" (los monitores calibran con Ctrl + Mayús + O, 4.12). Los proyectos que ya lo tienen siguen abriendo y funcionando | toolbox XML, `examples.json` | Sí (app real, 2026-11-09) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 
@@ -489,6 +491,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Sensores extra (botón, DHT, joystick, encoder…) | `www/js/blocklino.js` línea 6: `BlocklyDuino.mostrarSensoresExtra = true;` |
 | Categoría Texto | En `defaultCategories1` (línea 3 del toolbox XML) agregar `CAT_TEXT,` entre `CAT_MATH,` y `CAT_FUNCTIONS` |
 | `App code` / `Guardar Trims en EEPROM` / `Dance smooth criminal` | Quitar `<!-- OCULTO: ` y ` -->` en esas líneas de `CAT_OTTO` |
+| Bloque "Calibrar" (`otto_calibration`) y ejemplo "Biped calibration" | En `CAT_OTTO` quitar el comentario `OCULTO (MPR: ...)` que envuelve el bloque; en `examples/examples.json` poner `"visible": true` a `Ottocalibrationapp.xml` |
 | Casting en Matemática | Igual: quitar el comentario `OCULTO` de las 4 líneas `conversion_*` al final de `CAT_MATH` |
 | Otras placas (Uno, Mega, Leonardo, Micro, MRTduino, ZUM BT‑328) | Volver a agregar sus `<option>` en las **dos** listas de `index.html` (sus perfiles siguen en `boards.js`); para compilar, el core AVR ya está incluido |
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |

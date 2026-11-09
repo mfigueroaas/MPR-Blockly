@@ -638,6 +638,20 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - no quedan procesos de arduino-cli, avrdude ni cc1plus;
   - con los límites reales, envío a Otto sin aviso (9,8 s).
 
+### 2026-11-09 — Fuera el bloque "Calibrar" del menú Otto
+- **Pedido / problema:** como ya existe la calibración para monitores (Ctrl + Mayús + O), el usuario pidió sacar los bloques de programación para calibrar.
+- **Archivos:** `www/toolbox/toolbox_arduino_all.xml` (`otto_calibration` comentado con `OCULTO`), `www/examples/examples.json` ("Biped calibration" con `"visible": false`) y `DOCUMENTACION_TECNICA.md` (4.12, inventario 18 y sección 9).
+- **Qué se hizo:**
+  - Se ocultó, sin borrarlo, el único bloque de calibrar visible: "Calibrar" (pierna y pie, izquierda y derecha). El de Otto Ninja ya estaba comentado.
+  - También se ocultó el ejemplo "Biped calibration" de "Explora otros ejemplos", que es un programa de calibrar con ese bloque.
+  - La lupa busca solo en el menú, así que tampoco aparece al buscar.
+  - Los proyectos que ya tienen el bloque siguen abriendo y generando su código (`setTrims`).
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`:
+  - menú Otto sin el bloque (foto);
+  - búsqueda "calibrar", "calibración" y "trims" sin resultados;
+  - el ejemplo ya no está en la lista;
+  - `Ottocalibration.xml` carga y genera `setTrims`.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
