@@ -13,8 +13,9 @@
 
 var MPRSimulador = {
 	MESA: { ancho: 1400, fondo: 700, grosor: 18 },  // mm; Otto mide unos 125 mm de alto
-	INICIO: { x: -320, z: 0, rumbo: Math.PI / 2 },   // parte a la izquierda, mirando hacia la derecha (+x)
-	CAJA: { lado: 100, x: 140, z: 0 },
+	CUADRO: 100,              // tablero de cuadros de 10 cm: la caja cae justo en un cuadro y se pueden contar
+	INICIO: { x: -350, z: 0, rumbo: Math.PI / 2 },   // en el centro de un cuadro, a la izquierda, mirando hacia la derecha (+x)
+	CAJA: { lado: 100, x: 150, z: 0 },
 	SIN_ECO_CM: 400,          // lo que mide el sensor si no hay nada adelante (alcance del HC-SR04)
 	MM_PASO: 25,              // caminar: avance por paso (aproximado al robot real)
 	GRADOS_GIRO: 20,          // girar: grados por paso
@@ -22,7 +23,9 @@ var MPRSimulador = {
 	RADIO: 45,                // huella aproximada de Otto (mm) para chocar con la caja y caer de la mesa
 	MAX_MS: 180000,           // corta sola una prueba que nunca termina
 	VOLUMEN: 0.05,
-	CAMARA: { x: 140, y: 320, z: 680, fov: 32 },
+	// Cámara: gira alrededor de Otto (ángulo horizontal y altura) y se acerca o aleja. La vista inicial es la de siempre.
+	VISTA: { giro: 0.2, altura: 0.43, distancia: 765, fov: 32 },
+	ALTURA_MIN: 0.12, ALTURA_MAX: 1.3, ZOOM_MIN: 0.5, ZOOM_MAX: 1.9,
 	abierto: false,
 	corrida: null,
 	n: 0,
@@ -31,7 +34,7 @@ var MPRSimulador = {
 	tramos: [],
 	cajaVisible: true,
 	silencio: false,
-	zoom: 1
+	vista: null
 };
 
 MPRSimulador.DETENIDO = { detenido: true };
@@ -46,8 +49,13 @@ MPRSimulador.iniciar = function() {
 	if (!b) return;
 	var self = MPRSimulador;
 	b.title = self.msg('sim_boton', 'Probar en pantalla');
+	// pantalla con ▶ adentro (la fuente de íconos de la app no trae una): "probar en la pantalla"
+	b.innerHTML = '<svg class="mpr-ico-sim" viewBox="0 0 24 24" aria-hidden="true">' +
+		'<rect x="2.5" y="3.5" width="19" height="13" rx="2.5" fill="none" stroke="#ffffff" stroke-width="2.2"/>' +
+		'<path d="M8.5 20.5h7M12 16.8v3.5" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>' +
+		'<path d="M10.2 7.3l5 2.7-5 2.7z" fill="#ffffff"/></svg>';
 	b.addEventListener('click', function() { if (self.abierto) self.cerrar(); else self.abrir(); });
-	$(b).mouseover(function() { $('#survol').text(self.msg('sim_boton', 'Probar en pantalla')); })
+	$(b).mouseover(function() { $('#survol').text(self.msg('sim_boton_corto', 'Probar en pantalla')); })
 		.mouseout(function() { $('#survol').text(''); });
 	try { self.silencio = window.localStorage.mpr_sim_silencio == '1'; } catch (e) {}
 };
@@ -67,6 +75,13 @@ MPRSimulador.crearUI = function() {
 		'</div>' +
 		'<div id="mpr_esc_vista">' +
 			'<div id="mpr_esc_distancia"></div><div id="mpr_esc_aviso"></div><div id="mpr_esc_estado"></div>' +
+			'<div id="mpr_esc_camara">' +
+				'<button type="button" data-cam="izq" title="' + m('sim_cam_izq', 'Girar la vista a la izquierda') + '">↺</button>' +
+				'<button type="button" data-cam="der" title="' + m('sim_cam_der', 'Girar la vista a la derecha') + '">↻</button>' +
+				'<button type="button" data-cam="mas" title="' + m('sim_cam_mas', 'Acercar') + '">+</button>' +
+				'<button type="button" data-cam="menos" title="' + m('sim_cam_menos', 'Alejar') + '">−</button>' +
+				'<button type="button" data-cam="inicio" title="' + m('sim_cam_inicio', 'Volver a la vista de siempre') + '">⌂</button>' +
+			'</div>' +
 		'</div>' +
 		'<div id="mpr_esc_pie">' + m('sim_recuerda', '') + '</div>';
 	document.body.appendChild(e);
@@ -86,6 +101,20 @@ MPRSimulador.crearUI = function() {
 		self.actualizarBotones();
 	});
 	document.getElementById('mpr_esc_cerrar').addEventListener('click', function() { self.cerrar(); });
+	Array.prototype.forEach.call(e.querySelectorAll('#mpr_esc_camara button'), function(b) {
+		b.addEventListener('click', function() { self.mover(b.getAttribute('data-cam')); });
+	});
+};
+
+// Botones de la cámara: girar, acercar o alejar, y volver a la vista de siempre (con una transición suave)
+MPRSimulador.mover = function(accion) {
+	var self = MPRSimulador, v = self.vista;
+	if (accion == 'izq') v.giro -= Math.PI / 6;
+	else if (accion == 'der') v.giro += Math.PI / 6;
+	else if (accion == 'mas') v.zoom = Math.max(self.ZOOM_MIN, v.zoom / 1.2);
+	else if (accion == 'menos') v.zoom = Math.min(self.ZOOM_MAX, v.zoom * 1.2);
+	else if (accion == 'inicio') self.vista = { giro: self.VISTA.giro, altura: self.VISTA.altura, zoom: 1 };
+	self.despertar();
 };
 
 MPRSimulador.actualizarBotones = function() {
@@ -187,7 +216,9 @@ MPRSimulador.montarEscena = function() {
 		self.lugarCanvas = { padre: canvas.parentNode, sig: canvas.nextSibling, estilo: canvas.getAttribute('style') || '' };
 		vista.insertBefore(canvas, vista.firstChild);
 		canvas.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;';
-		self.camara = new THREE.PerspectiveCamera(self.CAMARA.fov, 1, 20, 8000);
+		self.camara = new THREE.PerspectiveCamera(self.VISTA.fov, 1, 20, 8000);
+		if (!self.vista) self.vista = { giro: self.VISTA.giro, altura: self.VISTA.altura, zoom: 1 };
+		self.vistaVis = { giro: self.vista.giro, altura: self.vista.altura, zoom: self.vista.zoom };
 		self.mira = new THREE.Vector3(self.INICIO.x, 45, self.INICIO.z);
 		self.armarMesa();
 		self.medirSuelas();
@@ -250,17 +281,28 @@ MPRSimulador.ajustarTamano = function() {
 // ---------------------------------------------------------------- escena
 MPRSimulador.armarMesa = function() {
 	var self = MPRSimulador, M = self.MESA, g = new THREE.Group(), obj = { grupo: g };
-	// Mesa de madera, con su canto
-	var mesa = new THREE.Mesh(new THREE.BoxGeometry(M.ancho, M.grosor, M.fondo), new THREE.MeshLambertMaterial({ color: 0xe0b98c }));
+	// Mesa de madera con su canto, un poco más grande que el tablero (queda un marco)
+	var mesa = new THREE.Mesh(new THREE.BoxGeometry(M.ancho + 40, M.grosor, M.fondo + 40), new THREE.MeshLambertMaterial({ color: 0x9c6a3a }));
 	mesa.position.y = -M.grosor / 2;
 	g.add(mesa);
-	// Cuadrícula de 5 cm: ayuda a ver cuánto avanza Otto
-	var lineas = [], paso = 50, x, z;
-	for (x = -M.ancho / 2 + paso; x < M.ancho / 2; x += paso) lineas.push(x, 0.6, -M.fondo / 2, x, 0.6, M.fondo / 2);
-	for (z = -M.fondo / 2 + paso; z < M.fondo / 2; z += paso) lineas.push(-M.ancho / 2, 0.6, z, M.ancho / 2, 0.6, z);
-	var gl = new THREE.BufferGeometry();
-	gl.setAttribute('position', new THREE.Float32BufferAttribute(lineas, 3));
-	g.add(new THREE.LineSegments(gl, new THREE.LineBasicMaterial({ color: 0xb8916a, transparent: true, opacity: 0.55 })));
+	// Tablero de cuadros de 10 cm en dos tonos (una sola geometría con colores por vértice: liviano)
+	var Q = self.CUADRO, pos = [], col = [], cA = new THREE.Color(0xe3c497), cB = new THREE.Color(0xcfa56d), i, j;
+	for (i = 0; i < M.ancho / Q; i++) for (j = 0; j < M.fondo / Q; j++) {
+		var x0 = -M.ancho / 2 + i * Q, z0 = -M.fondo / 2 + j * Q, x1 = x0 + Q, z1 = z0 + Q, c = (i + j) % 2 ? cB : cA;
+		pos.push(x0, 0.5, z0, x0, 0.5, z1, x1, 0.5, z1, x0, 0.5, z0, x1, 0.5, z1, x1, 0.5, z0);
+		for (var k = 0; k < 6; k++) col.push(c.r, c.g, c.b);
+	}
+	var gt = new THREE.BufferGeometry();
+	gt.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+	gt.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+	gt.computeVertexNormals();
+	g.add(new THREE.Mesh(gt, new THREE.MeshLambertMaterial({ vertexColors: true })));
+	// Casilla donde va a caer la caja mientras se arrastra
+	obj.marca = new THREE.Mesh(new THREE.PlaneGeometry(Q - 6, Q - 6), new THREE.MeshBasicMaterial({ color: 0xFF5700, transparent: true, opacity: 0.35, depthWrite: false }));
+	obj.marca.rotation.x = -Math.PI / 2;
+	obj.marca.position.y = 1.2;
+	obj.marca.visible = false;
+	g.add(obj.marca);
 	// Caja (obstáculo para el sensor)
 	var L = self.CAJA.lado;
 	obj.caja = new THREE.Mesh(new THREE.BoxGeometry(L, L, L), new THREE.MeshLambertMaterial({ color: 0xc8955a }));
@@ -385,10 +427,13 @@ MPRSimulador.pose = function(ahora) {
 	var k = dt ? Math.min(1, dt * 2.5) : 1;
 	self.mira.lerp(objetivo, k);
 	self.lejos = (self.lejos || lejos) + (lejos - (self.lejos || lejos)) * k;
-	var C = self.CAMARA, z = self.zoom * self.lejos;
-	self.camara.position.set(self.mira.x + C.x * z, self.mira.y + C.y * z, self.mira.z + C.z * z);
+	var v = self.vista, vv = self.vistaVis, kv = dt ? Math.min(1, dt * 6) : 1;
+	vv.giro += (v.giro - vv.giro) * kv; vv.altura += (v.altura - vv.altura) * kv; vv.zoom += (v.zoom - vv.zoom) * kv;
+	var dist = self.VISTA.distancia * vv.zoom * self.lejos, ch = Math.cos(vv.altura);
+	self.camara.position.set(self.mira.x + dist * ch * Math.sin(vv.giro), self.mira.y + dist * Math.sin(vv.altura), self.mira.z + dist * ch * Math.cos(vv.giro));
 	self.camara.lookAt(self.mira);
-	self.camaraQuieta = self.mira.distanceTo(objetivo) < 1 && Math.abs(self.lejos - lejos) < 0.01;
+	self.camaraQuieta = self.mira.distanceTo(objetivo) < 1 && Math.abs(self.lejos - lejos) < 0.01 &&
+		Math.abs(v.giro - vv.giro) < 0.002 && Math.abs(v.altura - vv.altura) < 0.002 && Math.abs(v.zoom - vv.zoom) < 0.002;
 
 	// Rayo del sensor: se apaga solo
 	if (obj.rayo.material.opacity > 0) obj.rayo.material.opacity = Math.max(0, obj.rayo.material.opacity - dt * 2.5);
@@ -519,27 +564,26 @@ MPRSimulador.tocaCaja = function(e) {
 MPRSimulador.alPasar = function(e) {
 	var self = MPRSimulador;
 	if (self.arrastre) return;
-	e.target.style.cursor = self.tocaCaja(e) ? 'grab' : '';
+	e.target.style.cursor = self.tocaCaja(e) ? 'grab' : 'move';
 };
 
-MPRSimulador.alPresionar = function(e) {
-	var self = MPRSimulador;
-	if (e.button !== 0 || !self.tocaCaja(e)) return;
+// Centro del cuadro más cercano (el tablero tiene un número par de cuadros a lo ancho e impar a lo fondo)
+MPRSimulador.alCuadro = function(v, largo) {
+	var Q = MPRSimulador.CUADRO, borde = -largo / 2;
+	return borde + (Math.floor((v - borde) / Q) + 0.5) * Q;
+};
+
+// Arrastrar el suelo (no la caja) gira la vista: de lado y hacia arriba o abajo
+MPRSimulador.girarArrastrando = function(e) {
+	var self = MPRSimulador, canvas = e.target, x0 = e.clientX, y0 = e.clientY, g0 = self.vista.giro, a0 = self.vista.altura;
 	e.preventDefault();
-	var canvas = e.target, plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), -self.CAJA.lado / 2), punto = new THREE.Vector3();
 	self.arrastre = true;
 	canvas.style.cursor = 'grabbing';
 	function mover(ev) {
-		var rc = new THREE.Raycaster();
-		rc.setFromCamera(self.puntero({ target: canvas, clientX: ev.clientX, clientY: ev.clientY }), self.camara);
-		if (!rc.ray.intersectPlane(plano, punto)) return;
-		var M = self.MESA, h = self.CAJA.lado / 2;
-		var x = Math.max(-M.ancho / 2 + h, Math.min(M.ancho / 2 - h, punto.x));
-		var z = Math.max(-M.fondo / 2 + h, Math.min(M.fondo / 2 - h, punto.z));
-		var p = self.obj.caja.position, c = self.cuerpo, m = h + self.RADIO;
-		if (Math.abs(x - c.x) < m && Math.abs(z - c.z) < m) return;   // no encima de Otto
-		p.x = x; p.z = z;
-		self.mostrarDistancia();
+		self.vista.giro = g0 - (ev.clientX - x0) * 0.008;
+		self.vista.altura = Math.max(self.ALTURA_MIN, Math.min(self.ALTURA_MAX, a0 + (ev.clientY - y0) * 0.006));
+		self.vistaVis.giro = self.vista.giro; self.vistaVis.altura = self.vista.altura;
+		self.despertar();
 	}
 	function soltar() {
 		document.removeEventListener('mousemove', mover, true);
@@ -552,10 +596,44 @@ MPRSimulador.alPresionar = function(e) {
 	document.addEventListener('mouseup', soltar, true);
 };
 
+MPRSimulador.alPresionar = function(e) {
+	var self = MPRSimulador;
+	if (e.button !== 0) return;
+	if (!self.tocaCaja(e)) { self.girarArrastrando(e); return; }
+	e.preventDefault();
+	var canvas = e.target, plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), -self.CAJA.lado / 2), punto = new THREE.Vector3();
+	self.arrastre = true;
+	canvas.style.cursor = 'grabbing';
+	function mover(ev) {
+		var rc = new THREE.Raycaster();
+		rc.setFromCamera(self.puntero({ target: canvas, clientX: ev.clientX, clientY: ev.clientY }), self.camara);
+		if (!rc.ray.intersectPlane(plano, punto)) return;
+		var M = self.MESA, h = self.CAJA.lado / 2;
+		var x = self.alCuadro(Math.max(-M.ancho / 2 + 1, Math.min(M.ancho / 2 - 1, punto.x)), M.ancho);
+		var z = self.alCuadro(Math.max(-M.fondo / 2 + 1, Math.min(M.fondo / 2 - 1, punto.z)), M.fondo);
+		var p = self.obj.caja.position, c = self.cuerpo, m = h + self.RADIO;
+		if (Math.abs(x - c.x) < m && Math.abs(z - c.z) < m) return;   // no encima de Otto
+		p.x = x; p.z = z;
+		self.obj.marca.position.x = x; self.obj.marca.position.z = z; self.obj.marca.visible = true;
+		self.mostrarDistancia();
+		self.despertar();
+	}
+	function soltar() {
+		document.removeEventListener('mousemove', mover, true);
+		document.removeEventListener('mouseup', soltar, true);
+		self.arrastre = false;
+		self.obj.marca.visible = false;
+		canvas.style.cursor = '';
+		self.despertar();
+	}
+	document.addEventListener('mousemove', mover, true);
+	document.addEventListener('mouseup', soltar, true);
+};
+
 MPRSimulador.alRueda = function(e) {
 	var self = MPRSimulador;
 	e.preventDefault();
-	self.zoom = Math.max(0.55, Math.min(1.8, self.zoom * (e.deltaY > 0 ? 1.1 : 1 / 1.1)));
+	self.vista.zoom = Math.max(self.ZOOM_MIN, Math.min(self.ZOOM_MAX, self.vista.zoom * (e.deltaY > 0 ? 1.1 : 1 / 1.1)));
 	self.despertar();
 };
 

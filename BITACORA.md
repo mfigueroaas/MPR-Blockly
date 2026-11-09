@@ -602,6 +602,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - **Botón de la barra:** bandera blanca dibujada en SVG, como los demás íconos (la fuente de íconos de la app no trae bandera). El contador pasa a una barrita abajo que se llena de naranja con las misiones cumplidas, con el detalle al pasar el mouse ("3 de 10 cumplidas"). Abierto, se pinta naranja como la lupa activa.
   - **Tarjeta:** el encabezado dice "MISIÓN 4 DE 10" con los puntos. Las flechas ‹ › van chicas a la izquierda, y Pista, Probar y Revisar a la derecha, con íconos de la app (?, ▶, ✓) en vez de emojis. La tarjeta mide 390 px.
 - **Commit:** (ver git log)  **Probado en la app:** sí (fotos de la app real: tarjeta y botón con 0 y 3 misiones; posiciones medidas, nada se sale de la tarjeta)
+### 2026-11-09 — Escenario más práctico y bonito: tablero de cuadros, cámara libre y botón ▶ con ícono nuevo
+- **Pedido / problema:** el usuario pidió un mejor ícono para el botón ▶ y un texto más corto al pasar el mouse (el largo se metía detrás de los botones de la derecha). También, que el espacio del Otto simulado fuera más práctico: más cuadriculado para poner objetos, más bonito y con botones para mover y reiniciar la cámara y el zoom, para que el niño tenga más libertad.
+- **Archivos:** `www/js/mpr_simulador.js`, `www/css/blocklino.css`, `www/lang/msg_es.js` (`sim_boton_corto`, `sim_cam_*`, `sim_listo`) y `DOCUMENTACION_TECNICA.md` (4.10).
+- **Qué se hizo:**
+  - **Botón:** pantalla con ▶ dibujada en SVG; al pasar el mouse dice solo "Probar en pantalla".
+  - **Tablero:** cuadros de 10 cm en dos tonos de madera, con marco. La caja cae justo en un cuadro, con una marca naranja en la casilla de destino. Otto parte centrado en un cuadro (distancia inicial: 42 cm).
+  - **Cámara:** gira alrededor de Otto. Arrastrar el suelo la gira y la rueda hace zoom. Hay botones redondos naranjas, como los de la mesa de bloques: girar ↺ ↻, acercar +, alejar − y volver a la vista de siempre ⌂.
+- **Commit:** (ver git log)  **Probado en la app:** sí (fotos en la app real; las pruebas del escenario pasan, a 30 cuadros/s con el modelo completo)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
