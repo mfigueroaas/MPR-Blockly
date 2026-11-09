@@ -626,6 +626,18 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - con el Otto del usuario en COM7: Verificar y luego la flecha (5,2 s, sin recompilar) y el puerto ocupado (P3).
   - En Otto quedó un programa quieto (posición inicial).
 
+### 2026-11-09 — Otto avisa cuando la subida se demora más de lo normal
+- **Pedido / problema:** a veces la subida se queda mucho rato en "Verificando" y no sale de ahí. El consejo que dan los monitores es desenchufar y enchufar el cable y mandar el programa otra vez. El usuario pidió que Otto lo diga cuando note que se demora más de lo normal.
+- **Archivos:** `www/js/mpr_subida.js`, `www/js/mpr_consejos.js` (pista P5 para el monitor), `www/lang/msg_es.js` (`sub_tarde`, `sub_detener`, `sub_detenido*`), `www/css/blocklino.css` (`.mpr-paso-tarde`) y `DOCUMENTACION_TECNICA.md` (4.9, 4.13 y 13.10).
+- **Qué se hizo:**
+  - **El aviso:** si Verificando o Cargando pasa del doble de lo normal más un margen (Verificando: entre 40 s y 2 min; Cargando: entre 30 s y 1 min), el cuadro muestra "Me estoy demorando más de lo normal. Desenchufa mi cable USB, vuelve a enchufarlo y manda tu programa otra vez", con un botón Detener, y Otto lo dice.
+  - **Al desenchufar:** desde ese momento, si Otto se desenchufa, la app detiene arduino-cli y avrdude con sus procesos hijos. Antes la flecha quedaba "ocupada" y no respondía al volver a mandar. Después dice "¡Bien! Me desenchufaste...".
+  - **Código P5:** al tercero seguido, Otto pide llamar al monitor. Las duraciones de más de 2 min no se guardan como "lo normal".
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, con el límite bajado a 1,5 s:
+  - botón Detener, desenchufe simulado (el puerto desaparece de la lista) y escalamiento al tercero;
+  - no quedan procesos de arduino-cli, avrdude ni cc1plus;
+  - con los límites reales, envío a Otto sin aviso (9,8 s).
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

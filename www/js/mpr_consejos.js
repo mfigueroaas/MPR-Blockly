@@ -65,6 +65,8 @@ var MPRConsejos = {
 	// Si el mismo error sale VECES veces seguidas (sin un envío bueno entre medio), Otto pide llamar al monitor
 	VECES: 3,
 	LLAMAR: 'Ya lo intentamos {n} veces. Levanta la mano y llama a tu monitor: dile "código {codigo}".',
+	// P5: la subida se quedó pegada en Verificando o Cargando y se detuvo (js/mpr_subida.js, avisarDemora)
+	DEMORA_MONITOR: 'Se quedó pegado verificando o cargando: desenchufar y enchufar el cable. Si se repite: cerrar otras ventanas de MPR Blockly, otro puerto USB u otro cable, y reiniciar la app.',
 	SIN_PUERTO_MONITOR: 'No hay puerto elegido: conectar el robot; si no aparece un COM, revisar cable de datos y driver CH340.',
 
 	// {n} se reemplaza por la cantidad de bloques sueltos

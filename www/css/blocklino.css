@@ -645,6 +645,10 @@ html, body { overflow: hidden; }
 #messageDIV .mpr-error-codigo { color: #6f77a3; font-size: 13px; margin: 0 0 8px; }
 #messageDIV .mpr-error-monitor { display: block; font-size: 12px; margin-top: 2px; }
 #messageDIV .mpr-error-llamar { color: #2d2d64; background: #fff1e8; border-left: 4px solid #FF5700; border-radius: 8px; padding: 6px 10px; margin: 0 0 8px; font-size: 14px; font-weight: bold; }
+/* se está demorando más de lo normal (js/mpr_subida.js, avisarDemora): el consejo de desenchufar y un botón Detener */
+#messageDIV .mpr-paso-tarde { color: #2d2d64; background: #fff1e8; border-left: 4px solid #FF5700; border-radius: 8px; padding: 8px 10px; margin: 12px -22px 0 0; font-size: 14px; font-weight: bold; }
+#messageDIV .mpr-paso-tarde button { display: block; margin: 8px 0 0 auto; border: none; border-radius: 10px; padding: 6px 14px; background: #e6e9f7; color: #2d2d64; font-family: inherit; font-size: 14px; font-weight: bold; cursor: pointer; outline: none; }
+#messageDIV .mpr-paso-tarde button:hover { background: #d4d8ee; }
 /* "Otto revisó tu programa" (js/mpr_revision.js): antes de mandar */
 #messageDIV .mpr-rev-titulo { font-weight: bold; font-size: 17px; color: #FF5700; }
 #messageDIV .mpr-rev-texto { color: #2d2d64; margin: 8px 0 14px; font-size: 14px; }

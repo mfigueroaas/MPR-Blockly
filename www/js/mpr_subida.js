@@ -19,12 +19,18 @@ var MPRSubida = {
 	ESPERA_PRUEBA_MS: 6000,
 	CADA_MS_PUERTOS: 2000,
 	ESTIMADO: { compila: 25000, sube: 8000 },     // primera estimación de la barra; luego se usa la última duración
+	// "Se está demorando": tiempo de un paso desde el que Otto aconseja desenchufar y enchufar el cable (el consejo que dan
+	// los monitores). Doble de lo normal más un margen, con un mínimo y un máximo. Ver tardeMs.
+	TARDE: { compila: { margen: 15000, min: 40000, max: 120000 }, sube: { margen: 10000, min: 30000, max: 60000 } },
+	RECORDAR_MAX_MS: 120000,                      // una duración más larga que esto no se toma como "lo normal"
 	PROGRAMA_PRECOMPILA: '// MPR: programa de precalentamiento que escribe la app al abrir; se reemplaza al subir.\n' +
 		'#include <Otto.h>\nOtto Otto;\n\nvoid setup() {\n  Otto.init(2, 3, 4, 5, true, 13);\n  Otto.home();\n}\n\n' +
 		'void loop() {\n  Otto.walk(1, 2000, 1);\n  Otto.playGesture(OttoHappy);\n  Otto.sing(S_happy);\n}\n',
 	listo: false,
 	ocupada: false,
-	precompilando: null
+	precompilando: null,
+	hijos: [],          // procesos en curso (arduino-cli, avrdude): se detienen si el envío se traba
+	cancelada: null     // 'cable' (Otto se desenchufó durante la espera) o 'boton' (el niño apretó Detener)
 };
 
 MPRSubida.msg = function(clave, defecto) {
@@ -125,10 +131,12 @@ MPRSubida.ejecutar = function(exe, args, op) {
 		var t0 = Date.now();
 		var hijo = self.cp.execFile(exe, args, { cwd: op.cwd || self.o.basepath, timeout: op.timeout || 0, windowsHide: true, maxBuffer: 8 * 1024 * 1024 },
 			function(err, stdout, stderr) {
+				self.hijos = self.hijos.filter(function(h) { return h !== hijo; });
 				var texto = err ? String(err.message || err) : String(stdout || '');
 				if (err && stderr && texto.indexOf(String(stderr).trim()) < 0) texto += '\n' + stderr;
 				listo({ ok: !err, texto: texto, ms: Date.now() - t0, matado: !!(err && err.killed) });
 			});
+		if (hijo) self.hijos.push(hijo);
 		if (op.baja && hijo && hijo.pid && self.os.setPriority) {
 			try { self.os.setPriority(hijo.pid, self.os.constants.priority.PRIORITY_BELOW_NORMAL); } catch (e) {}
 		}
@@ -183,11 +191,19 @@ MPRSubida.estimado = function(etapa) {
 };
 
 MPRSubida.recordar = function(etapa, ms) {
+	if (ms > MPRSubida.RECORDAR_MAX_MS) return;
 	try { localStorage.setItem('mpr_t_' + etapa, String(ms)); } catch (e) {}
 };
 
-MPRSubida.paso = function(titulo, sub, estimadoMs) {
+MPRSubida.tardeMs = function(etapa, estimadoMs) {
+	var t = MPRSubida.TARDE[etapa];
+	return Math.max(t.min, Math.min(t.max, estimadoMs * 2 + t.margen));
+};
+
+// etapa: 'compila' o 'sube' (para saber cuándo se está demorando más de lo normal)
+MPRSubida.paso = function(titulo, sub, estimadoMs, etapa) {
 	var self = MPRSubida, div = self.o.messageDiv;
+	self.vigilarDemora(etapa, estimadoMs);
 	div.style.color = '#000000';
 	div.innerHTML = '<div class="mpr-paso-titulo">' + titulo + ' <i class="fa fa-spinner fa-pulse fa-fw"></i></div>' +
 		'<div class="mpr-paso-sub">' + self.escapar(sub) + '</div><div class="mpr-progreso"><div></div></div>';
@@ -197,6 +213,73 @@ MPRSubida.paso = function(titulo, sub, estimadoMs) {
 	void barra.offsetWidth;
 	barra.style.transition = 'transform ' + Math.round(estimadoMs * 1.6) + 'ms cubic-bezier(0.2, 0.6, 0.35, 1)';
 	barra.style.transform = 'scaleX(0.95)';
+};
+
+// ---------------------------------------------------------------- se está demorando más de lo normal
+// A veces la subida se queda pegada en "Verificando ..." o "Cargando ..." (el cable o el puerto quedan trabados). El
+// consejo de los monitores es desenchufar el cable, enchufarlo y mandar otra vez: Otto lo dice cuando el paso pasa de
+// lo normal. Si el niño desenchufa a Otto mientras tanto, la app detiene lo que estaba haciendo (si no, la flecha queda
+// "ocupada" y no responde); también hay un botón Detener.
+MPRSubida.vigilarDemora = function(etapa, estimadoMs) {
+	var self = MPRSubida;
+	self.dejarDeVigilar();
+	if (!etapa) return;
+	self.tDemora = setTimeout(function() { self.avisarDemora(); }, self.tardeMs(etapa, estimadoMs));
+};
+
+MPRSubida.dejarDeVigilar = function() {
+	clearTimeout(MPRSubida.tDemora);
+	clearInterval(MPRSubida.tCable);
+	MPRSubida.tDemora = MPRSubida.tCable = null;
+};
+
+MPRSubida.avisarDemora = function() {
+	var self = MPRSubida, div = self.o.messageDiv;
+	if (!self.ocupada || !div.querySelector('.mpr-progreso')) return;
+	var texto = self.msg('sub_tarde', 'Me estoy demorando más de lo normal. Desenchufa mi cable USB, vuelve a enchufarlo y manda tu programa otra vez.');
+	var caja = document.createElement('div');
+	caja.className = 'mpr-paso-tarde';
+	caja.innerHTML = '<span>' + self.escapar(texto) + '</span><button type="button">' + self.escapar(self.msg('sub_detener', 'Detener')) + '</button>';
+	caja.querySelector('button').onclick = function() { self.cancelar('boton'); };
+	div.appendChild(caja);
+	if (typeof MPRMascota != 'undefined' && MPRMascota.decir) MPRMascota.decir(texto, { anim: 'pensar', prio: 3, ms: 30000 });
+	// mientras tanto, cada segundo: si el puerto de Otto desaparece (lo desenchufaron), se detiene todo
+	var com = self.o.portserie.value;
+	self.tCable = setInterval(function() {
+		self.o.sp.list(function(err, ports) {
+			if (err || !ports || !self.ocupada || self.cancelada) return;
+			if (!ports.some(function(p) { return p.comName == com; })) self.cancelar('cable');
+		});
+	}, 1000);
+};
+
+// Detiene los procesos en curso (con sus hijos: arduino-cli lanza avr-gcc, avrdude...). La subida termina sola cuando
+// los procesos mueren, y muestra el mensaje de "detenido" en vez del error.
+MPRSubida.cancelar = function(motivo) {
+	var self = MPRSubida;
+	if (!self.ocupada || self.cancelada) return;
+	self.cancelada = motivo;
+	self.dejarDeVigilar();
+	self.hijos.forEach(function(h) {
+		try { self.cp.execFile('taskkill', ['/pid', String(h.pid), '/T', '/F'], { windowsHide: true }, function() {}); } catch (e) {}
+		try { h.kill(); } catch (e) {}
+	});
+};
+
+MPRSubida.mostrarDetenido = function() {
+	var self = MPRSubida, div = self.o.messageDiv;
+	var texto = self.cancelada == 'cable' ?
+		self.msg('sub_detenido_cable', '¡Bien! Me desenchufaste y detuve el envío. Vuelve a enchufarme, espera a que aparezca mi puerto arriba y manda tu programa otra vez.') :
+		self.msg('sub_detenido', 'Desenchufa mi cable USB, vuelve a enchufarlo y manda tu programa otra vez.');
+	div.style.color = '#000000';
+	div.innerHTML = '<div class="mpr-rev-titulo">' + self.escapar(self.msg('sub_detenido_titulo', 'Detuve el envío')) + '</div>' +
+		'<div class="mpr-error-texto">' + self.escapar(texto) + '</div>' +
+		self.pie('P5', typeof MPRConsejos != 'undefined' && MPRConsejos.DEMORA_MONITOR) + self.o.quitDiv;
+	$('#message').modal('show');
+	var ll = div.querySelector('.mpr-error-llamar');
+	if (typeof MPRMascota != 'undefined' && MPRMascota.decir) {
+		MPRMascota.decir((self.cancelada == 'cable' ? '' : self.msg('sub_detenido_titulo', 'Detuve el envío') + '. ') + texto + (ll ? ' ' + ll.textContent.replace(/^\W+/, '') : ''), { anim: 'pensar', prio: 3, ms: 20000 });
+	}
 };
 
 // Pie de los errores: el código para el monitor y, si el mismo error ya salió varias veces seguidas, el aviso de
@@ -212,6 +295,7 @@ MPRSubida.pie = function(codigo, monitor) {
 
 MPRSubida.mostrarError = function(etapa, texto) {
 	var self = MPRSubida, div = self.o.messageDiv;
+	if (self.cancelada) { self.mostrarDetenido(); return; }   // el error es porque se detuvieron los procesos
 	var e = (typeof MPRConsejos != 'undefined' && MPRConsejos.explicar) ? MPRConsejos.explicar(texto) : null;
 	var titulo = etapa == 'compila' ? self.msg('sub_err_compila', 'No pude preparar tu programa') : self.msg('sub_err_sube', 'No pude enviar el programa a Otto');
 	div.style.color = '#ff0000';   // rojo: la mascota lo lee como error
@@ -237,9 +321,11 @@ MPRSubida.verificar = function(codigo) {
 	var self = MPRSubida, carte = localStorage.getItem('card');
 	if (self.ocupada) return;
 	self.ocupada = true;
+	self.cancelada = null;
 	var esperando = self.precompilando;
-	self.paso(Blockly.Msg.check, self.msg('sub_verifica', 'Reviso tu programa y lo preparo para Otto.'), self.estimado('compila') + (esperando ? 10000 : 0));
+	self.paso(Blockly.Msg.check, self.msg('sub_verifica', 'Reviso tu programa y lo preparo para Otto.'), self.estimado('compila') + (esperando ? 10000 : 0), 'compila');
 	(esperando || Promise.resolve()).then(function() {
+		if (self.cancelada) return { ok: false, texto: 'detenido' };
 		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
 		return self.compilar(window.profile[carte].upload_arg, false);
 	}).then(function(c) {
@@ -254,7 +340,13 @@ MPRSubida.verificar = function(codigo) {
 		setTimeout(function() { if (div.style.color == 'rgb(0, 144, 0)') $('#message').modal('hide'); }, 3000);
 	}).catch(function(e) {
 		self.mostrarError('compila', String(e && e.stack || e));
-	}).then(function() { self.ocupada = false; });
+	}).then(function() { self.terminar(); });
+};
+
+MPRSubida.terminar = function() {
+	MPRSubida.dejarDeVigilar();
+	MPRSubida.ocupada = false;
+	MPRSubida.cancelada = null;
 };
 
 // ---------------------------------------------------------------- subir (flecha naranja)
@@ -269,13 +361,15 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 		return;
 	}
 	self.ocupada = true;
+	self.cancelada = null;
 	// "Verificar" ya compiló exactamente este código para esta placa: no se vuelve a compilar
 	var v = self.verificado, verificado = !!(v && v.codigo == codigo && v.placa == carte);
 	self.verificado = null;
 	localStorage.setItem('verif', false);
 	var esperando = self.precompilando;
-	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0));
+	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0), 'compila');
 	(esperando || Promise.resolve()).then(function() {
+		if (self.cancelada) return [{ ok: false, texto: 'detenido' }, {}];
 		var compilacion;
 		if (verificado) compilacion = Promise.resolve({ ok: true, saltada: true });
 		else {
@@ -295,7 +389,8 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 			aviso = '<div class="mpr-ok-placa">' + self.escapar(self.msg('sub_placa', 'Tu Otto usa la placa "{placa}": la cambié en la lista.')
 				.replace('{placa}', $('#boards option:selected').text().replace(/^\W+/, '').trim())) + '</div>';
 		}
-		self.paso(Blockly.Msg.upload, self.msg('sub_paso2'), self.estimado('sube'));
+		if (self.cancelada) { self.mostrarDetenido(); return; }
+		self.paso(Blockly.Msg.upload, self.msg('sub_paso2'), self.estimado('sube'), 'sube');
 		return self.enviar(window.profile[carte].upload_arg, com).then(function(s) {
 			if (!s.ok) { self.mostrarError('sube', s.texto); return; }
 			self.recordar('sube', s.ms);
@@ -307,7 +402,7 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	}).catch(function(e) {
 		self.mostrarError('sube', String(e && e.stack || e));
 	}).then(function() {
-		self.ocupada = false;
+		self.terminar();
 		if (alTerminar) { try { alTerminar(subio, com); } catch (e) { console.log(e); } }
 	});
 };

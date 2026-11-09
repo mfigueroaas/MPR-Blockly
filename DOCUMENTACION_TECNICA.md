@@ -211,6 +211,11 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - **Placa automática:** mientras compila, `avrdude -n` (solo lee la firma del chip, no escribe) prueba 115200 baudios ("Nano") y 57600 ("Nano Old"), con 6 s de límite cada una, empezando por la recordada para ese puerto (`localStorage.mpr_placa_<COM>`) y la elegida. Lo compilado sirve para las dos (mismo chip; comprobado con el robot), así que se sube con la que respondió, se cambia la lista y se avisa. Con la placa equivocada avrdude tardaba ~103 s en rendirse (medido). Si el robot no responde a ninguna velocidad o el puerto está ocupado, el error sale enseguida (~7 s) sin intentar subir.
 - **Pasos claros:** "Verificando ..." (paso 1 de 2) y "Cargando ..." (paso 2 de 2), con una barra que avanza sola con una transición de `transform` según la última duración (`mpr_t_compila`, `mpr_t_sube`). Se mantienen las palabras que muestra el manual (Verificando, Cargando, OK code uploaded) y se agrega "¡Tu programa ya está en Otto!".
 - **Errores explicados:** título ("No pude preparar tu programa" o "No pude enviar el programa a Otto"), la explicación de `MPRConsejos.explicar`, el código para el monitor con su pista (4.13) y el texto técnico plegado ("Ver detalle técnico (para tu profe)").
+- **Se está demorando más de lo normal:** a veces la subida se queda pegada en "Verificando ..." o "Cargando ...", y el consejo de los monitores es desenchufar el cable, enchufarlo y mandar otra vez.
+  - **Cuándo avisa:** si un paso pasa de su límite (`MPRSubida.TARDE`, `tardeMs`): el doble de lo normal más un margen. Verificando: entre 40 s y 2 min. Cargando: entre 30 s y 1 min. Con los tiempos del notebook, 40 s y 30 s.
+  - **Qué hace:** el cuadro muestra el consejo con un botón "Detener", y Otto lo dice.
+  - **Al desenchufar:** desde ese momento revisa el puerto cada segundo. Si Otto se desenchufa, detiene lo que estaba en curso: arduino-cli y avrdude con sus hijos, con `taskkill /T /F`, porque si no la flecha queda "ocupada" y no responde. Luego dice "¡Bien! Me desenchufaste... vuelve a enchufarme y manda tu programa otra vez".
+  - Se cuenta como el código **P5**: al tercero seguido, Otto pide llamar al monitor. Una duración de más de 2 min no se guarda como "lo normal".
 - **Verificar y luego la flecha:** si el código y la placa son los mismos que se verificaron bien, la flecha no vuelve a compilar (`MPRSubida.verificado`). Antes, Verificar dejaba la marca aunque fallara, y la flecha podía mandar lo último que sí había compilado. Textos en `msg_es.js` (`sub_*`); el aviso sin puerto es `Blockly.Msg.com2`.
 - **Precompilación:** 8 s después de abrir (sin recorrido ni carga de Otto 3D en curso), si en `%TEMP%` no está lo compilado para ese programa y esa placa (`build.options.json` de las carpetas `arduino-sketch-*` y su carpeta `libraries\Otto`), compila un programa de Otto con prioridad "por debajo de lo normal" (la heredan avr-g++ y cc1plus; comprobado). Si el niño sube mientras tanto, espera a que termine. En el notebook la primera subida bajó de ~26 s a 11 s.
 - Los procesos se lanzan con `execFile` y `windowsHide` (sin consola ni comillas).
@@ -288,6 +293,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
   | B5 | Algo repetido (`redefinition`) | Quitar la configuración o función duplicada |
   | B6 | Nombre que no existe (`was not declared`) | Ver en el detalle qué variable o función falta |
   | M1 | Programa más grande que la memoria del Nano | Quitar canciones largas o bloques repetidos |
+  | P5 | Se quedó pegado verificando o cargando y se detuvo (Detener, o el niño desenchufó el cable) | Desenchufar y enchufar; si se repite: cerrar otras MPR Blockly, otro USB u otro cable, reiniciar la app |
   | A1 | Falta arduino-cli o sus archivos (`ENOENT`, `spawn`) | Reinstalar MPR Blockly |
   | A9 | Error no reconocido | Abrir "Ver detalle técnico" y leer la primera línea con "error" |
 
@@ -664,3 +670,4 @@ Equipo: Ryzen 5 4600H con gráfica Radeon integrada (ANGLE/Direct3D 11), 16 GB, 
   - Se probaron 11 casos de revisión con sus botones, los ejemplos, los códigos de 11 errores reales, Verificar y luego la flecha (no recompila), la subida real y el puerto ocupado (P3).
   - Al final quedó en Otto un programa quieto: Configuración Otto y posición inicial.
 - **Pendiente:** ver en el colegio si los niños entienden los cuadros y si los monitores usan los códigos. Se podría imprimir la tabla de códigos para cada mesa.
+- **Agregado el mismo día:** el aviso "me estoy demorando más de lo normal" (4.9, código P5). Se probó en la app con el límite bajado a 1,5 s: botón Detener, desenchufe simulado, sin procesos colgados y el escalamiento al tercero. El envío normal sube sin aviso.
