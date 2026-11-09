@@ -611,6 +611,21 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - **Cámara:** gira alrededor de Otto. Arrastrar el suelo la gira y la rueda hace zoom. Hay botones redondos naranjas, como los de la mesa de bloques: girar ↺ ↻, acercar +, alejar − y volver a la vista de siempre ⌂.
 - **Commit:** (ver git log)  **Probado en la app:** sí (fotos en la app real; las pruebas del escenario pasan, a 30 cuadros/s con el modelo completo)
 
+### 2026-11-09 — Otto ataja los errores de programación: bloques sueltos, revisión antes de mandar y códigos para el monitor
+- **Pedido / problema:** los bloques sueltos fuera de Configuración + Bucle entraban igual al programa. Por ejemplo, el niño cambiaba Caminar por Bailar, dejaba el bloque viejo afuera y Otto lo hacía igual, en un orden raro. El usuario pidió que Otto ataje ese y todos los errores posibles (no detectar el puerto COM, error al mandar...), ver cada código de error y su solución, y que Otto ayude primero y después venga el monitor de la mesa, para ahorrar tiempo.
+- **Archivos:** `www/js/mpr_revision.js` (nuevo), `www/js/mpr_consejos.js`, `www/js/mpr_subida.js`, `www/js/mpr_mascota.js`, `www/js/mpr_simulador.js`, `index.js`, `www/index.html`, `www/css/blocklino.css`, `www/lang/msg_es.js` y `DOCUMENTACION_TECNICA.md` (4.9, 4.13 y 13.10).
+- **Qué se hizo:**
+  - **Bloques sueltos:** ya no entran al Bucle. Su configuración (Configuración Otto o sensor que quedó afuera) se mantiene. Los 85 ejemplos que generan código quedan iguales.
+  - **Antes de mandar (flecha y Verificar):** Otto revisa el programa, muestra el problema y marca con borde amarillo los bloques en cuestión. Los problemas que revisa: falta Configuración + Bucle, falta Configuración Otto, sensor sin configurar, espacio vacío, configuración afuera, bloques sueltos y Bucle vacío. Cuando se puede, ofrece arreglarlo ("Ponlo tú, Otto", "Llevar a la papelera"). Probar en pantalla avisa lo mismo.
+  - **Códigos de error:** P1 a P4 (puerto y cable), B2 a B6 (bloques), M1 (memoria) y A1/A9 (app). Cada uno trae un texto para el niño y una pista para el monitor, incluidos los mensajes de Windows en español ("Acceso denegado", "El sistema no puede encontrar el archivo especificado"). Al tercer error igual seguido, Otto pide llamar al monitor con el código. Se corrigieron consejos equivocados: el sensor sin configurar decía "falta crear la variable", el "esperar" vacío daba un mensaje genérico y un puerto que no existe se tomaba como ocupado.
+  - **Verificar:** ahora usa el mismo cuadro y los mismos errores. Solo si compila, la flecha se salta la compilación. Antes quedaba marcado aunque fallara, y la flecha podía mandar lo último que sí compiló.
+  - **Cuadro de subida:** el `data-toggle` del botón cerraba el cuadro en el mismo clic, así que el primer paso "Verificando ..." no se veía.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` (Electron 4):
+  - 11 casos de revisión con sus botones y fotos;
+  - los ejemplos y los códigos de 11 errores reales;
+  - con el Otto del usuario en COM7: Verificar y luego la flecha (5,2 s, sin recompilar) y el puerto ocupado (P3).
+  - En Otto quedó un programa quieto (posición inicial).
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

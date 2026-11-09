@@ -496,11 +496,14 @@ MPRMascota.leerMensaje = function() {
 
 	if (r > 200 && g < 80 && b < 80) {   // rojo: error
 		var com2 = (typeof Blockly != 'undefined' && Blockly.Msg && Blockly.Msg.com2 || '').toLowerCase().replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-		if (com2 && texto.indexOf(com2) >= 0) { MPRMascota.decir(MPRConsejos.SIN_PUERTO, { anim: 'pensar', prio: 3, ms: 20000 }); return; }
+		// si el mismo error ya salió varias veces, el cuadro trae el aviso de llamar al monitor: Otto lo dice al final
+		var ll = el.querySelector('.mpr-error-llamar');
+		var llamar = ll ? ' ' + ll.textContent.replace(/^\W+/, '') : '';
+		if (com2 && texto.indexOf(com2) >= 0) { MPRMascota.decir(MPRConsejos.SIN_PUERTO + llamar, { anim: 'pensar', prio: 3, ms: 20000 }); return; }
 		// el cuadro de subida (mpr_subida.js) ya trae la explicación: se busca solo en el detalle técnico
 		var det = el.querySelector('.mpr-detalle pre');
 		var e = MPRConsejos.explicar(det ? det.textContent : texto);
-		if (e) { MPRMascota.decir(e.texto, { anim: e.anim || 'alerta', prio: 3, ms: 25000 }); return; }
+		if (e) { MPRMascota.decir(e.texto + llamar, { anim: e.anim || 'alerta', prio: 3, ms: 25000 }); return; }
 	} else if (g > 100 && r < 60 && b < 60) {   // verde: éxito
 		var subida = /upload|cargad|subid|cargando|ok code/.test(texto) && !/ready to upload|listo para/.test(texto);
 		MPRMascota.decir(subida ? MPRConsejos.EXITO_CARGA : MPRConsejos.EXITO_VERIFICA, { anim: 'celebrar', prio: 3, ms: 9000 });

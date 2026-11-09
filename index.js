@@ -166,7 +166,7 @@ window.addEventListener('load', function load(event) {
 	$('#btn_factory').on('click', function(){
 		ipcRenderer.send("factory", "")
 	})
-	$('#btn_verify').on('click', function(){
+	$('#btn_verify').on('click', function(ev){
 		if (localStorage.getItem('content') == "off") {
 			var data = editor.getValue()
 		} else {
@@ -175,6 +175,16 @@ window.addEventListener('load', function load(event) {
 		var carte = localStorage.getItem('card')
 		var prog = localStorage.getItem('prog')
 		var com = portserie.value
+		// MPR: Arduino: Otto revisa los bloques y explica los errores con su código (www/js/mpr_revision.js, mpr_subida.js)
+		if (prog != "python" && typeof MPRSubida != 'undefined' && MPRSubida.listo) {
+			// el cuadro lo abre MPR: sin esto, el data-toggle del botón lo cerraba en el mismo clic
+			ev.stopPropagation()
+			if (localStorage.getItem('content') != "off" && typeof MPRRevision != 'undefined' && MPRRevision.antesDeMandar(messageDiv, function(){
+				MPRSubida.verificar($('#pre_previewArduino').text())
+			})) return
+			MPRSubida.verificar(data)
+			return
+		}
 		messageDiv.style.color = '#000000'
 		messageDiv.innerHTML = Blockly.Msg.check + '<i class="fa fa-spinner fa-pulse fa-1_5x fa-fw"></i>'
 
@@ -248,13 +258,23 @@ window.addEventListener('load', function load(event) {
 		}
 		localStorage.setItem("verif",true)
 	})
-	$('#btn_flash').on('click', function(){
+	$('#btn_flash').on('click', function(ev){
 
 		var data = $('#pre_previewArduino').text()
 		var carte = localStorage.getItem('card')
 		var prog = profile[carte].prog
-		// MPR: placas Arduino: pasos claros, placa automática y errores explicados (www/js/mpr_subida.js)
-		if (prog != "python" && typeof MPRSubida != 'undefined' && MPRSubida.listo) { MPRSubida.cargar(data); return }
+		// MPR: placas Arduino: pasos claros, placa automática y errores explicados (www/js/mpr_subida.js). Antes, Otto
+		// revisa los bloques (www/js/mpr_revision.js); en modo código se manda lo escrito en el editor.
+		if (prog != "python" && typeof MPRSubida != 'undefined' && MPRSubida.listo) {
+			// el cuadro lo abre MPR: sin esto, el data-toggle del botón lo cerraba en el mismo clic
+			ev.stopPropagation()
+			if (localStorage.getItem('content') == "off") { MPRSubida.cargar(editor.getValue()); return }
+			if (typeof MPRRevision != 'undefined' && MPRRevision.antesDeMandar(messageDiv, function(){
+				MPRSubida.cargar($('#pre_previewArduino').text())
+			})) return
+			MPRSubida.cargar(data)
+			return
+		}
 		var speed = profile[carte].speed
 		var cpu = profile[carte].cpu
 		var com = portserie.value

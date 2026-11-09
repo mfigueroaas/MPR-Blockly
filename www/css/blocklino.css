@@ -641,6 +641,20 @@ html, body { overflow: hidden; }
 #messageDIV .mpr-detalle { color: #6f77a3; font-size: 12px; }
 #messageDIV .mpr-detalle summary { cursor: pointer; outline: none; }
 #messageDIV .mpr-detalle pre { max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 11px; margin: 6px 0 0; border-radius: 8px; background: #f4f5fb; border: 1px solid #e6e9f7; color: #2d2d64; }
+/* código para el monitor (P3, B4...) y aviso de llamarlo cuando el mismo error se repite */
+#messageDIV .mpr-error-codigo { color: #6f77a3; font-size: 13px; margin: 0 0 8px; }
+#messageDIV .mpr-error-monitor { display: block; font-size: 12px; margin-top: 2px; }
+#messageDIV .mpr-error-llamar { color: #2d2d64; background: #fff1e8; border-left: 4px solid #FF5700; border-radius: 8px; padding: 6px 10px; margin: 0 0 8px; font-size: 14px; font-weight: bold; }
+/* "Otto revisó tu programa" (js/mpr_revision.js): antes de mandar */
+#messageDIV .mpr-rev-titulo { font-weight: bold; font-size: 17px; color: #FF5700; }
+#messageDIV .mpr-rev-texto { color: #2d2d64; margin: 8px 0 14px; font-size: 14px; }
+#messageDIV .mpr-rev-acc { text-align: right; margin-right: -22px; }
+#messageDIV .mpr-rev-acc button { border: none; border-radius: 10px; padding: 7px 14px; background: #e6e9f7; color: #2d2d64; font-family: inherit; font-size: 14px; font-weight: bold; white-space: nowrap; cursor: pointer; outline: none; margin: 4px 0 0 8px; }
+#messageDIV .mpr-rev-acc button:hover { background: #d4d8ee; }
+#messageDIV .mpr-rev-acc button.mpr-rev-pri { background: #FF5700; color: #ffffff; }
+#messageDIV .mpr-rev-acc button.mpr-rev-pri:hover { background: #ff7a2e; }
+/* bloques con un problema: borde amarillo grueso (se quita solo al cambiar algo en la mesa) */
+.blocklySvg .mpr-marcado > .blocklyPath { stroke: #FFC400; stroke-width: 5px; }
 #portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }   /* verde = estado "Otto conectado" */
 
 /* ---------------------------------------------------------------- botones de la barra */

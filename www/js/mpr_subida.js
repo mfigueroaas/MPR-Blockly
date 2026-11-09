@@ -199,6 +199,17 @@ MPRSubida.paso = function(titulo, sub, estimadoMs) {
 	barra.style.transform = 'scaleX(0.95)';
 };
 
+// Pie de los errores: el código para el monitor y, si el mismo error ya salió varias veces seguidas, el aviso de
+// llamarlo (Otto ayuda primero; el monitor llega sabiendo qué pasó). Lo lee la mascota (.mpr-error-llamar).
+MPRSubida.pie = function(codigo, monitor) {
+	var self = MPRSubida, C = typeof MPRConsejos != 'undefined' ? MPRConsejos : null;
+	if (!C || !codigo) return '';
+	var llamar = C.llamar(codigo, C.registrar(codigo));
+	return (llamar ? '<div class="mpr-error-llamar">✋ ' + self.escapar(llamar) + '</div>' : '') +
+		'<div class="mpr-error-codigo">' + self.escapar(self.msg('sub_codigo', 'Código para tu monitor: {codigo}').replace('{codigo}', codigo)) +
+		(monitor ? '<span class="mpr-error-monitor">' + self.escapar(monitor) + '</span>' : '') + '</div>';
+};
+
 MPRSubida.mostrarError = function(etapa, texto) {
 	var self = MPRSubida, div = self.o.messageDiv;
 	var e = (typeof MPRConsejos != 'undefined' && MPRConsejos.explicar) ? MPRConsejos.explicar(texto) : null;
@@ -206,9 +217,44 @@ MPRSubida.mostrarError = function(etapa, texto) {
 	div.style.color = '#ff0000';   // rojo: la mascota lo lee como error
 	div.innerHTML = '<div class="mpr-error-titulo">🛑 ' + self.escapar(titulo) + '</div>' +
 		(e ? '<div class="mpr-error-texto">' + self.escapar(e.texto) + '</div>' : '') +
+		(e ? self.pie(e.codigo, e.monitor) : '') +
 		'<details class="mpr-detalle"><summary>' + self.escapar(self.msg('sub_detalle', 'Ver detalle técnico')) + '</summary><pre>' +
 		self.escapar(texto) + '</pre></details>' + self.o.quitDiv;
 	$('#message').modal('show');
+};
+
+MPRSubida.sinPuerto = function() {
+	var self = MPRSubida, C = typeof MPRConsejos != 'undefined' ? MPRConsejos : null;
+	self.o.messageDiv.style.color = '#ff0000';
+	self.o.messageDiv.innerHTML = Blockly.Msg.com2 + self.pie('P1', C && C.SIN_PUERTO_MONITOR) + self.o.quitDiv;
+	$('#message').modal('show');
+};
+
+// ---------------------------------------------------------------- verificar (botón del visto bueno)
+// Como el paso 1 de la flecha naranja: mismo cuadro, errores explicados con su código. Solo si compila queda
+// "verificado" ese mismo código (antes quedaba marcado aunque fallara y la flecha mandaba lo último que sí compiló).
+MPRSubida.verificar = function(codigo) {
+	var self = MPRSubida, carte = localStorage.getItem('card');
+	if (self.ocupada) return;
+	self.ocupada = true;
+	var esperando = self.precompilando;
+	self.paso(Blockly.Msg.check, self.msg('sub_verifica', 'Reviso tu programa y lo preparo para Otto.'), self.estimado('compila') + (esperando ? 10000 : 0));
+	(esperando || Promise.resolve()).then(function() {
+		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
+		return self.compilar(window.profile[carte].upload_arg, false);
+	}).then(function(c) {
+		if (!c.ok) { self.verificado = null; self.mostrarError('compila', c.texto); return; }
+		self.recordar('compila', c.ms);
+		self.verificado = { codigo: codigo, placa: carte };
+		if (typeof MPRConsejos != 'undefined') MPRConsejos.registrar(null);
+		var div = self.o.messageDiv;
+		div.style.color = '#009000';
+		div.innerHTML = Blockly.Msg.check + ': ✅ Code is ready to upload' + self.o.quitDiv;
+		$('#message').modal('show');
+		setTimeout(function() { if (div.style.color == 'rgb(0, 144, 0)') $('#message').modal('hide'); }, 3000);
+	}).catch(function(e) {
+		self.mostrarError('compila', String(e && e.stack || e));
+	}).then(function() { self.ocupada = false; });
 };
 
 // ---------------------------------------------------------------- subir (flecha naranja)
@@ -218,14 +264,14 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	if (self.ocupada) { if (alTerminar) alTerminar(false); return; }
 	var com = self.o.portserie.value, carte = localStorage.getItem('card');
 	if (com == 'com') {
-		self.o.messageDiv.style.color = '#ff0000';
-		self.o.messageDiv.innerHTML = Blockly.Msg.com2 + self.o.quitDiv;
-		$('#message').modal('show');
+		self.sinPuerto();
 		if (alTerminar) alTerminar(false);
 		return;
 	}
 	self.ocupada = true;
-	var verificado = localStorage.getItem('verif') == 'true';   // modo código: "Verificar" ya compiló
+	// "Verificar" ya compiló exactamente este código para esta placa: no se vuelve a compilar
+	var v = self.verificado, verificado = !!(v && v.codigo == codigo && v.placa == carte);
+	self.verificado = null;
 	localStorage.setItem('verif', false);
 	var esperando = self.precompilando;
 	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0));
@@ -255,6 +301,7 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 			self.recordar('sube', s.ms);
 			if (!prueba.saltada) localStorage.setItem('mpr_placa_' + com, carte);
 			subio = true;
+			if (typeof MPRConsejos != 'undefined') MPRConsejos.registrar(null);
 			self.o.alSubir(aviso);
 		});
 	}).catch(function(e) {

@@ -206,11 +206,12 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - El manual 2025 pide arrastrar "Configuración + Bucle" y "Configuración Otto". Si el niño agrega otro, Otto le explica que ya están (4.7, bloques que van una sola vez). Un segundo Configuración + Bucle lo quita el propio bloque (`onchange` con `undo`, heredado); un segundo Configuración Otto no hace daño (mismas claves en el código generado).
 
 ### 4.9 Subida a Otto: puerto y placa automáticos, pasos claros y precompilación (noviembre 2026)
-- **Dónde:** `www/js/mpr_subida.js` (objeto `MPRSubida`). `index.js` lo inicia (`MPRSubida.iniciar`, con `sp`, `arduino_basepath`, la lista de puertos, el cuadro de mensajes y `uploadOK`) y la flecha naranja de las placas Arduino llama a `MPRSubida.cargar`. Si el módulo no está (por ejemplo, en el navegador), `index.js` sigue con su código original. El botón "Verificar" (solo en modo código) no cambió.
+- **Dónde:** `www/js/mpr_subida.js` (objeto `MPRSubida`). `index.js` lo inicia (`MPRSubida.iniciar`, con `sp`, `arduino_basepath`, la lista de puertos, el cuadro de mensajes y `uploadOK`) y la flecha naranja de las placas Arduino llama a `MPRSubida.cargar` (antes, Otto revisa los bloques: 4.13). El botón "Verificar" usa `MPRSubida.verificar` (mismo cuadro y errores explicados). Si el módulo no está (por ejemplo, en el navegador), `index.js` sigue con su código original. En los dos botones se detiene el `data-toggle="modal"` del HTML (`ev.stopPropagation()`): abría y cerraba el cuadro en el mismo clic, así que el primer paso "Verificando ..." no se veía.
 - **Puerto automático:** revisa los puertos cada 2 s (`sp.list`) y al pasar el mouse por la lista. Si no hay puerto elegido y aparece un solo puerto USB, o un solo robot conocido por su VID (CH340, FTDI, Arduino, CP210x), lo elige y Otto dice "¡Me conectaste!". Si el puerto elegido desaparece, la lista vuelve a "Seleccionar puerto USB". Con puerto elegido, la lista lleva un anillo verde (`.mpr-puerto-listo`). Al abrir la app, como antes, se elige el primero.
 - **Placa automática:** mientras compila, `avrdude -n` (solo lee la firma del chip, no escribe) prueba 115200 baudios ("Nano") y 57600 ("Nano Old"), con 6 s de límite cada una, empezando por la recordada para ese puerto (`localStorage.mpr_placa_<COM>`) y la elegida. Lo compilado sirve para las dos (mismo chip; comprobado con el robot), así que se sube con la que respondió, se cambia la lista y se avisa. Con la placa equivocada avrdude tardaba ~103 s en rendirse (medido). Si el robot no responde a ninguna velocidad o el puerto está ocupado, el error sale enseguida (~7 s) sin intentar subir.
 - **Pasos claros:** "Verificando ..." (paso 1 de 2) y "Cargando ..." (paso 2 de 2), con una barra que avanza sola con una transición de `transform` según la última duración (`mpr_t_compila`, `mpr_t_sube`). Se mantienen las palabras que muestra el manual (Verificando, Cargando, OK code uploaded) y se agrega "¡Tu programa ya está en Otto!".
-- **Errores explicados:** título ("No pude preparar tu programa" o "No pude enviar el programa a Otto"), la explicación de `MPRConsejos.explicar` y el texto técnico plegado ("Ver detalle técnico (para tu profe)"). Textos en `msg_es.js` (`sub_*`); el aviso sin puerto es `Blockly.Msg.com2`.
+- **Errores explicados:** título ("No pude preparar tu programa" o "No pude enviar el programa a Otto"), la explicación de `MPRConsejos.explicar`, el código para el monitor con su pista (4.13) y el texto técnico plegado ("Ver detalle técnico (para tu profe)").
+- **Verificar y luego la flecha:** si el código y la placa son los mismos que se verificaron bien, la flecha no vuelve a compilar (`MPRSubida.verificado`). Antes, Verificar dejaba la marca aunque fallara, y la flecha podía mandar lo último que sí había compilado. Textos en `msg_es.js` (`sub_*`); el aviso sin puerto es `Blockly.Msg.com2`.
 - **Precompilación:** 8 s después de abrir (sin recorrido ni carga de Otto 3D en curso), si en `%TEMP%` no está lo compilado para ese programa y esa placa (`build.options.json` de las carpetas `arduino-sketch-*` y su carpeta `libraries\Otto`), compila un programa de Otto con prioridad "por debajo de lo normal" (la heredan avr-g++ y cc1plus; comprobado). Si el niño sube mientras tanto, espera a que termine. En el notebook la primera subida bajó de ~26 s a 11 s.
 - Los procesos se lanzan con `execFile` y `windowsHide` (sin consola ni comillas).
 
@@ -256,6 +257,42 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 - **Probado con el Otto del usuario:** tenía −1, −1, −1, −1 (EEPROM nunca calibrada). Se guardó un ajuste de prueba y se restauraron los originales, verificados al reiniciar.
 - **Confirmación:** cada cambio que Otto aplica se muestra en el panel ("Otto aplicó: ... todavía no está guardado"); si no responde al guardar en 4 s, se avisa. Cada marca de la barra es 1°: los cambios pequeños casi no se ven en el robot.
 - **Trampa:** el programa lee cada orden como una línea completa (`readStringUntil` + `sscanf`); con `Serial.parseInt` los números se desfasaban entre órdenes.
+
+### 4.13 Otto revisa el programa antes de mandarlo y códigos de error para el monitor (noviembre 2026)
+- **Pedido:** que los bloques sueltos no se cuelen en el programa (los niños cambian Caminar por Bailar y dejan el bloque viejo afuera) y que Otto ataje los errores típicos y diga qué hacer; Otto ayuda primero y, si no se arregla, el niño llama al monitor de la mesa con un código.
+- **Bloques sueltos (generador):** `www/js/mpr_revision.js` envuelve `Blockly.Arduino.blockToCode`. Un bloque de arriba que no es Configuración + Bucle, una función ni un bloque de definición (`MPRRevision.ARRIBA`) se genera igual, para conservar lo que aporta a la configuración (`#include`, pines, `Otto.init`), pero su código del Bucle se descarta. Antes, Blockly lo ponía dentro de `loop()`, antes o después según su posición en la mesa. En los 85 ejemplos que generan código, el código queda igual; `ledpot`, `ledfadepot` y `matrixhands` ya no generaban antes (usan bloques sin generador).
+- **Revisión antes de mandar** (`MPRRevision.revisar`, desde la flecha y desde Verificar). Muestra el problema más importante en el cuadro "Otto revisó tu programa", marca los bloques con un borde amarillo (clase `mpr-marcado`, que se quita al cambiar algo en la mesa), y Otto dice "¡Espera! ... mira el cuadro". Los arreglos se deshacen con un solo Ctrl + Z.
+
+  | Problema | ¿Se puede mandar igual? | Arreglo de Otto |
+  |---|---|---|
+  | Falta Configuración + Bucle | no | la pone y mete adentro la fila suelta del niño |
+  | Bloques de Otto sin Configuración Otto | no | la pone al principio de Configuración (pines 2, 3, 4, 5 y 13) |
+  | Bloque de distancia sin la configuración del sensor | no | la pone después de Configuración Otto (Trig 8, Echo 9) |
+  | Un bloque con un espacio vacío (si, comparar, repetir, esperar...) | no | solo lo marca (el niño lo completa) |
+  | Configuración Otto o el sensor afuera de Configuración + Bucle | sí ("Mandar igual") | la mete en Configuración |
+  | Bloques sueltos | sí ("Mandar sin los sueltos") | los lleva a la papelera |
+  | Bucle vacío | sí | — |
+
+  Después de arreglar, revisa otra vez y, si no queda nada, manda. Probar en pantalla muestra el mismo aviso (sin detener la prueba).
+- **Códigos de error** (`MPRConsejos.ERRORES`, en `www/js/mpr_consejos.js`). Cada error de compilar o subir tiene un código corto, para decirlo en voz alta en una mesa con ruido. El cuadro muestra "Código para tu monitor: P3" con una pista para el monitor. Si el mismo código sale 3 veces seguidas sin un envío bueno entre medio (`MPRConsejos.VECES`), el cuadro y Otto dicen "Levanta la mano y llama a tu monitor: dile «código P3»".
+
+  | Código | Qué pasa (texto real que lo identifica) | Qué hace el monitor |
+  |---|---|---|
+  | P1 | No hay puerto elegido | Conectar el robot; si no aparece un COM: cable de datos y driver CH340 (`driversUSB`) |
+  | P2 | El puerto ya no existe ("El sistema no puede encontrar el archivo especificado") | Revisar cable y conector; ver que aparezca un COM en la lista |
+  | P3 | Puerto ocupado ("Acceso denegado", `can't open device`) | Cerrar otra MPR Blockly, Arduino IDE o monitor serie; desenchufar y enchufar; reiniciar la app |
+  | P4 | La placa no responde (`not in sync`, `programmer is not responding`) | Otro cable de datos u otro USB; ver que la placa tenga luz (la app ya prueba Nano y Nano Old) |
+  | B2 | Falta Configuración Otto (`'Otto' was not declared`) | Ponerla en Configuración (Otto también lo ofrece antes) |
+  | B3 | Falta la configuración del sensor (`'ultrasound_distance_simple' was not declared`) | Ponerla en Configuración, Trig 8 y Echo 9 |
+  | B4 | Espacio vacío en un bloque (`expected primary-expression`, `invalid type argument of unary '*'`) | Completar el bloque marcado |
+  | B5 | Algo repetido (`redefinition`) | Quitar la configuración o función duplicada |
+  | B6 | Nombre que no existe (`was not declared`) | Ver en el detalle qué variable o función falta |
+  | M1 | Programa más grande que la memoria del Nano | Quitar canciones largas o bloques repetidos |
+  | A1 | Falta arduino-cli o sus archivos (`ENOENT`, `spawn`) | Reinstalar MPR Blockly |
+  | A9 | Error no reconocido | Abrir "Ver detalle técnico" y leer la primera línea con "error" |
+
+  Los mensajes se probaron en la app: compilando cada error típico de un niño, con un puerto que no existe y con el puerto de Otto tomado por otro programa. Para agregar un error, basta con una línea en `ERRORES`. El orden importa: P2 va antes que P3, porque los dos traen `can't open device`.
+- **Textos:** `msg_es.js` (`rev_*`, `sub_codigo`, `sub_verifica`); los de los errores están en `mpr_consejos.js`.
 
 ---
 
@@ -621,3 +658,9 @@ Equipo: Ryzen 5 4600H con gráfica Radeon integrada (ANGLE/Direct3D 11), 16 GB, 
   - **Cuadros/s:** 30 con la gráfica integrada y 20 sin GPU.
 - **Instalada en el notebook** con `probar.py` el 2026-11-09 (los 11 archivos verificados). En la app instalada se probaron el escenario (gestos con Detener; al cerrar, Otto vuelve a su esquina), las misiones y los menús.
 - **Pendiente:** el instalador con las etapas 1 y 2 se generará cuando termine el desarrollo (pedido del usuario: "todavía estamos desarrollando"). Falta probar en un PC del colegio. Para el próximo panfleto, ver 13.8.
+
+### 13.10 Otto ataja los errores de programación (2026-11-09)
+- Hecho y probado en la copia de prueba `C:\mprbp` con el Otto del usuario (COM7). Ver 4.13.
+  - Se probaron 11 casos de revisión con sus botones, los ejemplos, los códigos de 11 errores reales, Verificar y luego la flecha (no recompila), la subida real y el puerto ocupado (P3).
+  - Al final quedó en Otto un programa quieto: Configuración Otto y posición inicial.
+- **Pendiente:** ver en el colegio si los niños entienden los cuadros y si los monitores usan los códigos. Se podría imprimir la tabla de códigos para cada mesa.

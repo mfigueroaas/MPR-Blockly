@@ -3,43 +3,73 @@
 // MPR: base de conocimiento de la mascota Otto. Para agregar un error común o un consejo basta con
 // añadir una línea a las listas de abajo (no hay que tocar mpr_mascota.js).
 //
-//  ERRORES:  { re: /texto que aparece en el mensaje/, texto: 'lo que dice Otto', anim: 'alerta' | 'pensar' }
-//            Se revisan en orden; gana la primera que coincida. Se comparan contra el mensaje rojo
-//            del cuadro de verificar/cargar (en minúsculas).
+//  ERRORES:  { codigo, re: /texto que aparece en el mensaje/, texto: 'lo que dice Otto', monitor: 'qué revisa el monitor',
+//              anim: 'alerta' | 'pensar' }
+//            Se revisan en orden; gana la primera que coincida. Se comparan contra el detalle técnico del cuadro de
+//            verificar/cargar (en minúsculas; Windows en español escribe sus mensajes en español).
+//            codigo: corto, para decirlo en voz alta en una mesa con ruido ("P3"). P = puerto y cable, B = bloques,
+//            M = memoria, A = la app. La tabla completa para los monitores está en DOCUMENTACION_TECNICA.md 4.13.
 //  SUELTOS:  mensaje cuando hay bloques sin conectar en la mesa de trabajo.
 //  AZAR:     consejos cortos para el botón "Dame un consejo" y los ratos de calma.
 
 var MPRConsejos = {
 	ERRORES: [
-		{ re: /not in sync|not responding|stk500|no responde/,
-		  texto: 'Otto no me responde. Revisa que el cable USB esté bien conectado (algunos cables solo cargan y no sirven para programar) y que en la lista de arriba esté el puerto de Otto. Luego vuelve a mandar tu programa.',
+		// "El sistema no puede encontrar el archivo especificado": el puerto ya no existe (va antes que P3, que también
+		// trae "can't open device")
+		{ codigo: 'P2', re: /cannot find the file|no puede encontrar el archivo|no se puede encontrar el archivo|no se encuentra el archivo|no such file or directory.*(com|tty)/,
+		  texto: 'Parece que me desconecté. Revisa el cable USB en el computador y en mi placa: cuando me conectes, mi puerto aparecerá solo en la lista de arriba.',
+		  monitor: 'El puerto elegido ya no existe. Revisar cable y conector; ver que aparezca un COM nuevo en la lista. Si no aparece ninguno: driver CH340 (carpeta driversUSB) o cable que solo carga.',
 		  anim: 'pensar' },
-		{ re: /access is denied|acceso denegado|can't open device|cannot open|ser_open|permission denied|busy/,
-		  texto: 'No puedo hablar con el puerto USB. Tal vez otro programa lo está usando. Desenchufa y vuelve a enchufar el cable de Otto, y espera a que aparezca su puerto.',
+		{ codigo: 'P3', re: /access is denied|acceso denegado|can't open device|cannot open|ser_open|permission denied|busy|ocupado/,
+		  texto: 'Otro programa está usando mi cable USB. Cierra otras ventanas (por ejemplo otra MPR Blockly o la calibración), desenchúfame, vuelve a enchufarme y prueba otra vez.',
+		  monitor: 'Puerto ocupado: cerrar otra ventana de MPR Blockly, Arduino IDE o monitor serie. Desenchufar y enchufar. Si sigue: reiniciar la app.',
 		  anim: 'alerta' },
-		{ re: /cannot find the file specified|no se puede encontrar el archivo|no se encuentra el archivo|no such file or directory.*(com|tty)/,
-		  texto: 'Parece que Otto se desconectó. Revisa el cable USB: cuando lo conectes, su puerto aparecerá solo en la lista de arriba.',
+		{ codigo: 'P4', re: /not in sync|not responding|stk500|no responde|programmer is not/,
+		  texto: 'Te encuentro, pero no te escucho. Revisa que el cable esté bien firme (algunos cables solo cargan y no sirven para programar) y que en la lista de arriba esté mi puerto. Luego vuelve a mandar tu programa.',
+		  monitor: 'La placa no responde al cargador: probar otro cable de datos, otro puerto USB, revisar que la placa tenga luz. La app ya prueba sola Nano y Nano Old.',
 		  anim: 'pensar' },
-		{ re: /was not declared|not declared in this scope|no se declar/,
-		  texto: 'Un bloque usa algo que todavía no existe. ¿Falta crear la variable o poner el bloque de configuración de Otto al principio?',
+		{ codigo: 'B3', re: /ultrasound_distance\w*'? was not declared/,
+		  texto: 'Usas el sensor de distancia (mis ojos), pero falta su bloque de configuración dentro de Configuración. Búscalo en Sensores y ponlo debajo de Configuración Otto.',
+		  monitor: 'Falta el bloque de configuración del sensor ultrasónico (Trig 8, Echo 9) en Configuración.',
 		  anim: 'pensar' },
-		{ re: /multiple definition|redefinition|redeclaration|previously declared/,
+		{ codigo: 'B2', re: /'otto' was not declared|'otto' does not name a type/,
+		  texto: 'Falta el bloque Configuración Otto dentro de Configuración: sin él no sé dónde están mis piernas.',
+		  monitor: 'Falta Configuración Otto (pines 2, 3, 4, 5 y zumbador 13) dentro de Configuración.',
+		  anim: 'pensar' },
+		{ codigo: 'B6', re: /was not declared|not declared in this scope|no se declar/,
+		  texto: 'Un bloque usa algo que todavía no existe, por ejemplo una variable que no se creó. Revisa los bloques de variables.',
+		  monitor: 'Nombre no declarado (variable o función): ver en el detalle qué nombre falta.',
+		  anim: 'pensar' },
+		{ codigo: 'B5', re: /multiple definition|redefinition|redeclaration|previously declared/,
 		  texto: 'Hay algo repetido: tienes dos bloques que hacen lo mismo, por ejemplo dos configuraciones de Otto. Quita uno.',
+		  monitor: 'Definición repetida: buscar bloques de configuración o funciones duplicadas.',
 		  anim: 'pensar' },
-		{ re: /expected .* before|expected '[;)}]'|expected primary-expression|expected unqualified-id/,
-		  texto: 'Falta algo en el programa. Revisa que ningún bloque tenga un espacio vacío sin completar.',
+		{ codigo: 'B4', re: /expected .* before|expected '[;)}]'|expected primary-expression|expected unqualified-id|invalid type argument of unary|too few arguments/,
+		  texto: 'Un bloque tiene un espacio vacío. Revisa que todos estén completos: el "si" con su condición, "repetir" y "esperar" con su número.',
+		  monitor: 'Entrada vacía en un bloque (si, comparar, repetir, esperar...). Otto lo marca antes de mandar.',
 		  anim: 'pensar' },
-		{ re: /sketch too big|text section exceeds|overflowed|not enough memory|low memory|demasiado grande/,
-		  texto: 'Tu programa es muy grande para Otto. Prueba quitando canciones o bloques que no estés usando.',
+		{ codigo: 'M1', re: /sketch too big|text section exceeds|overflowed|not enough memory|low memory|demasiado grande/,
+		  texto: 'Tu programa es muy grande para mí. Prueba quitando canciones o bloques que no estés usando.',
+		  monitor: 'Programa sobre la memoria del Nano: quitar canciones largas o bloques repetidos.',
 		  anim: 'alerta' },
-		{ re: /error/,
-		  texto: 'Algo salió mal. Revisa que los bloques estén bien unidos y completos, y que Otto esté conectado. Si sigue igual, pídele ayuda a tu profe.',
+		{ codigo: 'A1', re: /enoent|spawn|no se reconoce|is not recognized|no such file or directory/,
+		  texto: 'A la app le falta una pieza para preparar programas. Esto no lo puedes arreglar tú: llama a tu monitor.',
+		  monitor: 'No se encontró arduino-cli o sus archivos: reinstalar MPR Blockly (C:\\MPRBlockly).',
+		  anim: 'alerta' },
+		{ codigo: 'A9', re: /error|failed|exit status/,
+		  texto: 'Algo salió mal. Revisa que los bloques estén bien unidos y completos, y que yo esté conectado. Prueba otra vez.',
+		  monitor: 'Error no reconocido: abrir "Ver detalle técnico" y leer la primera línea con "error".',
 		  anim: 'alerta' }
 	],
 
+	// Si el mismo error sale VECES veces seguidas (sin un envío bueno entre medio), Otto pide llamar al monitor
+	VECES: 3,
+	LLAMAR: 'Ya lo intentamos {n} veces. Levanta la mano y llama a tu monitor: dile "código {codigo}".',
+	SIN_PUERTO_MONITOR: 'No hay puerto elegido: conectar el robot; si no aparece un COM, revisar cable de datos y driver CH340.',
+
 	// {n} se reemplaza por la cantidad de bloques sueltos
-	SUELTOS_UNO: 'Tienes 1 bloque suelto en la mesa. Los bloques sueltos también cuentan como parte del programa de Otto. Únelo a tu programa o arrástralo a la papelera.',
-	SUELTOS_VARIOS: 'Tienes {n} bloques sueltos en la mesa. Los bloques sueltos también cuentan como parte del programa de Otto. Únelos a tu programa o arrástralos a la papelera.',
+	SUELTOS_UNO: 'Tienes 1 bloque suelto, fuera de Configuración + Bucle. Yo solo hago lo que está adentro: únelo a tu programa o arrástralo a la papelera.',
+	SUELTOS_VARIOS: 'Tienes {n} bloques sueltos, fuera de Configuración + Bucle. Yo solo hago lo que está adentro: únelos a tu programa o arrástralos a la papelera.',
 
 	// Bloques que van una sola vez (la mesa de un proyecto nuevo ya los trae)
 	REPETIDO_ESTRUCTURA: 'Tu mesa ya tiene el bloque Configuración + Bucle, y solo puede haber uno. Pon tus bloques dentro del que ya está.',
@@ -56,6 +86,20 @@ var MPRConsejos = {
 			if (MPRConsejos.ERRORES[i].re.test(t)) return MPRConsejos.ERRORES[i];
 		}
 		return null;
+	},
+
+	// Cuenta cuántas veces seguidas salió el mismo código (null = salió bien: vuelve a cero). Devuelve la cuenta.
+	seguidos: { codigo: null, n: 0 },
+	registrar: function(codigo) {
+		var s = MPRConsejos.seguidos;
+		if (!codigo) { s.codigo = null; s.n = 0; return 0; }
+		s.n = s.codigo == codigo ? s.n + 1 : 1;
+		s.codigo = codigo;
+		return s.n;
+	},
+	// Texto para llamar al monitor si ya van VECES intentos con el mismo error ('' si todavía no)
+	llamar: function(codigo, n) {
+		return n >= MPRConsejos.VECES ? MPRConsejos.LLAMAR.replace('{n}', n).replace('{codigo}', codigo) : '';
 	},
 
 	AZAR: [

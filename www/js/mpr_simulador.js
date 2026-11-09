@@ -761,7 +761,9 @@ MPRSimulador.probar = function() {
 	if (self.corrida || typeof MPROttoLib == 'undefined') return;
 	var r = self.raiz();
 	if (!r) { self.aviso(self.msg('sim_sin_estructura', ''), 8000); return; }
-	self.aviso('');
+	// lo que Otto revisaría antes de mandarlo al robot (bloques sueltos, configuraciones que faltan...): se avisa, pero
+	// la prueba sigue (en pantalla los bloques sueltos tampoco se hacen)
+	self.aviso(typeof MPRRevision != 'undefined' ? MPRRevision.avisoSimulador() : '', 10000);
 	self.audio.despertar();
 	self.reiniciarPose();
 	var c = self.corrida = { id: ++self.n, detenida: false, pendientes: [], vars: {}, inicio: performance.now(), pasos: 0, avisados: {}, temporizadores: {}, profundidad: 0 };
