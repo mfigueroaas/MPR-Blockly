@@ -595,6 +595,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - Se corrigió el botón "siguiente" de las misiones, que se salía de la tarjeta.
 - **Commit:** (ver git log)  **Probado en la app:** sí (fotos antes y después en la app real: barra, escenario, misiones, calibración, subida en curso, error y éxito, recorrido y mascota)
 
+### 2026-11-09 — Misiones: botón de la barra y fila de botones rediseñados
+- **Pedido / problema:** en la tarjeta de misiones, el botón Revisar quedaba apretado y la flecha "siguiente" tocaba el borde. Arriba a la derecha, el botón de misiones (emoji 🏁 de color con el contador "1/10" encima) se veía raro junto a los íconos blancos de la barra.
+- **Archivos:** `www/js/mpr_misiones.js`, `www/css/blocklino.css`, `www/lang/msg_es.js` (`mis_de`, `mis_cumplidas`, `mis_anterior`, `mis_siguiente`; etiquetas sin emoji).
+- **Qué se hizo:**
+  - **Botón de la barra:** bandera blanca dibujada en SVG, como los demás íconos (la fuente de íconos de la app no trae bandera). El contador pasa a una barrita abajo que se llena de naranja con las misiones cumplidas, con el detalle al pasar el mouse ("3 de 10 cumplidas"). Abierto, se pinta naranja como la lupa activa.
+  - **Tarjeta:** el encabezado dice "MISIÓN 4 DE 10" con los puntos. Las flechas ‹ › van chicas a la izquierda, y Pista, Probar y Revisar a la derecha, con íconos de la app (?, ▶, ✓) en vez de emojis. La tarjeta mide 390 px.
+- **Commit:** (ver git log)  **Probado en la app:** sí (fotos de la app real: tarjeta y botón con 0 y 3 misiones; posiciones medidas, nada se sale de la tarjeta)
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

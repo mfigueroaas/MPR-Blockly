@@ -104,7 +104,9 @@ MPRMisiones.iniciar = function() {
 	var b = document.getElementById('btn_misiones');
 	if (!b) return;
 	var self = MPRMisiones;
-	b.title = self.msg('mis_boton', 'Misiones');
+	// Bandera blanca dibujada (la fuente de íconos de la app no trae una) y barrita naranja con el avance
+	b.innerHTML = '<svg class="mpr-ico-mis" viewBox="0 0 24 24" aria-hidden="true">' +
+		'<path d="M5 2.5h2v19H5z"/><path d="M7 3.5h12l-3 4.5 3 4.5H7z"/></svg><span class="mpr-avance-mis"><i></i></span>';
 	b.addEventListener('click', function() { if (self.abierto) self.cerrar(); else self.abrir(); });
 	try { var p = JSON.parse(window.localStorage[self.CLAVE] || 'null'); if (p && typeof p.actual == 'number') self.progreso = p; } catch (e) {}
 	if (!self.progreso.hechas) self.progreso.hechas = {};
@@ -120,8 +122,10 @@ MPRMisiones.guardar = function() {
 MPRMisiones.marcarBoton = function() {
 	var b = document.getElementById('btn_misiones');
 	if (!b) return;
-	var n = Object.keys(MPRMisiones.progreso.hechas).length;
-	b.setAttribute('data-hechas', n ? n + '/' + MPRMisiones.LISTA.length : '');
+	var n = Object.keys(MPRMisiones.progreso.hechas).length, total = MPRMisiones.LISTA.length;
+	var barra = b.querySelector('.mpr-avance-mis i');
+	if (barra) barra.style.width = Math.round(100 * n / total) + '%';
+	b.title = MPRMisiones.msg('mis_boton', 'Misiones') + ' (' + MPRMisiones.msg('mis_cumplidas', '{n} de {t} cumplidas').replace('{n}', n).replace('{t}', total) + ')';
 };
 
 MPRMisiones.crear = function() {
@@ -136,11 +140,12 @@ MPRMisiones.crear = function() {
 			'<div id="mpr_mis_titulo"></div><div id="mpr_mis_texto"></div>' +
 			'<div id="mpr_mis_pista"></div><div id="mpr_mis_res"></div>' +
 			'<div id="mpr_mis_acc">' +
-				'<button type="button" id="mpr_mis_ant">◀</button>' +
+				'<button type="button" id="mpr_mis_ant" title="' + self.msg('mis_anterior', 'Misión anterior') + '"><span class="fa fa-chevron-right mpr-girado"></span></button>' +
+				'<button type="button" id="mpr_mis_sig" title="' + self.msg('mis_siguiente', 'Misión siguiente') + '"><span class="fa fa-chevron-right"></span></button>' +
+				'<span class="espacio"></span>' +
 				'<button type="button" id="mpr_mis_ver_pista"></button>' +
 				'<button type="button" id="mpr_mis_probar"></button>' +
 				'<button type="button" id="mpr_mis_revisar"></button>' +
-				'<button type="button" id="mpr_mis_sig">▶</button>' +
 			'</div>' +
 		'</div>';
 	document.body.appendChild(e);
@@ -196,7 +201,7 @@ MPRMisiones.mostrar = function() {
 	var e = document.getElementById('mpr_mis');
 	if (!e) return;
 	e.className = (self.minimizado ? 'mini ' : '') + (hecha ? 'hecha' : '');
-	document.getElementById('mpr_mis_num').textContent = '🏁 ' + self.msg('mis_mision', 'Misión') + ' ' + (self.progreso.actual + 1) + ' / ' + self.LISTA.length;
+	document.getElementById('mpr_mis_num').textContent = self.msg('mis_mision', 'Misión') + ' ' + (self.progreso.actual + 1) + ' ' + self.msg('mis_de', 'de') + ' ' + self.LISTA.length;
 	// puntos como los del recorrido: naranja = cumplida, anillo = la actual, lavanda = pendiente
 	document.getElementById('mpr_mis_puntos').innerHTML = self.LISTA.map(function(x, i) {
 		return '<span class="' + (self.progreso.hechas[x.id] ? 'hecha' : (i == self.progreso.actual ? 'actual' : '')) + '"></span>';
@@ -208,10 +213,11 @@ MPRMisiones.mostrar = function() {
 	p.style.display = 'none';
 	document.getElementById('mpr_mis_res').textContent = hecha ? self.msg('mis_ya_hecha', '¡Ya la cumpliste! Puedes seguir con la próxima.') : '';
 	document.getElementById('mpr_mis_res').className = hecha ? 'ok' : '';
-	document.getElementById('mpr_mis_ver_pista').textContent = self.msg('mis_pista', 'Pista');
-	document.getElementById('mpr_mis_probar').textContent = self.msg('mis_probar', '▶ Probar');
+	// íconos de la fuente de la app (no emojis), como el resto de la barra
+	document.getElementById('mpr_mis_ver_pista').innerHTML = '<span class="fa fa-question"></span> ' + self.msg('mis_pista', 'Pista');
+	document.getElementById('mpr_mis_probar').innerHTML = '<span class="fa fa-play"></span> ' + self.msg('mis_probar', 'Probar');
 	document.getElementById('mpr_mis_probar').style.display = typeof MPRSimulador != 'undefined' ? '' : 'none';
-	document.getElementById('mpr_mis_revisar').textContent = m.manual ? self.msg('mis_lo_logre', '¡Lo logré!') : self.msg('mis_revisar', 'Revisar');
+	document.getElementById('mpr_mis_revisar').innerHTML = '<span class="fa fa-check"></span> ' + (m.manual ? self.msg('mis_lo_logre', '¡Lo logré!') : self.msg('mis_revisar', 'Revisar'));
 	document.getElementById('mpr_mis_ant').disabled = self.progreso.actual == 0;
 	document.getElementById('mpr_mis_sig').disabled = self.progreso.actual == self.LISTA.length - 1;
 };
