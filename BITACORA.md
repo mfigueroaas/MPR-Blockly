@@ -575,6 +575,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - Más espacio entre las filas y una línea que separa el paso 1 de los ajustes.
 - **Commit:** (ver git log)  **Probado en la app:** revisado en una foto de la interfaz (Chrome, versión de navegador). Instalado en el notebook con `probar.py` (F5 para verlo).
 
+### 2026-11-09 — Paneles sin `gap` (Chromium 69) y regla de revisar en la app
+- **Pedido / problema:** en la app los botones de abajo de la calibración quedaban pegados y demasiado anchos. Yo los había revisado en un Chrome moderno, donde se veían bien. Causa: Chromium 69 (Electron 4) no soporta `gap` en flexbox. El usuario pidió revisar siempre comparando con la app y no con la versión web.
+- **Archivos:** `www/css/blocklino.css` (`#mpr_esc_barra`, `#mpr_mis_cab`, `#mpr_mis_acc`, `#mpr_cal_ajustes`), `CLAUDE.md` (regla nueva en "Verificar antes de entregar").
+- **Qué se hizo:**
+  - Las separaciones van con márgenes (`> * + * { margin-left }`).
+  - En la calibración, los dos botones secundarios quedan del ancho de su texto a la izquierda y "3. Guardar en Otto" a la derecha.
+  - `CLAUDE.md` exige revisar en la app real y evitar en CSS `gap` en flex, `clamp()`, `min()`/`max()`, `:is()` y `aspect-ratio`.
+- **Commit:** (ver git log)  **Probado en la app:** sí (fotos de la app instalada: calibración, escenario y misiones)
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

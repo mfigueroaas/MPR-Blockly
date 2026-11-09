@@ -617,7 +617,9 @@ html, body { overflow: hidden; }
 	user-select: none;
 	-webkit-user-select: none;
 }
-#mpr_esc_barra { display: flex; align-items: center; gap: 6px; padding: 6px 8px; color: #ffffff; }
+/* Chromium 69 (Electron 4) no soporta gap en flex: las separaciones van con márgenes */
+#mpr_esc_barra { display: flex; align-items: center; padding: 6px 8px; color: #ffffff; }
+#mpr_esc_barra > * + * { margin-left: 6px; }
 #mpr_esc_titulo { flex: 1; font-weight: bold; font-size: 16px; }
 #mpr_esc_barra button {
 	border: 0;
@@ -676,7 +678,7 @@ html, body { overflow: hidden; }
 #mpr_mis.hecha { border-color: #1FA855; }
 #mpr_mis.festeja { animation: mpr-festeja 0.9s ease-out; }
 @keyframes mpr-festeja { 0% { transform: scale(1); } 30% { transform: scale(1.06) rotate(-1.5deg); } 60% { transform: scale(0.98) rotate(1deg); } 100% { transform: scale(1); } }
-#mpr_mis_cab { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #2d2d64; color: #ffffff; cursor: default; user-select: none; }
+#mpr_mis_cab { display: flex; align-items: center; padding: 6px 8px; background: #2d2d64; color: #ffffff; cursor: default; user-select: none; }
 #mpr_mis_num { font-weight: bold; font-size: 14px; white-space: nowrap; }
 #mpr_mis_puntos { flex: 1; color: #ffc400; font-size: 12px; letter-spacing: 1px; overflow: hidden; white-space: nowrap; }
 #mpr_mis_cab button { border: 0; background: transparent; color: #ffffff; font-size: 16px; padding: 0 6px; cursor: pointer; outline: none; }
@@ -688,7 +690,9 @@ html, body { overflow: hidden; }
 #mpr_mis_res { margin-top: 8px; font-size: 14px; font-weight: bold; min-height: 4px; }
 #mpr_mis_res.ok { color: #1FA855; }
 #mpr_mis_res.falta { color: #c0392b; }
-#mpr_mis_acc { display: flex; gap: 6px; margin-top: 10px; }
+#mpr_mis_cab > * + * { margin-left: 6px; }
+#mpr_mis_acc { display: flex; margin-top: 10px; }
+#mpr_mis_acc > * + * { margin-left: 6px; }
 #mpr_mis_acc button { border: 0; border-radius: 6px; padding: 5px 9px; font-size: 13px; font-weight: bold; cursor: pointer; background: #e4e6f0; color: #2d2d64; outline: none; }
 #mpr_mis_acc button:disabled { opacity: 0.35; cursor: default; }
 #mpr_mis_acc #mpr_mis_revisar { flex: 1; background: #FF5700; color: #ffffff; }
@@ -704,15 +708,16 @@ html, body { overflow: hidden; }
 #mpr_cal_cuerpo button { border: 0; border-radius: 6px; padding: 8px 14px; white-space: nowrap; font-weight: bold; cursor: pointer; background: #e4e6f0; color: #2d2d64; outline: none; }
 #mpr_cal_cuerpo button.principal { background: #FF5700; color: #ffffff; }
 #mpr_cal_ajustes { display: none; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e4e6f0; }
-#mpr_cal_ajustes .fila { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+#mpr_cal_ajustes .fila { display: flex; align-items: center; margin: 8px 0; }
+#mpr_cal_ajustes .fila > * + * { margin-left: 8px; }
 #mpr_cal_ajustes .nom { width: 130px; font-weight: bold; }
 #mpr_cal_ajustes .fila button { padding: 2px 11px; font-size: 16px; }
 #mpr_cal_ajustes input[type=range] { flex: 1; }
 #mpr_cal_ajustes .val { width: 36px; text-align: right; font-weight: bold; }
 /* abajo: dos acciones secundarias en una fila y "Guardar" grande, de ancho completo */
-#mpr_cal_ajustes .acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-#mpr_cal_ajustes .acciones button { flex: 1 1 0; }
-#mpr_cal_ajustes .acciones #mpr_cal_guardar { flex: 1 1 100%; padding: 11px 14px; font-size: 15px; }
+#mpr_cal_ajustes .acciones { margin-top: 16px; overflow: hidden; }
+#mpr_cal_ajustes .acciones button { float: left; margin-right: 10px; }
+#mpr_cal_ajustes .acciones #mpr_cal_guardar { float: right; margin-right: 0; }
 #mpr_cal_estado { margin-top: 12px; min-height: 18px; line-height: 1.35; }
 #mpr_cal_estado.ok { color: #1FA855; font-weight: bold; }
 #mpr_cal_estado.error { color: #c0392b; font-weight: bold; }

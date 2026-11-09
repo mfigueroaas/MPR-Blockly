@@ -36,6 +36,7 @@ Salida: `dist\MPR_Blockly_Setup_<version>.exe`. La versión está en `package.js
 https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 (SHA‑256 en el script).
 
 ## Verificar antes de entregar
+- **Revisar siempre en la app real** (Electron 4 = Chromium 69), nunca solo en un navegador o en la versión web: lo que en un Chrome moderno se ve bien puede verse mal en la app. Fotos y pruebas con la app instalada o la copia de prueba `C:mprbp` abierta con `--remote-debugging-port=9222` (6.5). En CSS no usar `gap` en flex, `clamp()`, `min()`/`max()`, `:is()` ni `aspect-ratio` (no existen en Chromium 69).
 - `node --check` sobre los `.js` modificados.
 - Si se cambia algo animado o gráfico (recorrido, mascota 3D, CSS): medir en la app instalada con
   `node tools/medir_app.mjs` (sección 6.5 de `DOCUMENTACION_TECNICA.md`), no solo en un navegador. Los PCs
