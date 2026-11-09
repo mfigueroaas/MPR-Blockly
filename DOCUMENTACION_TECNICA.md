@@ -479,7 +479,7 @@ Detalle completo, motivos y cómo revertir cada cambio en `BITACORA.md`. Estado 
 | 16 | Verificar/Subir: `arduino-cli.exe` con ruta completa (falla si Windows tiene `NoDefaultCurrentDirectoryInExePath`) | `index.js` | Error reproducido y corregido fuera de la app; en la app pendiente |
 | 17 | Zumbador: 6 canciones de 31 Minutos en "Tocar RTTTL" | `mpr_canciones.js` (nuevo), `RTTTL.js`, `index.html` | **Pendiente en el robot** (validadas y compiladas) |
 | 18 | Otto: oculto el bloque "Calibrar" y el ejemplo "Biped calibration" (los monitores calibran con Ctrl + Mayús + O, 4.12). Los proyectos que ya lo tienen siguen abriendo y funcionando | toolbox XML, `examples.json` | Sí (app real, 2026-11-09) |
-| 19 | Ejemplos: ocultos "Servo centering" y "Servo sweep" (técnicos, para un servo suelto) | `examples.json` | Sí (app instalada, 2026-11-09) |
+| 19 | Ejemplos: ocultos "Servo centering" y "Servo sweep" (técnicos, para un servo suelto) y "Serial measure distance" (escribe en el monitor serie, que está oculto) | `examples.json` | Sí (app instalada, 2026-11-09) |
 
 Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 
@@ -493,7 +493,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Categoría Texto | En `defaultCategories1` (línea 3 del toolbox XML) agregar `CAT_TEXT,` entre `CAT_MATH,` y `CAT_FUNCTIONS` |
 | `App code` / `Guardar Trims en EEPROM` / `Dance smooth criminal` | Quitar `<!-- OCULTO: ` y ` -->` en esas líneas de `CAT_OTTO` |
 | Bloque "Calibrar" (`otto_calibration`) y ejemplo "Biped calibration" | En `CAT_OTTO` quitar el comentario `OCULTO (MPR: ...)` que envuelve el bloque; en `examples/examples.json` poner `"visible": true` a `Ottocalibrationapp.xml` |
-| Ejemplos "Servo centering" y "Servo sweep" | En `examples/examples.json` poner `"visible": true` a `servo.xml` y `servosweep.xml` |
+| Ejemplos "Servo centering", "Servo sweep" y "Serial measure distance" | En `examples/examples.json` poner `"visible": true` a `servo.xml`, `servosweep.xml` y `serialdistance.xml` |
 | Casting en Matemática | Igual: quitar el comentario `OCULTO` de las 4 líneas `conversion_*` al final de `CAT_MATH` |
 | Otras placas (Uno, Mega, Leonardo, Micro, MRTduino, ZUM BT‑328) | Volver a agregar sus `<option>` en las **dos** listas de `index.html` (sus perfiles siguen en `boards.js`); para compilar, el core AVR ya está incluido |
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |

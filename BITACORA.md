@@ -658,6 +658,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** "🦿 Servo centering" y "🦿 Servo sweep" quedan con `"visible": false`, sin borrarlos. Mueven un servo suelto y no a Otto. "Servo advanced control" ya estaba oculto.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la app instalada: la lista de ejemplos ya no muestra servos ni calibración.
 
+### 2026-11-09 — Fuera el ejemplo "Serial measure distance"
+- **Pedido / problema:** el ejemplo escribe la distancia del sensor en el monitor serie, que está oculto en esta versión: el niño no veía nada. El usuario aprobó sacarlo.
+- **Archivos:** `www/examples/examples.json` y `DOCUMENTACION_TECNICA.md` (inventario 19 y sección 9).
+- **Qué se hizo:** `serialdistance.xml` queda con `"visible": false`, sin borrarlo.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la app instalada: la lista ya no lo muestra.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

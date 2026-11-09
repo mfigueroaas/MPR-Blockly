@@ -17,7 +17,7 @@
     {"source_url": "RTTL.xml","source_text": "🎼 Ring Tone sounds  ","visible": true},
     {"source_url": "wheelsmove.xml","source_text": "🚗 Wheels move ","visible": false},
     {"source_url": "wheelsavoid.xml","source_text": "🚗 Wheels avoids ","visible": false},
-    {"source_url": "serialdistance.xml","source_text": "📏 Serial measure distance ","visible": true },
+    {"source_url": "serialdistance.xml","source_text": "📏 Serial measure distance ","visible": false },
     {"source_url": "theremin.xml","source_text": "🎹 Theremin  ","visible": true},
     {"source_url": "neopixel.xml", "source_text": "🌈 Color LEDs ","visible": false },
     {"source_url": "neopixelfunctions.xml", "source_text": "🌈 RGB LED Functions ","visible": false },
