@@ -1,7 +1,7 @@
 'use strict';
 
 // MPR: Otto revisa el programa antes de mandarlo (DOCUMENTACION_TECNICA.md 4.13). Ataja los errores típicos de los niños
-// antes de compilar, los explica, marca los bloques con problema y, si se activa con Ctrl + Mayús + A, los arregla solo:
+// antes de compilar, los explica, marca los bloques con problema y, si se activa con Ctrl + Mayús + P, los arregla solo:
 //  - bloques sueltos fuera de Configuración + Bucle (ya no entran al programa: ver "generador", abajo);
 //  - falta Configuración + Bucle; bloques de Otto sin Configuración Otto; sensor sin su bloque de configuración;
 //  - bloques con un espacio vacío (un "si" sin condición, "esperar" sin número...); programa que no le pide nada a Otto.
@@ -19,7 +19,7 @@ var MPRRevision = {
 	// entradas que pueden quedar vacías sin error
 	VACIO_OK: { serial_print: 1, serial_println: 1, procedures_ifreturn: 1 },
 	// Otto pone los bloques que faltan él mismo ("Ponlo tú, Otto"). Apagado por defecto: Otto explica qué falta y
-	// dónde buscarlo, y el niño lo pone. Ctrl + Mayús + A lo enciende o lo apaga (no se guarda: al abrir la app vuelve
+	// dónde buscarlo, y el niño lo pone. Ctrl + Mayús + P lo enciende o lo apaga (no se guarda: al abrir la app vuelve
 	// a estar apagado).
 	ottoPone: false,
 	// texto para cuando Otto no pone los bloques (el niño lo hace)
@@ -95,7 +95,7 @@ MPRRevision.revisar = function() {
 	return p;
 };
 
-// Ctrl + Mayús + A: Otto pone los bloques él mismo (sí / no). Lo confirma un aviso pequeño abajo al centro, que se va solo
+// Ctrl + Mayús + P: Otto pone los bloques él mismo (sí / no). Lo confirma un aviso pequeño abajo al centro, que se va solo
 // a los 2,5 s (aparece y se va con opacidad: no repinta la mesa). No usa el globo de Otto, para no distraer al niño.
 MPRRevision.cambiarOttoPone = function() {
 	var self = MPRRevision;
@@ -111,7 +111,7 @@ MPRRevision.cambiarOttoPone = function() {
 };
 
 document.addEventListener('keydown', function(e) {
-	if (e.ctrlKey && e.shiftKey && !e.altKey && (e.key == 'A' || e.key == 'a' || e.keyCode == 65)) {
+	if (e.ctrlKey && e.shiftKey && !e.altKey && (e.key == 'P' || e.key == 'p' || e.keyCode == 80)) {
 		e.preventDefault();
 		e.stopPropagation();
 		MPRRevision.cambiarOttoPone();

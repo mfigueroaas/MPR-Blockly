@@ -704,6 +704,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** en vez del globo de Otto, sale una píldora azul oscuro de 13 px abajo al centro: "Otto pone los bloques que faltan: activado" (punto verde) o "...: desactivado" (punto gris). Aparece y se va con una transición de opacidad y se quita sola a los 2,5 s. No recibe clics.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` con teclas reales: se ve al apretar (foto), a los 3 s está oculta, al apretar otra vez dice "desactivado" y el globo de Otto no se abre.
 
+### 2026-11-10 — La combinación pasa a Ctrl + Mayús + P
+- **Pedido:** cambiar la combinación de teclas para que Otto ponga los bloques: Ctrl + Mayús + P en vez de Ctrl + Mayús + A (al usuario no le funcionaba en su app).
+- **Archivos:** `www/js/mpr_revision.js`, `www/css/blocklino.css` (comentario), `DOCUMENTACION_TECNICA.md` (4.13 y 9).
+- **Qué se hizo:** el atajo revisa `P` (`keyCode` 80). No choca con otros atajos de la app (Ctrl + Mayús + O es la calibración). Las entradas anteriores de hoy que dicen Ctrl + Mayús + A quedan como historia.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` con teclas reales: Ctrl + Mayús + A ya no hace nada; Ctrl + Mayús + P activa ("...: activado") y desactiva.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

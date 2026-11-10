@@ -676,7 +676,7 @@ html, body { overflow: hidden; }
 /* flecha a la izquierda del bloque que se esta haciendo */
 .blocklySvg .mpr-ejecuta-flecha circle { fill: #2ECC40; stroke: #ffffff; stroke-width: 2px; }
 .blocklySvg .mpr-ejecuta-flecha path { fill: #ffffff; }
-/* aviso pequeno de Ctrl + Mayus + A (Otto pone los bloques: activado / desactivado); se va solo */
+/* aviso pequeno de Ctrl + Mayus + P (Otto pone los bloques: activado / desactivado); se va solo */
 #mpr_rev_aviso { position: fixed; bottom: 28px; left: 50%; z-index: 3000; padding: 7px 14px 7px 12px; border-radius: 16px; background: rgba(45,45,100,.92); color: #ffffff; font-size: 13px; white-space: nowrap; box-shadow: 0 3px 12px rgba(0,0,0,.25); pointer-events: none; opacity: 0; transform: translate(-50%, 8px); transition: opacity .25s ease, transform .25s ease; }
 #mpr_rev_aviso.visible { opacity: 1; transform: translate(-50%, 0); }
 #mpr_rev_aviso .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; background: #9aa0c8; }
