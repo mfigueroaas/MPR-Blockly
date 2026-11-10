@@ -710,6 +710,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** el atajo revisa `P` (`keyCode` 80). No choca con otros atajos de la app (Ctrl + Mayús + O es la calibración). Las entradas anteriores de hoy que dicen Ctrl + Mayús + A quedan como historia.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` con teclas reales: Ctrl + Mayús + A ya no hace nada; Ctrl + Mayús + P activa ("...: activado") y desactiva.
 
+### 2026-11-10 — Fuera el modo código: la flecha mandaba el editor vacío
+- **Pedido / problema:** el usuario armó un programa bien hecho (si distancia = 10, Sonido Feliz; si no, Sonido Sorpresa) y daba error al mandarlo. Quiere poder ver el código, pero sin un modo que un niño active y le cause el mismo problema.
+- **Causa:** en algún momento se apretó el interruptor bloques/código (`codeORblock`, a la derecha de la barra) y quedó `localStorage.content = "off"`. Al abrir la app se veían los bloques, pero la flecha y Verificar mandaban el editor de texto, que no se guarda y vuelve a `#enter your code here`: "error: invalid preprocessing directive #enter" (código A9).
+- **Archivos:** `www/js/blocklino.js`, `www/index.html`, `www/css/blocklino.css`, `DOCUMENTACION_TECNICA.md` (9).
+- **Qué se hizo:** (1) `blocklino.js` parte siempre en modo bloques: si `content` venía en "off", lo vuelve a "on". (2) El interruptor queda oculto con comentario `OCULTO` en `index.html`. (3) El código se sigue viendo con el botón `</>` (`btn_preview`): muestra el código actual de los bloques y no se puede editar. Ahora ese botón es el último del grupo y lleva las esquinas derechas redondas.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` con el estado real del usuario (`content = "off"`): al abrir queda en "on", no está el interruptor (foto de la barra), `</>` muestra el código, y el programa del usuario compila ("Code is ready to upload").
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

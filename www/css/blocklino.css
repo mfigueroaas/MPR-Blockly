@@ -690,6 +690,8 @@ html, body { overflow: hidden; }
 #btn_simular.btn-arduino.activo { box-shadow: 0 0 0 3px #FF5700; }
 #btn_simular .mpr-ico-sim { width: 22px; height: 22px; vertical-align: middle; margin-top: -2px; }
 /* Misiones: bandera blanca (SVG) como los demás íconos de la barra y una barrita naranja abajo con el avance */
+/* </> es el ultimo boton del grupo desde que se quito el interruptor bloques/codigo (index.html): esquinas derechas redondas */
+#btn_group #btn_preview { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
 #btn_misiones { position: relative; overflow: hidden; }
 #btn_misiones .mpr-ico-mis { width: 19px; height: 19px; fill: #ffffff; vertical-align: middle; margin-top: -3px; }
 #btn_misiones .mpr-avance-mis { position: absolute; left: 8px; right: 8px; bottom: 6px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.45); }

@@ -221,7 +221,10 @@ BlocklyDuino.loadConfig = function() {
 		$("#toolboxes").val(toolbox);
 		BlocklyDuino.loadToolboxDefinition(toolbox)
 	}
-	if (content===undefined) {
+	// MPR: siempre parte en modo bloques. El texto del editor de codigo no se guarda: si la app quedaba en modo codigo,
+	// al abrirla mostraba los bloques pero la flecha mandaba el editor vacio ("#enter your code here") y fallaba.
+	if (content===undefined || content=="off") {
+		content = BlocklyDuino.content;
 		window.localStorage.content = BlocklyDuino.content;
 		$('#codeORblock').bootstrapToggle(BlocklyDuino.content);
 		$('#btn_verify').addClass("hidden");

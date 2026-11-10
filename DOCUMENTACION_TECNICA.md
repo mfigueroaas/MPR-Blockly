@@ -500,6 +500,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |
 | Monitor serie (lo abría la lupa) | En `www/index.html` quitar el comentario `OCULTO` de `btn_term` (y comentar `btn_buscar` si no se quiere la búsqueda) |
 | Otto pone los bloques que faltan ("Ponlo tú, Otto") | **Ctrl + Mayús + P** en la app (solo hasta cerrarla; no hay botón a propósito). Para que parta encendido: `ottoPone: true` en `www/js/mpr_revision.js` |
+| Interruptor bloques / código (editor de texto) | En `www/index.html` quitar el comentario `OCULTO` de `codeORblock`. Ojo: `blocklino.js` igual parte siempre en modo bloques (el texto del editor no se guarda) |
 | Limitador de servos como antes (más lento y suave) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h`: 3 (ahora 240); valores intermedios 150–180; **probar en el robot** |
 
 Después de cualquiera: `python tools/probar.py` y F5.
