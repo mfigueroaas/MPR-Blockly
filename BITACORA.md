@@ -686,6 +686,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** sin la orilla azul oscuro de 11 px: ahora es una línea de 3 px del color con un brillo suave del mismo color (9 px al 30 %; 10 px al 45 % en el verde, que sobre los bloques azules quedaba tenue). Rojo `#FF3355`, verde `#2ECC40` (el verde de estado de la app). Flecha ▶ más chica (radio 9), verde con borde blanco. Hueco: orilla punteada de 2 px y "?" de 15 px.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, con fotos de los espacios vacíos (repetir, esperar, si) y del ejemplo del Cerro en Probar en pantalla.
 
+### 2026-11-10 — Botón en el menú de Otto para que ponga los bloques (sí / no)
+- **Pedido:** además de la combinación de teclas, un botón para activar y desactivar que Otto ponga los bloques él mismo.
+- **Archivos:** `www/js/mpr_mascota.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md` (4.13 y 9).
+- **Qué se hizo:** el menú de Otto (clic en Otto) tiene "🧩 Que Otto ponga los bloques que faltan" cuando está apagado (por defecto) y "✋ Yo pongo mis bloques" cuando está encendido. Llama a `MPRRevision.cambiarOttoPone`, lo mismo que Ctrl + Mayús + A. El mensaje de Otto al encenderlo dice que se apaga "en mi menú o con Ctrl + Mayús + A".
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`: el botón enciende y apaga, cambia su texto y Otto confirma cada cambio (foto del menú).
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
