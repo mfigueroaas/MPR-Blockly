@@ -753,6 +753,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, recargando sin caché y registrando la consola. Se usaron el recorrido, la vista de código, las misiones, la búsqueda, el menú y los consejos de Otto, el escenario con Probar, la revisión, los ejemplos y Ctrl + Mayús + P: ningún error del código de MPR. Otto 3D se ve igual (foto).
 - **Commit:** (ver git log)
 
+### 2026-11-10 — Versión 1.5.0 e instalador
+- **Pedido:** generar el instalador de la nueva versión, después de dejarla pulida.
+- **Archivos:** `package.json` (1.4.1 → 1.5.0), `DOCUMENTACION_TECNICA.md` (13.1 y 13.11).
+- **Qué se hizo:** `py tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe` generó `dist\MPR_Blockly_Setup_1.5.0.exe` (139.047.350 bytes, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`, versión 1.5.0.0 en el .exe, sin firma). Se extrajeron del instalador `mpr_misiones.js`, `mpr_revision.js`, `blocklino.js` e `index.html`: iguales a los del repositorio. Hubo que borrar a mano `C:\mprb\stage`, que quedó de un armado interrumpido (13.11).
+- **Commit:** (ver git log)  **Probado:** el instalador todavía no se ha ejecutado en un PC. Los cambios se probaron en la copia de prueba y en la app instalada con `probar.py`.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

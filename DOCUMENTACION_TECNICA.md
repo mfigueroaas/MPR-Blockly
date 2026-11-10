@@ -576,6 +576,7 @@ Después de cualquiera: `python tools/probar.py` y F5.
 Esta sección resume la sesión del 8 de noviembre de 2026 para retomar el trabajo sin el contexto de la conversación. Detalle cambio a cambio en `BITACORA.md` (entradas "2026-11-08") y mecanismos en 4.6 y 4.7.
 
 ### 13.1 Estado actual
+- **Al 2026-11-10: instalador 1.5.0 generado** (`dist\MPR_Blockly_Setup_1.5.0.exe`, 139 MB, sin firma, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`). Lleva las etapas 1 y 2 (13.8, 13.9), Otto ataja los errores (13.10) y lo del 2026-11-10 (13.11). Se comprobó que lleva los archivos nuevos (`mpr_misiones.js`, `mpr_revision.js`, `blocklino.js`, `index.html`, iguales a los del repositorio). Falta instalarlo y probarlo en el notebook y en un PC del colegio. Lo que sigue en esta sección es el estado del 2026-11-08.
 - **Rama `main`.** `package.json`: 1.4.0. Después del instalador 1.4.0 (`afd7b0e`) vinieron la documentación de traspaso y, el mismo día en el notebook, la revisión de rendimiento (13.7): recorrido fluido, espera del recorrido a Otto 3D y Otto sin recorte por vista. Ver `git log`.
 - **Instalador generado:** `dist\MPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`). `dist/` está en `.gitignore`: el `.exe` no está en git, solo en la carpeta (OneDrive).
 - **Instalado en el PC principal** (`C:\MPRBlockly`) con `python tools/probar.py`, no con el instalador. **En el notebook NB0003** (Ryzen 5 4600H con gráfica Radeon integrada, sin GPU dedicada, como los PCs donde se usará el programa) está el instalador 1.4.0 más los cambios de rendimiento, copiados con `probar.py` el 2026-11-08. Eso incluye el `electronApp.js` de git (mínimo 1100×650).
@@ -699,3 +700,20 @@ Equipo: Ryzen 5 4600H con gráfica Radeon integrada (ANGLE/Direct3D 11), 16 GB, 
   - Al final quedó en Otto un programa quieto: Configuración Otto y posición inicial.
 - **Pendiente:** ver en el colegio si los niños entienden los cuadros y si los monitores usan los códigos. Se podría imprimir la tabla de códigos para cada mesa.
 - **Agregado el mismo día:** el aviso "me estoy demorando más de lo normal" (4.9, código P5). Se probó en la app con el límite bajado a 1,5 s: botón Detener, desenchufe simulado, sin procesos colgados y el escalamiento al tercero. El envío normal sube sin aviso.
+
+### 13.11 Cambios del 2026-11-10 (versión 1.5.0)
+Detalle en `BITACORA.md` (entradas "2026-11-10").
+- **Otto aconseja, pero no pone bloques:** viene apagado. **Ctrl + Mayús + P** lo enciende y lo apaga, sin botón en la interfaz, a pedido del usuario, y muestra un aviso pequeño abajo. No se guarda. Ver 4.13.
+- **Resaltado visible:** el bloque que se está haciendo en Probar en pantalla lleva un contorno verde fino con brillo y una flecha ▶. Los bloques con problema llevan un contorno rojo que late, y los huecos vacíos un "?". Medido: 60 cuadros/s igual que antes.
+- **Sin modo código:** la app parte siempre en bloques, el interruptor bloques/código está oculto y abrir acepta solo `.xml` y `.bloc`. El código se ve con `</>`.
+  - **Por qué:** el usuario tuvo un error A9 con un programa correcto. La app había quedado en modo código y mandaba el editor vacío.
+- **Misiones:** cada una revisa su objetivo de verdad y acepta varias formas, dice qué falta y marca el bloque. El Cerro exige cambiar el ejemplo y probarlo. Ver 4.11.
+- **Recorrido:** textos al día ("Más ayudas", "¡Mándame tu programa!").
+- **Pulido:** sin los archivos `microbit` inexistentes ni los avisos de `flatShading`.
+- **Pendiente:**
+  - Probar la 1.5.0 instalada en el notebook y en un PC del colegio.
+  - Ver con niños si los mensajes de las misiones se entienden.
+  - Decidir si "Cinco pasos" acepta cinco Mover sin Repetir (hoy no).
+  - La flecha ▶ tapa un poco "de lo contrario" cuando el bloque está dentro de un Si.
+- **Trampa:** `build_installer.py` no logra borrar `C:\mprb\stage` si quedó de un armado interrumpido, por las rutas de más de 260 caracteres de la librería Firebase. Antes de reintentar: `cmd /c rd /s /q "\\?\C:\mprb\stage"`.
+
