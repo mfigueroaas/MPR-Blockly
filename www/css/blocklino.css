@@ -474,6 +474,7 @@ html, body { overflow: hidden; }
 	font-weight: bold;
 	cursor: pointer;
 	outline: none;
+	white-space: nowrap;   /* el boton "A programar" se partia en dos lineas */
 }
 #mpr_tour_sig { background: #FF5700; color: #fff; }
 #mpr_tour_sig:hover { background: #ff7a2e; }

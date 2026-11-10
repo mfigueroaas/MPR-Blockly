@@ -717,6 +717,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** (1) `blocklino.js` parte siempre en modo bloques: si `content` venía en "off", lo vuelve a "on". (2) El interruptor queda oculto con comentario `OCULTO` en `index.html`. (3) El código se sigue viendo con el botón `</>` (`btn_preview`): muestra el código actual de los bloques y no se puede editar. Ahora ese botón es el último del grupo y lleva las esquinas derechas redondas.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` con el estado real del usuario (`content = "off"`): al abrir queda en "on", no está el interruptor (foto de la barra), `</>` muestra el código, y el programa del usuario compila ("Code is ready to upload").
 
+### 2026-11-10 — Recorrido inicial al día con los cambios
+- **Pedido:** revisar que el tutorial del inicio ("Conoce a Otto") muestre bien los botones y el programa después de los cambios de hoy.
+- **Archivos:** `www/lang/msg_es.js`, `www/css/blocklino.css`.
+- **Qué se hizo:** "Más ayudas" ya no menciona el interruptor bloques/código, que se quitó: ahora dice "Con el globo dime qué bloque buscas. Con </> ves el código que arman tus bloques, y con ? repites este paseo." "¡Mándame tu programa!" suma que Otto revisa el programa antes de mandarlo y marca en rojo lo que falta. El botón "¡A programar!" ya no se parte en dos líneas (`white-space: nowrap`). No se menciona Ctrl + Mayús + P, a propósito. Se revisaron los demás textos (consejos, misiones, menú de Otto): no hablan del modo código.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, con fotos de los pasos "¡Mándame tu programa!" y "Más ayudas" (9 pasos).
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
