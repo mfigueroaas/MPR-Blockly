@@ -676,8 +676,11 @@ html, body { overflow: hidden; }
 /* flecha a la izquierda del bloque que se esta haciendo */
 .blocklySvg .mpr-ejecuta-flecha circle { fill: #2ECC40; stroke: #ffffff; stroke-width: 2px; }
 .blocklySvg .mpr-ejecuta-flecha path { fill: #ffffff; }
-/* aviso de Ctrl + Mayus + A cuando Otto esta escondido */
-#mpr_rev_aviso { display: none; position: fixed; top: 70px; left: 50%; width: 420px; margin-left: -210px; z-index: 3000; background: #ffffff; border: 3px solid #FF5700; border-radius: 18px; box-shadow: 0 8px 28px rgba(0,0,0,.35); padding: 12px 16px; color: #2d2d64; font-size: 15px; text-align: center; }
+/* aviso pequeno de Ctrl + Mayus + A (Otto pone los bloques: activado / desactivado); se va solo */
+#mpr_rev_aviso { position: fixed; bottom: 28px; left: 50%; z-index: 3000; padding: 7px 14px 7px 12px; border-radius: 16px; background: rgba(45,45,100,.92); color: #ffffff; font-size: 13px; white-space: nowrap; box-shadow: 0 3px 12px rgba(0,0,0,.25); pointer-events: none; opacity: 0; transform: translate(-50%, 8px); transition: opacity .25s ease, transform .25s ease; }
+#mpr_rev_aviso.visible { opacity: 1; transform: translate(-50%, 0); }
+#mpr_rev_aviso .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; background: #9aa0c8; }
+#mpr_rev_aviso.si .punto { background: #2ECC40; }
 #portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }   /* verde = estado "Otto conectado" */
 
 /* ---------------------------------------------------------------- botones de la barra */

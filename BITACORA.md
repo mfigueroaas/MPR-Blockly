@@ -698,6 +698,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** se quitó el botón "🧩 Que Otto ponga los bloques que faltan" / "✋ Yo pongo mis bloques" del menú de Otto (entrada anterior) y sus textos. El mensaje de Otto al encenderlo vuelve a decir "(Ctrl + Mayús + A para apagarlo)". Sigue apagado por defecto.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`: el menú de Otto ya no tiene el botón y Ctrl + Mayús + A sigue encendiendo y apagando.
 
+### 2026-11-10 — Aviso pequeño al apretar Ctrl + Mayús + A
+- **Pedido:** que al apretar la combinación se note que se activó el modo, con algo sutil y pequeño que se quite solo.
+- **Archivos:** `www/js/mpr_revision.js`, `www/css/blocklino.css`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md` (4.13).
+- **Qué se hizo:** en vez del globo de Otto, sale una píldora azul oscuro de 13 px abajo al centro: "Otto pone los bloques que faltan: activado" (punto verde) o "...: desactivado" (punto gris). Aparece y se va con una transición de opacidad y se quita sola a los 2,5 s. No recibe clics.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp` con teclas reales: se ve al apretar (foto), a los 3 s está oculta, al apretar otra vez dice "desactivado" y el globo de Otto no se abre.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

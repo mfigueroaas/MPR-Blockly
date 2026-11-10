@@ -95,21 +95,19 @@ MPRRevision.revisar = function() {
 	return p;
 };
 
-// Ctrl + Mayús + A: Otto pone los bloques él mismo (sí / no). Lo confirma Otto (o un aviso, si Otto no está).
+// Ctrl + Mayús + A: Otto pone los bloques él mismo (sí / no). Lo confirma un aviso pequeño abajo al centro, que se va solo
+// a los 2,5 s (aparece y se va con opacidad: no repinta la mesa). No usa el globo de Otto, para no distraer al niño.
 MPRRevision.cambiarOttoPone = function() {
 	var self = MPRRevision;
 	self.ottoPone = !self.ottoPone;
-	var texto = self.msg(self.ottoPone ? 'rev_otto_pone_si' : 'rev_otto_pone_no');
-	if (typeof MPRMascota != 'undefined' && MPRMascota.decir && !MPRMascota.leer('oculta')) {
-		MPRMascota.decir(texto, { anim: self.ottoPone ? 'celebrar' : 'pensar', prio: 3, ms: 6000, forzar: true });
-	} else {
-		var e = document.getElementById('mpr_rev_aviso');
-		if (!e) { e = document.createElement('div'); e.id = 'mpr_rev_aviso'; document.body.appendChild(e); }
-		e.textContent = texto;
-		e.style.display = 'block';
-		clearTimeout(self.avisoT);
-		self.avisoT = setTimeout(function() { e.style.display = 'none'; }, 5000);
-	}
+	var e = document.getElementById('mpr_rev_aviso');
+	if (!e) { e = document.createElement('div'); e.id = 'mpr_rev_aviso'; document.body.appendChild(e); }
+	e.innerHTML = '<span class="punto"></span>' + self.msg(self.ottoPone ? 'rev_otto_pone_si' : 'rev_otto_pone_no');
+	e.className = self.ottoPone ? 'si' : 'no';
+	void e.offsetWidth;   // para que la transición parta de nuevo si se aprieta seguido
+	e.className += ' visible';
+	clearTimeout(self.avisoT);
+	self.avisoT = setTimeout(function() { e.className = e.className.replace(' visible', ''); }, 2500);
 };
 
 document.addEventListener('keydown', function(e) {
