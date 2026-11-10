@@ -680,6 +680,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - **Hueco vacío:** rectángulo blanco con orilla roja punteada y un "?", justo donde va el bloque que falta (en línea o al costado).
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:mprbp` (Chromium 69), con fotos: repetir, esperar y si vacíos; Meneíto y el ejemplo del Cerro en Probar en pantalla (el halo sigue al bloque, también dentro de si/de lo contrario). Cuadros/s de la página con la prueba corriendo: 60 con el halo y 60 con el resaltado anterior.
 
+### 2026-11-10 — Contornos más finos y bonitos
+- **Pedido:** los contornos rojo y verde se veían bien, pero muy gruesos y poco estéticos; que se vean bonitos y no desentonen con el programa.
+- **Archivos:** `www/css/blocklino.css`, `www/js/mpr_simulador.js`, `www/js/mpr_revision.js` (comentarios), `DOCUMENTACION_TECNICA.md` (4.10 y 4.13).
+- **Qué se hizo:** sin la orilla azul oscuro de 11 px: ahora es una línea de 3 px del color con un brillo suave del mismo color (9 px al 30 %; 10 px al 45 % en el verde, que sobre los bloques azules quedaba tenue). Rojo `#FF3355`, verde `#2ECC40` (el verde de estado de la app). Flecha ▶ más chica (radio 9), verde con borde blanco. Hueco: orilla punteada de 2 px y "?" de 15 px.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, con fotos de los espacios vacíos (repetir, esperar, si) y del ejemplo del Cerro en Probar en pantalla.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

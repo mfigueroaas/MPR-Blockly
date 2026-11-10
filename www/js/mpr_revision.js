@@ -254,7 +254,7 @@ MPRRevision.botarSueltos = function() {
 
 // ---------------------------------------------------------------- marcar los bloques con problema
 // Borde propio: el resaltado de Blockly (un relieve) casi no se ve. Se dibuja un halo encima del contorno del bloque:
-// una banda roja gruesa con orilla azul oscuro, que se ve sobre la mesa y sobre bloques de cualquier color
+// una línea roja fina con un brillo suave del mismo color, que se ve sobre la mesa y sobre bloques de cualquier color
 // (estilos en css/blocklino.css, "mpr-halo"). Probar en pantalla usa el mismo halo en verde para el bloque que se está
 // haciendo (MPRRevision.halo). En un espacio vacío, además, se marca el hueco que hay que rellenar.
 // Se marcan el bloque y los que cuelgan de él (si es una fila suelta).
