@@ -723,6 +723,25 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** "Más ayudas" ya no menciona el interruptor bloques/código, que se quitó: ahora dice "Con el globo dime qué bloque buscas. Con </> ves el código que arman tus bloques, y con ? repites este paseo." "¡Mándame tu programa!" suma que Otto revisa el programa antes de mandarlo y marca en rojo lo que falta. El botón "¡A programar!" ya no se parte en dos líneas (`white-space: nowrap`). No se menciona Ctrl + Mayús + P, a propósito. Se revisaron los demás textos (consejos, misiones, menú de Otto): no hablan del modo código.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, con fotos de los pasos "¡Mándame tu programa!" y "Más ayudas" (9 pasos).
 
+### 2026-11-10 — Misiones: revisiones que de verdad comprueban el objetivo (y aceptan varias formas)
+- **Pedido:** mejorar cómo se comprueba que se cumplió cada misión. En la última ("Sube el Cerro Renca") el usuario no hizo nada, presionó Revisar y se la dio por buena. Después pidió no ser tan exactos: hay varias formas de resolver cada objetivo, y un niño que sí lo hizo no puede quedar mal.
+- **Archivos:** `www/js/mpr_misiones.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md` (4.11).
+- **Qué se hizo:**
+  - **Revisión común:** cada misión parte por la revisión de siempre de Otto.
+  - **Qué falta:** la tarjeta dice qué falta en concreto (29 textos nuevos `mis_*_f_*`) y marca los bloques en rojo.
+  - **Más flexibles:** se aceptan cualquier sonido, cualquier espera, Repetir o "contar", y la condición escrita al revés o con una variable. Inicio es opcional y el orden no importa donde no corresponde.
+  - **Lo que sigue fallando:** el sonido antes de Configuración Otto (el robot no sonaría) y Detener antes del baile.
+  - **Cerro:** el programa tiene que ser distinto del ejemplo y estar probado en pantalla.
+  - **Última misión:** "¡Cumpliste todas!" sale solo con las 10 hechas.
+  - **Textos:** los objetivos de Hola, Repetir sonido, Te veo y Cerro dicen lo que hay que lograr, con un ejemplo.
+- **Probado en la app:** sí, en la copia de prueba `C:\mprbp`.
+  - **64 programas armados por DevTools:** varias formas correctas por misión, que aprueban, y formas incompletas, que fallan con el texto correcto. También la mesa inicial, que no cumple ninguna.
+  - **Ejemplos:** "Esquivar obstáculos" y "Subir el Cerro Renca" cumplen Esquiva la caja, y "Canto" cumple Te veo.
+  - **Cerro con los botones reales:** el ejemplo sin cambios no pasa, cambiado sin probar tampoco, y cambiado y probado con ▶ Probar sí.
+  - **Tarjeta:** foto con "Cambia el número del repetir para que diga 5 veces." y el repetir marcado.
+  - **Estado:** el avance y la mesa del usuario quedaron como estaban.
+- **Commit:** (ver git log)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

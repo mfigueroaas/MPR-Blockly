@@ -247,9 +247,29 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
 
 ### 4.11 Misiones (noviembre 2026)
 - **Dónde:** `www/js/mpr_misiones.js` (`MPRMisiones`). Botón 🏁 `#btn_misiones` en el grupo de la derecha; la fuente de íconos de la app no trae bandera, por eso es un emoji. La tarjeta aparece abajo, junto al menú de bloques, para no tapar Configuración + Bucle.
-- **10 misiones**, siguiendo el manual: ¡Hola, Otto!, ¿Cuántas veces sonó?, Un paso, Cinco pasos, ¡Más rápido!, Camina y gira, ¡A bailar! (con Detener), Te veo (sensor), Esquiva la caja y Sube el Cerro Renca. Cada una tiene objetivo, pista, "▶ Probar" (abre el escenario) y "✅ Revisar". Revisar mira los bloques de Configuración y Bucle, también los que están dentro de Repetir o Si. "Sube el Cerro Renca" se marca a mano.
+- **10 misiones**, siguiendo el manual: ¡Hola, Otto!, ¿Cuántas veces sonó?, Un paso, Cinco pasos, ¡Más rápido!, Camina y gira, ¡A bailar! (con Detener), Te veo (sensor), Esquiva la caja y Sube el Cerro Renca. Cada una tiene objetivo, pista, "▶ Probar" (abre el escenario) y "✅ Revisar". Revisar mira los bloques de Configuración y Bucle, también los que están dentro de Repetir o Si. "Sube el Cerro Renca" también se revisa (ver abajo).
 - **Al cumplir una:** Otto celebra, la tarjeta se anima y pasa a la siguiente. El avance se guarda en `localStorage.mpr_misiones` y el botón muestra el conteo (por ejemplo, 3/10). Para el siguiente niño, Mayúscula + doble clic en "Misión N / 10" reinicia el avance.
 - **Textos:** `msg_es.js` (`mis_*`). Las revisiones están en `MPRMisiones.LISTA`.
+- **Cómo se revisa** (rehecho el 2026-11-10): cada misión mira lo que pide su objetivo y acepta las distintas formas correctas de lograrlo. Solo falla cuando falta lo pedido o cuando el robot real no lo haría.
+  - **Revisión común:** primero va la revisión de siempre (`MPRRevision.revisar`): falta Configuración + Bucle, falta Configuración Otto, el sensor sin su configuración o espacios vacíos.
+  - **Qué falta:** si algo falta, la tarjeta dice qué (textos `mis_<id>_f_*`) y marca el bloque con el borde rojo.
+  - **Orden real:** `MPRMisiones.orden` recorre los bloques en el orden en que Otto los hace.
+  - **Sensor:** la condición se reconoce escrita de cualquier forma: `Distancia < n`, `n > Distancia`, con una variable que guarda la distancia (como el Cerro) o dentro de "y/o". Las ramas "cerca" y "lejos" incluyen el "si no", los "o si" y lo que va en el Bucle fuera del Si (`MPRMisiones.ramas`).
+
+  | Misión | Se cumple con |
+  |---|---|
+  | ¡Hola, Otto! | Cualquier sonido (Sonido, Gesto, nota, canción) en Configuración, debajo de Configuración Otto |
+  | ¿Cuántas veces sonó? | Un sonido que se repite (en Bucle o en un Repetir de 2 o más) con un esperar mayor que 0 junto a él |
+  | Un paso | Mover ↑ Adelante en Configuración. Inicio es opcional; si está, va antes |
+  | Cinco pasos | Repetir 5 veces, o "contar" con 5 vueltas, con un Mover adelante o atrás adentro. Cinco Mover sueltos no valen: la misión es usar Repetir |
+  | ¡Más rápido! | Rápido o Muy rápido en cualquier bloque con velocidad (Mover, Bailar, Hacer) |
+  | Camina y gira | Un Mover que camina y otro que gira, en cualquier orden |
+  | ¡A bailar! | Dos o más bloques Bailar, Hacer o Gesto (pueden repetirse) y Detener a Otto después del último |
+  | Te veo | Si en el Bucle con "algo cerca" (de 5 a 50 cm) y un sonido en esa rama |
+  | Esquiva la caja | Si en el Bucle con el sensor: cerca, retrocede o gira; lejos, avanza |
+  | Sube el Cerro Renca | Un Si con el sensor en el Bucle y movimientos, **cambiado** respecto del ejemplo (`MPRMisiones.huella`, comparada con `examples/mpr_cerro.xml`) y **probado** en pantalla sin cambios después (se guarda al apretar ▶ Probar). Antes se marcaba a mano y pasaba con la mesa vacía |
+
+  - **Al cumplir la última:** "¡Cumpliste todas las misiones!" sale solo si están las 10; si no, dice cuántas faltan.
 
 ### 4.12 Calibración para monitores (noviembre 2026)
 - **Dónde:** `www/js/mpr_calibracion.js` (`MPRCalibracion`). Se abre con **Ctrl + Mayús + O**: no tiene botón, para que los niños no la abran por accidente.
