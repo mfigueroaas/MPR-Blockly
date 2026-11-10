@@ -280,7 +280,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
   | Bucle vacío | sí | — |
 
   Después de arreglar, revisa otra vez y, si no queda nada, manda. Probar en pantalla muestra el mismo aviso (sin detener la prueba).
-- **Otto pone los bloques solo si se activa** (pedido del 2026-11-10): por defecto Otto aconseja pero no pone ni bota bloques (`MPRRevision.ottoPone = false`). El cuadro explica qué falta y dónde buscarlo ("Búscalo en 🤖 Otto (es el primero)...", textos `rev_*_tu`) y no muestra los botones de la columna "Arreglo de Otto" ni "Llevar a la papelera"; "Mandar igual" y "Mandar sin los sueltos" siguen (no cambian la mesa). Se enciende o se apaga con el botón del menú de Otto (clic en Otto: "🧩 Que Otto ponga los bloques que faltan" / "✋ Yo pongo mis bloques") o con **Ctrl + Mayús + A**, y Otto lo confirma (si está escondido, sale un aviso arriba). No se guarda: al abrir la app vuelve a estar apagado.
+- **Otto pone los bloques solo si se activa** (pedido del 2026-11-10): por defecto Otto aconseja pero no pone ni bota bloques (`MPRRevision.ottoPone = false`). El cuadro explica qué falta y dónde buscarlo ("Búscalo en 🤖 Otto (es el primero)...", textos `rev_*_tu`) y no muestra los botones de la columna "Arreglo de Otto" ni "Llevar a la papelera"; "Mandar igual" y "Mandar sin los sueltos" siguen (no cambian la mesa). Se enciende o se apaga **solo con Ctrl + Mayús + A** (pedido del usuario: sin botón en la interfaz, para que los niños no lo activen), y Otto lo confirma (si está escondido, sale un aviso arriba). No se guarda: al abrir la app vuelve a estar apagado.
 - **Códigos de error** (`MPRConsejos.ERRORES`, en `www/js/mpr_consejos.js`). Cada error de compilar o subir tiene un código corto, para decirlo en voz alta en una mesa con ruido. El cuadro muestra "Código para tu monitor: P3" con una pista para el monitor. Si el mismo código sale 3 veces seguidas sin un envío bueno entre medio (`MPRConsejos.VECES`), el cuadro y Otto dicen "Levanta la mano y llama a tu monitor: dile «código P3»".
 
   | Código | Qué pasa (texto real que lo identifica) | Qué hace el monitor |
@@ -499,7 +499,7 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Otras placas (Uno, Mega, Leonardo, Micro, MRTduino, ZUM BT‑328) | Volver a agregar sus `<option>` en las **dos** listas de `index.html` (sus perfiles siguen en `boards.js`); para compilar, el core AVR ya está incluido |
 | Sonidos de Otto en la categoría Otto | Mover las 4 líneas `<block>` de `CAT_BUZZER` a `CAT_OTTO` |
 | Monitor serie (lo abría la lupa) | En `www/index.html` quitar el comentario `OCULTO` de `btn_term` (y comentar `btn_buscar` si no se quiere la búsqueda) |
-| Otto pone los bloques que faltan ("Ponlo tú, Otto") | Menú de Otto ("🧩 Que Otto ponga los bloques que faltan") o **Ctrl + Mayús + A** en la app (solo hasta cerrarla). Para que parta encendido: `ottoPone: true` en `www/js/mpr_revision.js` |
+| Otto pone los bloques que faltan ("Ponlo tú, Otto") | **Ctrl + Mayús + A** en la app (solo hasta cerrarla; no hay botón a propósito). Para que parta encendido: `ottoPone: true` en `www/js/mpr_revision.js` |
 | Limitador de servos como antes (más lento y suave) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h`: 3 (ahora 240); valores intermedios 150–180; **probar en el robot** |
 
 Después de cualquiera: `python tools/probar.py` y F5.

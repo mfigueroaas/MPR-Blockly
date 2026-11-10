@@ -692,6 +692,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** el menú de Otto (clic en Otto) tiene "🧩 Que Otto ponga los bloques que faltan" cuando está apagado (por defecto) y "✋ Yo pongo mis bloques" cuando está encendido. Llama a `MPRRevision.cambiarOttoPone`, lo mismo que Ctrl + Mayús + A. El mensaje de Otto al encenderlo dice que se apaga "en mi menú o con Ctrl + Mayús + A".
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`: el botón enciende y apaga, cambia su texto y Otto confirma cada cambio (foto del menú).
 
+### 2026-11-10 — Fuera el botón del menú de Otto: solo Ctrl + Mayús + A
+- **Pedido:** que la opción de que Otto ponga los bloques no se pueda activar desde la interfaz, solo con la combinación de teclas.
+- **Archivos:** `www/js/mpr_mascota.js`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md` (4.13 y 9).
+- **Qué se hizo:** se quitó el botón "🧩 Que Otto ponga los bloques que faltan" / "✋ Yo pongo mis bloques" del menú de Otto (entrada anterior) y sus textos. El mensaje de Otto al encenderlo vuelve a decir "(Ctrl + Mayús + A para apagarlo)". Sigue apagado por defecto.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:\mprbp`: el menú de Otto ya no tiene el botón y Ctrl + Mayús + A sigue encendiendo y apagando.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

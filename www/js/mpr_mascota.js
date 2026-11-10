@@ -272,10 +272,6 @@ MPRMascota.menu = function() {
 	lista.appendChild(mprBoton('🎨 ' + MPRMascota.msg('masc_colores', 'Mis colores'), '', MPRMascota.panelColores));
 	lista.appendChild(mprBoton(MPRMascota.paseando ? '⏸ ' + MPRMascota.msg('masc_quieto', 'Quedarme en mi lugar') : '🚶 ' + MPRMascota.msg('masc_pasear', 'Pasear por la mesa'), '', MPRMascota.alternarPaseo));
 	lista.appendChild(mprBoton(MPRMascota.silenciada ? '🔔 ' + MPRMascota.msg('masc_activar', 'Activar avisos') : '🔕 ' + MPRMascota.msg('masc_silenciar', 'Avisos tranquilos'), '', MPRMascota.alternarSilencio));
-	// Otto pone los bloques que faltan (sí / no): lo mismo que Ctrl + Mayús + A (js/mpr_revision.js). Apagado por defecto.
-	if (typeof MPRRevision != 'undefined' && MPRRevision.cambiarOttoPone) {
-		lista.appendChild(mprBoton(MPRRevision.ottoPone ? '✋ ' + MPRMascota.msg('masc_pone_no', 'Yo pongo mis bloques') : '🧩 ' + MPRMascota.msg('masc_pone_si', 'Que Otto ponga los bloques que faltan'), '', MPRRevision.cambiarOttoPone));
-	}
 	lista.appendChild(mprBoton('💤 ' + MPRMascota.msg('masc_esconder', 'Esconderme'), '', MPRMascota.esconder));
 	cont.appendChild(lista);
 	MPRMascota.enMenu = true;
