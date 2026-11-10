@@ -664,6 +664,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** `serialdistance.xml` queda con `"visible": false`, sin borrarlo.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la app instalada: la lista ya no lo muestra.
 
+### 2026-11-10 — Otto aconseja, pero no pone bloques salvo que se active
+- **Pedido:** que Otto siga dando consejos, pero que la opción de que coloque los bloques él mismo esté desactivada por defecto, con una combinación de teclas para activarla.
+- **Archivos:** `www/js/mpr_revision.js`, `www/lang/msg_es.js`, `www/css/blocklino.css`, `DOCUMENTACION_TECNICA.md` (4.13 y 9).
+- **Qué se hizo:** `MPRRevision.revisar` quita el arreglo cuando `ottoPone` está apagado (por defecto) y usa textos que dicen dónde buscar el bloque (`rev_*_tu`). Sin arreglo no aparecen "Ponlo tú, Otto", "Ponla tú, Otto" ni "Llevar a la papelera". **Ctrl + Mayús + A** lo cambia; Otto dice "¡Listo! Ahora, si falta un bloque, te ofreceré ponerlo yo..." o "Ya no pondré bloques yo...". Si Otto está escondido, sale un aviso (`#mpr_rev_aviso`). No se guarda en `localStorage`.
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:mprbp` con teclas reales por DevTools: por defecto solo "Volver a mis bloques" y el texto nuevo; con Ctrl + Mayús + A aparece "Ponlo tú, Otto" y pone Configuración Otto; otra vez Ctrl + Mayús + A lo apaga; bloques sueltos: solo "Mandar sin los sueltos"; aviso con Otto escondido.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

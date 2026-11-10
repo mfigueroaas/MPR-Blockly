@@ -1,7 +1,7 @@
 'use strict';
 
 // MPR: Otto revisa el programa antes de mandarlo (DOCUMENTACION_TECNICA.md 4.13). Ataja los errores típicos de los niños
-// antes de compilar, los explica, marca los bloques con problema y, si se puede, los arregla solo:
+// antes de compilar, los explica, marca los bloques con problema y, si se activa con Ctrl + Mayús + A, los arregla solo:
 //  - bloques sueltos fuera de Configuración + Bucle (ya no entran al programa: ver "generador", abajo);
 //  - falta Configuración + Bucle; bloques de Otto sin Configuración Otto; sensor sin su bloque de configuración;
 //  - bloques con un espacio vacío (un "si" sin condición, "esperar" sin número...); programa que no le pide nada a Otto.
@@ -18,6 +18,12 @@ var MPRRevision = {
 	SOLO_CONFIG: { otto_configuration: 1, ultrasonic_sensor: 1, buzzer_init: 1, serial_init: 1, otto_calibration: 1 },
 	// entradas que pueden quedar vacías sin error
 	VACIO_OK: { serial_print: 1, serial_println: 1, procedures_ifreturn: 1 },
+	// Otto pone los bloques que faltan él mismo ("Ponlo tú, Otto"). Apagado por defecto: Otto explica qué falta y
+	// dónde buscarlo, y el niño lo pone. Ctrl + Mayús + A lo enciende o lo apaga (no se guarda: al abrir la app vuelve
+	// a estar apagado).
+	ottoPone: false,
+	// texto para cuando Otto no pone los bloques (el niño lo hace)
+	TEXTO_NINO: { sin_estructura: 'rev_sin_estructura_tu', sin_config_otto: 'rev_sin_config_otto_tu', sensor_sin_config: 'rev_sensor_sin_config_tu', config_afuera: 'rev_config_afuera_tu' },
 	marcados: []
 };
 
@@ -78,8 +84,43 @@ MPRRevision.delPrograma = function() {
 	return res;
 };
 
-// Devuelve el problema más importante (o null). Cada problema: { id, grave, bloques, texto, arreglo, accion }
+// Devuelve el problema más importante (o null). Cada problema: { id, grave, bloques, texto, arreglo, accion }.
+// Si Otto no pone bloques (MPRRevision.ottoPone apagado), el problema no trae arreglo y el texto dice cómo hacerlo.
 MPRRevision.revisar = function() {
+	var p = MPRRevision.buscar();
+	if (p && !MPRRevision.ottoPone) {
+		p.arreglo = null;
+		if (MPRRevision.TEXTO_NINO[p.id]) p.texto = MPRRevision.msg(MPRRevision.TEXTO_NINO[p.id], p.texto);
+	}
+	return p;
+};
+
+// Ctrl + Mayús + A: Otto pone los bloques él mismo (sí / no). Lo confirma Otto (o un aviso, si Otto no está).
+MPRRevision.cambiarOttoPone = function() {
+	var self = MPRRevision;
+	self.ottoPone = !self.ottoPone;
+	var texto = self.msg(self.ottoPone ? 'rev_otto_pone_si' : 'rev_otto_pone_no');
+	if (typeof MPRMascota != 'undefined' && MPRMascota.decir && !MPRMascota.leer('oculta')) {
+		MPRMascota.decir(texto, { anim: self.ottoPone ? 'celebrar' : 'pensar', prio: 3, ms: 6000, forzar: true });
+	} else {
+		var e = document.getElementById('mpr_rev_aviso');
+		if (!e) { e = document.createElement('div'); e.id = 'mpr_rev_aviso'; document.body.appendChild(e); }
+		e.textContent = texto;
+		e.style.display = 'block';
+		clearTimeout(self.avisoT);
+		self.avisoT = setTimeout(function() { e.style.display = 'none'; }, 5000);
+	}
+};
+
+document.addEventListener('keydown', function(e) {
+	if (e.ctrlKey && e.shiftKey && !e.altKey && (e.key == 'A' || e.key == 'a' || e.keyCode == 65)) {
+		e.preventDefault();
+		e.stopPropagation();
+		MPRRevision.cambiarOttoPone();
+	}
+}, true);
+
+MPRRevision.buscar = function() {
 	var self = MPRRevision, ws = self.ws(), m = self.msg;
 	if (!ws) return null;
 	var raiz = self.raiz();

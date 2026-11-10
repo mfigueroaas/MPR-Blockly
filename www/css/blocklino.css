@@ -659,6 +659,8 @@ html, body { overflow: hidden; }
 #messageDIV .mpr-rev-acc button.mpr-rev-pri:hover { background: #ff7a2e; }
 /* bloques con un problema: borde amarillo grueso (se quita solo al cambiar algo en la mesa) */
 .blocklySvg .mpr-marcado > .blocklyPath { stroke: #FFC400; stroke-width: 5px; }
+/* aviso de Ctrl + Mayus + A cuando Otto esta escondido */
+#mpr_rev_aviso { display: none; position: fixed; top: 70px; left: 50%; width: 420px; margin-left: -210px; z-index: 3000; background: #ffffff; border: 3px solid #FF5700; border-radius: 18px; box-shadow: 0 8px 28px rgba(0,0,0,.35); padding: 12px 16px; color: #2d2d64; font-size: 15px; text-align: center; }
 #portserie.mpr-puerto-listo { box-shadow: 0 0 0 3px #2ECC40; }   /* verde = estado "Otto conectado" */
 
 /* ---------------------------------------------------------------- botones de la barra */
