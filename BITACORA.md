@@ -670,6 +670,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** `MPRRevision.revisar` quita el arreglo cuando `ottoPone` está apagado (por defecto) y usa textos que dicen dónde buscar el bloque (`rev_*_tu`). Sin arreglo no aparecen "Ponlo tú, Otto", "Ponla tú, Otto" ni "Llevar a la papelera". **Ctrl + Mayús + A** lo cambia; Otto dice "¡Listo! Ahora, si falta un bloque, te ofreceré ponerlo yo..." o "Ya no pondré bloques yo...". Si Otto está escondido, sale un aviso (`#mpr_rev_aviso`). No se guarda en `localStorage`.
 - **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:mprbp` con teclas reales por DevTools: por defecto solo "Volver a mis bloques" y el texto nuevo; con Ctrl + Mayús + A aparece "Ponlo tú, Otto" y pone Configuración Otto; otra vez Ctrl + Mayús + A lo apaga; bloques sueltos: solo "Mandar sin los sueltos"; aviso con Otto escondido.
 
+### 2026-11-10 — Se ve mejor qué bloque se está haciendo y dónde falta algo
+- **Pedido:** en Probar en pantalla (el patio de juegos) el bloque que se está ejecutando no se veía bien; tampoco el contorno amarillo con que Otto marca un bloque con un espacio vacío. Revisarlo en la app, no en la web.
+- **Archivos:** `www/js/mpr_revision.js`, `www/js/mpr_simulador.js`, `www/css/blocklino.css`, `www/lang/msg_es.js`, `DOCUMENTACION_TECNICA.md` (4.10 y 4.13).
+- **Qué se hizo:**
+  - **Halo propio** (`MPRRevision.halo`): dos trazos SVG con la forma del bloque, encima de él: orilla azul oscuro de 11 px y banda de color de 6 px. Se ve sobre la mesa gris y sobre bloques de cualquier color. Antes era un trazo amarillo de 5 px que se perdía en los bloques de Lógica (amarillos) y el relieve de Blockly (`highlightBlock`), casi invisible.
+  - **Bloque que se está haciendo:** halo verde y una flecha ▶ (círculo azul oscuro) a la izquierda. Fijo, sin animación.
+  - **Bloque con problema:** halo rojo que late 4 veces al aparecer (1,8 s) y queda fijo. Los textos dicen "borde rojo" en vez de "borde amarillo".
+  - **Hueco vacío:** rectángulo blanco con orilla roja punteada y un "?", justo donde va el bloque que falta (en línea o al costado).
+- **Commit:** (ver git log)  **Probado en la app:** sí, en la copia de prueba `C:mprbp` (Chromium 69), con fotos: repetir, esperar y si vacíos; Meneíto y el ejemplo del Cerro en Probar en pantalla (el halo sigue al bloque, también dentro de si/de lo contrario). Cuadros/s de la página con la prueba corriendo: 60 con el halo y 60 con el resaltado anterior.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

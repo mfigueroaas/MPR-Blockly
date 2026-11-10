@@ -253,19 +253,63 @@ MPRRevision.botarSueltos = function() {
 };
 
 // ---------------------------------------------------------------- marcar los bloques con problema
-// Borde amarillo propio (clase mpr-marcado, css/blocklino.css): el resaltado de Blockly casi no se ve y además lo usa
-// Probar en pantalla para mostrar el bloque que se está haciendo. Se marcan el bloque y los que cuelgan de él.
-MPRRevision.marcar = function(bloques) {
+// Borde propio: el resaltado de Blockly (un relieve) casi no se ve. Se dibuja un halo encima del contorno del bloque:
+// una banda roja gruesa con orilla azul oscuro, que se ve sobre la mesa y sobre bloques de cualquier color
+// (estilos en css/blocklino.css, "mpr-halo"). Probar en pantalla usa el mismo halo en verde para el bloque que se está
+// haciendo (MPRRevision.halo). En un espacio vacío, además, se marca el hueco que hay que rellenar.
+// Se marcan el bloque y los que cuelgan de él (si es una fila suelta).
+MPRRevision.SVG = 'http://www.w3.org/2000/svg';
+
+MPRRevision.svg = function(tag, attrs, padre) {
+	var e = document.createElementNS(MPRRevision.SVG, tag);
+	for (var k in attrs) e.setAttribute(k, attrs[k]);
+	if (padre) padre.appendChild(e);
+	return e;
+};
+
+// Agrega un halo al bloque (tipo: 'marcado' o 'ejecuta'). Devuelve el elemento, para quitarlo después.
+MPRRevision.halo = function(b, tipo) {
+	var g = b && b.getSvgRoot && b.getSvgRoot(), path = b && b.svgPath_;
+	var d = path && path.getAttribute('d');
+	if (!g || !d) return null;
+	var h = MPRRevision.svg('g', { 'class': 'mpr-halo mpr-halo-' + tipo });
+	MPRRevision.svg('path', { 'class': 'mpr-halo-orilla', d: d }, h);
+	MPRRevision.svg('path', { 'class': 'mpr-halo-banda', d: d }, h);
+	g.appendChild(h);   // al final: queda encima del bloque y del que cuelga debajo
+	return h;
+};
+
+// Huecos vacíos de un bloque: un rectángulo blanco con orilla roja punteada y un "?", justo donde va el bloque que falta
+MPRRevision.huecos = function(b, h) {
+	if (!h || MPRRevision.VACIO_OK[b.type]) return;
+	var xy = b.getRelativeToSurfaceXY();
+	b.inputList.forEach(function(inp) {
+		var c = inp.connection;
+		if (inp.type != Blockly.INPUT_VALUE || !c || c.targetBlock() || typeof c.x_ != 'number') return;
+		var x = c.x_ - xy.x, y = c.y_ - xy.y;
+		var enLinea = b.getInputsInline() && inp.renderWidth;
+		var r = enLinea ? { x: x - 8, y: y - 3, width: inp.renderWidth + 5, height: (inp.renderHeight || 25) + 6 }
+			: { x: x - 12, y: y - 3, width: 34, height: 31 };
+		r.rx = 6;
+		var g = MPRRevision.svg('g', { 'class': 'mpr-hueco' }, h);
+		MPRRevision.svg('rect', r, g);
+		MPRRevision.svg('text', { x: r.x + r.width / 2, y: r.y + r.height / 2 + 6 }, g).textContent = '?';
+	});
+};
+
+MPRRevision.marcar = function(bloques, conHuecos) {
 	var ws = MPRRevision.ws();
 	MPRRevision.desmarcar();
-	var ids = [];
+	var halos = [];
 	(bloques || []).forEach(function(b) {
 		(MPRRevision.esSuelto(b) || !b.getParent() ? b.getDescendants(false) : [b]).forEach(function(d) {
-			var g = d.getSvgRoot && d.getSvgRoot();
-			if (g) { Blockly.addClass_(g, 'mpr-marcado'); ids.push(d.id); }
+			var h = MPRRevision.halo(d, 'marcado');
+			if (!h) return;
+			if (conHuecos) MPRRevision.huecos(d, h);
+			halos.push(h);
 		});
 	});
-	MPRRevision.marcados = ids;
+	MPRRevision.marcados = halos;
 	MPRRevision.marcadoT = Date.now();
 	// se desmarcan solos cuando el niño cambia algo en la mesa (no con los eventos del propio arreglo, que llegan después)
 	if (!MPRRevision.vigila && ws) {
@@ -278,11 +322,7 @@ MPRRevision.marcar = function(bloques) {
 };
 
 MPRRevision.desmarcar = function() {
-	var ws = MPRRevision.ws();
-	MPRRevision.marcados.forEach(function(id) {
-		var b = ws && ws.getBlockById(id), g = b && b.getSvgRoot && b.getSvgRoot();
-		if (g) Blockly.removeClass_(g, 'mpr-marcado');
-	});
+	MPRRevision.marcados.forEach(function(h) { if (h.parentNode) h.parentNode.removeChild(h); });
 	MPRRevision.marcados = [];
 };
 
@@ -291,7 +331,7 @@ MPRRevision.desmarcar = function() {
 MPRRevision.antesDeMandar = function(div, continuar) {
 	var self = MPRRevision, p = self.revisar(), m = self.msg;
 	if (!p) return false;
-	self.marcar(p.bloques);
+	self.marcar(p.bloques, p.id == 'vacios');
 	var botones = '<button type="button" data-rev="volver" class="mpr-rev-sec">' + m('rev_volver', 'Volver a mis bloques') + '</button>';
 	if (!p.grave) botones += '<button type="button" data-rev="igual" class="mpr-rev-sec">' + m(p.id == 'sueltos' ? 'rev_mandar_sin' : 'rev_mandar_igual', 'Mandar igual') + '</button>';
 	if (p.arreglo) botones += '<button type="button" data-rev="arreglar" class="mpr-rev-pri">' + p.accion + '</button>';
@@ -321,12 +361,12 @@ MPRRevision.antesDeMandar = function(div, continuar) {
 	return true;
 };
 
-// Para Probar en pantalla: un aviso corto (no detiene la prueba). El borde amarillo no choca con el resaltado de la
+// Para Probar en pantalla: un aviso corto (no detiene la prueba). El borde rojo no choca con el resaltado de la
 // prueba (que muestra el bloque que se está haciendo).
 MPRRevision.avisoSimulador = function() {
 	var p = MPRRevision.revisar();
 	if (!p || p.id == 'sin_estructura' || p.id == 'vacio') return '';
-	MPRRevision.marcar(p.bloques);
+	MPRRevision.marcar(p.bloques, p.id == 'vacios');
 	// sin la pregunta "¿Lo pongo yo?": en la prueba no hay botón para arreglarlo
 	return MPRRevision.msg('rev_en_robot', 'Ojo, para el robot:') + ' ' + p.texto.replace(/\s*¿[^?]*\?\s*$/, '');
 };

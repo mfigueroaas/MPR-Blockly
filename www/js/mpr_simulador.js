@@ -805,7 +805,7 @@ MPRSimulador.terminar = function(motivo) {
 	self.corrida = null;
 	self.tramos = [];
 	self.audio.silencio();
-	try { BlocklyDuino.workspace.highlightBlock(null); } catch (e) {}
+	self.quitarResaltado();
 	if (motivo) self.estado(self.msg(motivo, ''));
 	if (motivo == 'sim_borde') self.aviso(self.msg('sim_borde', ''), 12000);
 	self.actualizarBotones();
@@ -824,8 +824,26 @@ MPRSimulador.vigilarCambios = function() {
 	});
 };
 
+// El bloque que se está haciendo: halo verde con orilla azul oscuro y una flecha ▶ a su izquierda (el resaltado de
+// Blockly, un relieve, casi no se veía). Usa el halo de js/mpr_revision.js; sin él, el resaltado de Blockly.
 MPRSimulador.resaltar = function(b) {
-	try { BlocklyDuino.workspace.highlightBlock(b.id); } catch (e) {}
+	var self = MPRSimulador;
+	if (b && self.resaltado && self.resaltado.bloque === b && self.resaltado.h.parentNode) return;
+	self.quitarResaltado();
+	if (!b) return;
+	var h = typeof MPRRevision != 'undefined' && MPRRevision.halo ? MPRRevision.halo(b, 'ejecuta') : null;
+	if (!h) { try { BlocklyDuino.workspace.highlightBlock(b.id); } catch (e) {} return; }
+	var f = MPRRevision.svg('g', { 'class': 'mpr-ejecuta-flecha', transform: 'translate(-17,' + Math.min(14, (b.height || 28) / 2) + ')' }, h);
+	MPRRevision.svg('circle', { r: 11 }, f);
+	MPRRevision.svg('path', { d: 'M-3.5 -6 L6 0 L-3.5 6 Z' }, f);
+	self.resaltado = { bloque: b, h: h };
+};
+
+MPRSimulador.quitarResaltado = function() {
+	var r = MPRSimulador.resaltado;
+	if (r && r.h.parentNode) r.h.parentNode.removeChild(r.h);
+	MPRSimulador.resaltado = null;
+	try { BlocklyDuino.workspace.highlightBlock(null); } catch (e) {}
 };
 
 MPRSimulador.noSimulado = function(b) {
