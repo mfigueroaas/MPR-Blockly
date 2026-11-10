@@ -120,5 +120,6 @@ Code.initLanguage = function() {
 };
 document.write('<script src="lang/msg_' + Code.LANG + '.js"></script>\n');
 document.write('<script src="lang/Blockly_' + Code.LANG + '.js"></script>\n');
-document.write('<script src="lang/microbit_' + Code.LANG + '.js"></script>\n');
+// MPR: lang/microbit_es.js no existe (heredado de Otto Blockly; daba ERR_FILE_NOT_FOUND al abrir)
+// document.write('<script src="lang/microbit_' + Code.LANG + '.js"></script>\n');
 document.write('<script src="lang/Arduino_' + Code.LANG + '.js"></script>\n');

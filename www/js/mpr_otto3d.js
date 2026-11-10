@@ -76,7 +76,7 @@ MPROtto3D.iniciar = function(canvas, colores) {
 	// Materiales: uno por grupo de piezas, así cada niño pinta su Otto
 	self.mat = {};
 	self.PARTES_COLOR.forEach(function(n) {
-		self.mat[n] = new THREE.MeshLambertMaterial({ color: (colores && colores[n]) || '#ff5700', flatShading: true });
+		self.mat[n] = new THREE.MeshLambertMaterial({ color: (colores && colores[n]) || '#ff5700' });   // sin flatShading: este material lo ignora (avisaba en la consola); las caras planas vienen de la geometría
 	});
 	// Materiales del sensor ultrasónico (no se personalizan: son parte del robot)
 	self.matPlata = new THREE.MeshLambertMaterial({ color: 0xc7ccd4 });

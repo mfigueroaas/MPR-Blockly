@@ -742,6 +742,17 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - **Estado:** el avance y la mesa del usuario quedaron como estaban.
 - **Commit:** (ver git log)
 
+### 2026-11-10 — Pulido antes del instalador 1.5.0
+- **Pedido:** dejar la versión pulida, con lo pendiente en el código, antes de generar el instalador.
+- **Archivos:** `www/index.html`, `www/lang/code.js`, `www/js/mpr_otto3d.js`, `DOCUMENTACION_TECNICA.md` (13.4).
+- **Qué se hizo:**
+  - **Abrir:** el botón de abrir acepta solo proyectos de bloques (`.xml`, `.bloc`). Un `.ino` o un `.py` pasaba al editor de código, del que ya no se puede volver sin el interruptor.
+  - **Archivos que faltaban:** fuera las referencias a `blocs&generateurs/microbit.js` y `lang/microbit_es.js`, que no existen (2 `ERR_FILE_NOT_FOUND` al abrir; heredado de Otto Blockly).
+  - **Otto 3D:** sin `flatShading` en `MeshLambertMaterial`. three r128 lo ignora y avisaba 4 veces; las caras planas salen de la geometría (13.6).
+  - **Sin cambios, a propósito:** el `TypeError` de `typing.js:95`, porque corregirlo cambia los tipos de variables del código generado (13.4). También el aviso de `play()` de Blockly, que es el navegador bloqueando los sonidos antes del primer clic.
+- **Probado en la app:** sí, en la copia de prueba `C:\mprbp`, recargando sin caché y registrando la consola. Se usaron el recorrido, la vista de código, las misiones, la búsqueda, el menú y los consejos de Otto, el escenario con Probar, la revisión, los ejemplos y Ctrl + Mayús + P: ningún error del código de MPR. Otto 3D se ve igual (foto).
+- **Commit:** (ver git log)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
