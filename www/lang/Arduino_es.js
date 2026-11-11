@@ -16,7 +16,7 @@ Blockly.Msg.no = "No";
 Blockly.Msg.uptodate = "✅ ¡La versión está actualizada!" ;
 Blockly.Msg.download = "Descarga completada, la aplicación se instalará y reiniciará ..."
 // common to all blocks
-Blockly.Msg.HELPURL = "https://ottodiy.com"; // do not translate
+Blockly.Msg.HELPURL = "https://miprimerrobot.utem.cl/"; // MPR: página de ayuda del programa
 Blockly.Msg.pin = "en el pin";
 Blockly.Msg._AT = "en";
 Blockly.Msg.AV = "Adelante";

@@ -73,4 +73,18 @@
       menuDom.scrollTop = checked.offsetTop - menuDom.clientHeight / 2;
     }
   };
+
+  // "Ayuda" del clic derecho en un bloque: siempre lleva a la página del programa Mi Primer Robot (antes cada
+  // bloque abría su propia página: ottodiy.com, Adafruit, Arduino...). Electron la abre en el navegador.
+  Blockly.MPR_AYUDA_URL = 'https://miprimerrobot.utem.cl/';
+  if (Blockly.BlockSvg) {
+    var menuOriginal = Blockly.BlockSvg.prototype.showContextMenu_;
+    Blockly.BlockSvg.prototype.showContextMenu_ = function (e) {
+      this.helpUrl = Blockly.MPR_AYUDA_URL;   // así "Ayuda" queda activa en todos los bloques
+      return menuOriginal.call(this, e);
+    };
+    Blockly.BlockSvg.prototype.showHelp_ = function () {
+      window.open(Blockly.MPR_AYUDA_URL);
+    };
+  }
 })();

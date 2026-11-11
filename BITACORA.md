@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-11 — "Ayuda" del clic derecho lleva a miprimerrobot.utem.cl
+- **Pedido:** al hacer clic derecho en un bloque, "Ayuda" mandaba a www.ottodiy.com; que vaya a https://miprimerrobot.utem.cl/.
+- **Archivos:** `www/js/mpr_fixes.js`, `www/lang/Arduino_es.js` (`HELPURL`).
+- **Hecho:** `Blockly.BlockSvg.prototype.showHelp_` abre siempre `Blockly.MPR_AYUDA_URL` (cada bloque tenía su página: ottodiy, Adafruit,
+  Arduino...) y `showContextMenu_` deja "Ayuda" activa en todos los bloques. Electron la abre en el navegador.
+- **Probado:** en la app (copia de prueba `C:\mprbp`, por DevTools): `showHelp_` abre https://miprimerrobot.utem.cl/. Instalado con `probar.py`.
+
 ### 2026-11-06 — Canciones infantiles tradicionales (11 a 13)
 - **Pedido:** 10 canciones latinoamericanas más, alegres y para niños, y agregar "Firestarter" (K/DA).
 - **Archivos:** `www/blocs&generateurs/mpr_canciones.js`.
