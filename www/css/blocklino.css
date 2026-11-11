@@ -578,6 +578,55 @@ html, body { overflow: hidden; }
 	-webkit-app-region: no-drag;
 }
 #mpr_masc_volver img { width: 100%; height: 100%; }
+/* Otto parte escondido: cada 8 s el botón da un saltito con un balanceo y suelta un anillo naranja suave, para que el
+   niño lo descubra sin que moleste. Solo transform y opacity (no repinta; liviano en gráfica integrada). */
+#mpr_masc_volver.llamando { animation: mpr-volver-salto 8s ease-in-out 3s infinite; }
+#mpr_masc_volver.llamando::after {
+	content: '';
+	position: absolute;
+	left: -3px; top: -3px; right: -3px; bottom: -3px;
+	border: 3px solid #FF5700;
+	border-radius: 50%;
+	opacity: 0;
+	pointer-events: none;
+	animation: mpr-volver-anillo 8s ease-out 3s infinite;
+}
+#mpr_masc_volver.llamando:hover { animation: none; }
+@keyframes mpr-volver-salto {
+	0%, 84%, 100% { transform: translateY(0) rotate(0); }
+	87% { transform: translateY(-7px) rotate(-8deg); }
+	90% { transform: translateY(0) rotate(6deg); }
+	93% { transform: translateY(-3px) rotate(-3deg); }
+	96% { transform: translateY(0) rotate(0); }
+}
+@keyframes mpr-volver-anillo {
+	0%, 85% { transform: scale(1); opacity: 0; }
+	87% { transform: scale(1); opacity: 0.7; }
+	100% { transform: scale(1.6); opacity: 0; }
+}
+/* Ícono de un botón de la app dentro de un texto de Otto (ej. el birrete de ejemplos), dibujado como el botón */
+#mpr_masc_cont .mpr-icono-boton {
+	display: inline-block;
+	width: 24px; height: 24px;
+	line-height: 24px;
+	margin: 0 2px;
+	border-radius: 7px;
+	background: #adadad;
+	color: #ffffff;
+	font-size: 14px;
+	text-align: center;
+	vertical-align: middle;
+}
+/* "Colores al azar": arcoíris que se desliza despacio */
+#mpr_masc_cont button.arcoiris, #mpr_masc_cont button.arcoiris:hover {
+	color: #ffffff;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+	background: linear-gradient(90deg, #e63946, #ff8c00, #ffc400, #2bb673, #19a7ce, #3a5bd9, #8e44ad, #e63946);
+	background-size: 300% 100%;
+	animation: mpr-arcoiris 6s linear infinite;
+}
+#mpr_masc_cont button.arcoiris:hover { animation-duration: 2s; }
+@keyframes mpr-arcoiris { from { background-position: 0% 50%; } to { background-position: 150% 50%; } }
 
 /* =====================================================================================================================
    MPR: piezas agregadas (subida, Probar en pantalla, misiones, calibración) con el MISMO lenguaje visual del recorrido

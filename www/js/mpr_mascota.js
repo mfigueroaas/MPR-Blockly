@@ -226,6 +226,21 @@ function mprBoton(texto, clase, accion) {
 	return b;
 }
 
+// Íconos de botones de la app que se pueden nombrar en un texto con {nombre}: se dibujan como un botón en miniatura,
+// para que el niño reconozca cuál apretar (ej. '{birrete}' = botón de ejemplos)
+MPRMascota.ICONOS = { birrete: 'fa fa-graduation' };
+MPRMascota.escribirConIconos = function(el, texto) {
+	String(texto).split(/(\{\w+\})/).forEach(function(trozo) {
+		var m = /^\{(\w+)\}$/.exec(trozo);
+		if (m && MPRMascota.ICONOS[m[1]]) {
+			var ic = document.createElement('span');
+			ic.className = 'mpr-icono-boton';
+			ic.innerHTML = '<span class="' + MPRMascota.ICONOS[m[1]] + '"></span>';
+			el.appendChild(ic);
+		} else if (trozo) el.appendChild(document.createTextNode(trozo));
+	});
+};
+
 // opciones: anim ('saludo', 'alerta'...), ms (tiempo en pantalla), prio (1 = calma, 2 = aviso, 3 = error), forzar
 MPRMascota.decir = function(texto, o) {
 	o = o || {};
@@ -237,7 +252,7 @@ MPRMascota.decir = function(texto, o) {
 	cont.innerHTML = '';
 	var p = document.createElement('div');
 	p.className = 'texto';
-	p.textContent = texto;
+	MPRMascota.escribirConIconos(p, texto);
 	cont.appendChild(p);
 	var acc = document.createElement('div');
 	acc.className = 'acciones';
@@ -271,7 +286,7 @@ MPRMascota.menu = function() {
 	lista.appendChild(mprBoton('💡 ' + MPRMascota.msg('masc_consejo', 'Dame un consejo'), '', function() { MPRMascota.consejoAlAzar(true); }));
 	lista.appendChild(mprBoton('🎨 ' + MPRMascota.msg('masc_colores', 'Mis colores'), '', MPRMascota.panelColores));
 	lista.appendChild(mprBoton(MPRMascota.paseando ? '⏸ ' + MPRMascota.msg('masc_quieto', 'Quedarme en mi lugar') : '🚶 ' + MPRMascota.msg('masc_pasear', 'Pasear por la mesa'), '', MPRMascota.alternarPaseo));
-	lista.appendChild(mprBoton(MPRMascota.silenciada ? '🔔 ' + MPRMascota.msg('masc_activar', 'Activar avisos') : '🔕 ' + MPRMascota.msg('masc_silenciar', 'Avisos tranquilos'), '', MPRMascota.alternarSilencio));
+	lista.appendChild(mprBoton(MPRMascota.silenciada ? '🔔 ' + MPRMascota.msg('masc_activar', 'Activar avisos') : '🔕 ' + MPRMascota.msg('masc_silenciar', 'Silenciar avisos'), '', MPRMascota.alternarSilencio));
 	lista.appendChild(mprBoton('💤 ' + MPRMascota.msg('masc_esconder', 'Esconderme'), '', MPRMascota.esconder));
 	cont.appendChild(lista);
 	MPRMascota.enMenu = true;
@@ -309,7 +324,7 @@ MPRMascota.panelColores = function() {
 	});
 	var acc = document.createElement('div');
 	acc.className = 'acciones';
-	acc.appendChild(mprBoton(MPRMascota.msg('masc_restablecer', 'Naranja de nuevo'), '', function() { MPRMascota.pintar('todo', '#ff5700'); MPRMascota.panelColores(); }));
+	acc.appendChild(mprBoton('🌈 ' + MPRMascota.msg('masc_azar', 'Colores al azar'), 'arcoiris', function() { MPRMascota.coloresAlAzar(); MPRMascota.panelColores(); }));
 	acc.appendChild(mprBoton(MPRMascota.msg('masc_listo', 'Listo'), 'ok', MPRMascota.menu));
 	cont.appendChild(acc);
 	MPRMascota.enMenu = true;
@@ -324,6 +339,18 @@ MPRMascota.pintar = function(parte, hex) {
 		if (MPRMascota.modo3d) MPROtto3D.colorear(p, hex);
 	});
 	MPRMascota.guardar('colores', MPRMascota.colores);
+};
+
+// Pinta cada parte con un color distinto de la paleta, sin repetir la combinación de antes
+MPRMascota.coloresAlAzar = function() {
+	var antes = JSON.stringify(MPRMascota.colores), intentos = 0;
+	do {
+		var libres = MPRMascota.PALETA.slice();
+		['cabeza', 'cuerpo', 'piernas', 'pies'].forEach(function(p) {
+			MPRMascota.pintar(p, libres.splice(Math.floor(Math.random() * libres.length), 1)[0]);
+		});
+	} while (JSON.stringify(MPRMascota.colores) == antes && ++intentos < 5);
+	MPRMascota.animar('celebrar');
 };
 
 MPRMascota.alternarPaseo = function() {
@@ -351,11 +378,18 @@ MPRMascota.esconder = function() {
 
 MPRMascota.mostrar = function() {
 	MPRMascota.guardar('oculta', '');
-	document.getElementById('mpr_masc_volver').style.display = 'none';
+	var volver = document.getElementById('mpr_masc_volver');
+	volver.style.display = 'none';
+	volver.className = '';   // ya lo descubrió: si lo vuelve a esconder, el botón queda quieto
 	document.getElementById('mpr_masc').style.display = 'block';
 	MPRMascota.acomodar();
 	if (!document.getElementById('mpr_masc_img')) MPRMascota.iniciar3D();   // al iniciar vuelve a programar sus paseos
-	setTimeout(function() { MPRMascota.decir(MPRMascota.msg('masc_regreso', '¡Aquí estoy de nuevo!'), { forzar: true, ms: 5000 }); }, 600);
+	var primera = !MPRMascota.presentado;
+	MPRMascota.presentado = true;
+	setTimeout(function() {
+		if (primera) MPRMascota.decir(MPRMascota.msg('masc_presentacion', '¡Hola! Soy Otto. Haz clic en mí si necesitas ayuda y te cuento cómo pintarme a tu gusto.'), { anim: 'saludo', forzar: true, ms: 14000 });
+		else MPRMascota.decir(MPRMascota.msg('masc_regreso', '¡Aquí estoy de nuevo!'), { forzar: true, ms: 5000 });
+	}, primera ? 900 : 600);
 };
 
 MPRMascota.consejoAlAzar = function(forzar) {
@@ -548,22 +582,12 @@ MPRMascota.arrancar = function() {
 	MPRMascota.vigilarMensajes();
 	MPRMascota.vigilarCalma();
 
-	if (MPRMascota.leer('oculta')) {
-		document.getElementById('mpr_masc').style.display = 'none';
-		document.getElementById('mpr_masc_volver').style.display = 'block';
-		return;
-	}
-	MPRMascota.iniciar3D();
-	// Se presenta cuando termina el recorrido (o enseguida si ya lo vio)
-	var visto = !!MPRMascota.leer('presentada');
-	if (!visto) {
-		var espera = setInterval(function() {
-			if (typeof MPRTour != 'undefined' && (MPRTour.activo || !MPRTour.yaVisto())) return;
-			clearInterval(espera);
-			MPRMascota.guardar('presentada', '1');
-			MPRMascota.decir(MPRMascota.msg('masc_presentacion', '¡Hola! Soy Otto. Haz clic en mí si necesitas ayuda y te cuento cómo pintarme a tu gusto.'), { anim: 'saludo', ms: 14000 });
-		}, 1000);
-	}
+	// Otto parte siempre escondido (pedido del 2026-11-11): solo se ve el botón redondo, que se mueve un poco de vez en
+	// cuando para que el niño lo descubra. Al llamarlo se presenta (la primera vez de cada apertura de la app).
+	document.getElementById('mpr_masc').style.display = 'none';
+	var volver = document.getElementById('mpr_masc_volver');
+	volver.style.display = 'block';
+	volver.className = 'llamando';
 };
 
 window.addEventListener('load', function() {

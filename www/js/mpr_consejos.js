@@ -10,7 +10,8 @@
 //            codigo: corto, para decirlo en voz alta en una mesa con ruido ("P3"). P = puerto y cable, B = bloques,
 //            M = memoria, A = la app. La tabla completa para los monitores está en DOCUMENTACION_TECNICA.md 4.13.
 //  SUELTOS:  mensaje cuando hay bloques sin conectar en la mesa de trabajo.
-//  AZAR:     consejos cortos para el botón "Dame un consejo" y los ratos de calma.
+//  AZAR:     consejos cortos para el botón "Dame un consejo" y los ratos de calma. {birrete} se muestra como el ícono
+//            del botón de ejemplos (MPRMascota.ICONOS).
 
 var MPRConsejos = {
 	ERRORES: [
@@ -114,6 +115,6 @@ var MPRConsejos = {
 		'Empieza con pocos bloques y ve sumando más. ¡Así es más fácil!',
 		'Antes de mandar tu programa, revisa que no queden bloques sueltos.',
 		'Haz clic en mí y elige "Mis colores" para pintar a Otto como tú quieras.',
-		'¿No sabes por dónde empezar? Mira los ejemplos del birrete.'
+		'¿No sabes por dónde empezar? Mira los ejemplos en el botón {birrete} de arriba.'
 	]
 };

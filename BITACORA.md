@@ -12,6 +12,20 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-11 — Otto parte escondido, colores al azar, "Silenciar avisos" y el ícono del birrete
+- **Pedido:** (1) en vez de "Naranja de nuevo", un botón de colores aleatorios con efecto arcoíris; (2) "Avisos tranquilos" pasa a
+  "Silenciar avisos"; (3) el consejo de los ejemplos muestra el ícono del birrete en vez de la palabra; (6) Otto parte escondido, con un
+  efecto sutil que llame la atención del niño pero deje que lo descubra.
+- **Archivos:** `www/js/mpr_mascota.js`, `www/css/blocklino.css` (final del bloque de la mascota), `www/lang/msg_es.js`
+  (`masc_silenciar`, `masc_azar`), `www/js/mpr_consejos.js`, `DOCUMENTACION_TECNICA.md` (4.7, 13.3).
+- **Hecho:** "🌈 Colores al azar" pinta cada pieza con un color distinto de la paleta y Otto celebra; el fondo del botón es un arcoíris que
+  se desliza despacio. El consejo dice "Mira los ejemplos en el botón [ícono] de arriba" (`{birrete}` → botón en miniatura, gris con el
+  birrete blanco). Al abrir la app Otto está siempre escondido: el botón redondo da un saltito con un anillo naranja cada 8 s (solo
+  transform/opacity, liviano en gráfica integrada); al tocarlo Otto aparece y se presenta. Si después se esconde, el botón queda quieto.
+  Ojo: mientras está escondido Otto no dice los avisos (el cuadro de errores igual los explica).
+- **Probado:** en la app (copia de prueba `C:\mprbp`, por DevTools, fotos): botón animado, presentación, menú, colores al azar y consejo
+  con el ícono. Estado del usuario (localStorage y mesa) respaldado y restaurado. Instalado con `probar.py`.
+
 ### 2026-11-11 — Canción extranjera "Misteriosa: melodía del bosque perdido"
 - **Pedido:** agregar a canciones extranjeras una melodía (notas Fa – La – Si ... entregadas por el usuario) con el acertijo
   "melodía del bosque perdido".
