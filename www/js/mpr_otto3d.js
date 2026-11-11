@@ -13,6 +13,9 @@ var MPROtto3D = {
 	// duración en segundos de cada animación
 	ANIMACIONES: { saludo: 2.2, celebrar: 1.8, pensar: 3.2, alerta: 1.3, vuelta: 3.2 },
 	VEL_GIRO: 3.2,        // rad/s al girarse hacia donde camina
+	// Altura del salto al celebrar (mm). Con 42 la cabeza salía 21 px por arriba del canvas de 150x190 y se veía cortada;
+	// con 20 queda dentro. Medido proyectando todos los vértices de cada pose con la cámara de la mascota.
+	SALTO: 20,
 	vivo: false,
 	economia: false,      // equipo sin aceleración gráfica: 20 cuadros/s al moverse, 8 en reposo, sin suavizado de bordes
 	estado: { nombre: 'reposo', inicio: 0 },
@@ -250,7 +253,7 @@ MPROtto3D.pose = function(t) {
 		incZ += 0.1 * env;                                   // y el cuerpo se inclina hacia el otro lado
 		giro = m.ax * 0.15;
 	} else if (e.nombre == 'celebrar') {
-		y += 42 * Math.abs(Math.sin(Math.PI * s / 0.9)) * env;
+		y += self.SALTO * Math.abs(Math.sin(Math.PI * s / 0.9)) * env;   // dos saltos; la altura cabe en el canvas (ver SALTO)
 		giro = Math.min(1, s / 1.3) * Math.PI * 2;
 		cadI = 0.35 * Math.sin(s * 14) * env; cadD = -cadI;
 		tobI = -0.2 * Math.max(0, Math.sin(s * 14)) * env; tobD = 0.2 * Math.max(0, -Math.sin(s * 14)) * env;

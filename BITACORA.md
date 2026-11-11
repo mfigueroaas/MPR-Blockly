@@ -12,6 +12,23 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-11 — Otto ya no se corta: salto al celebrar, cámara del escenario y botón escondido
+- **Pedido:** al apretar "Colores al azar" Otto baila y se le corta la cabeza (captura del usuario); revisar que no pase con otras
+  animaciones parecidas.
+- **Causa:** no era el globo de opciones: Otto se dibuja en un canvas fijo de 150×190 y en "celebrar" saltaba 42 mm, así que la cabeza
+  salía 21 px por arriba. Pasaba también al cumplir una misión y al subir bien un programa (usan la misma animación).
+- **Revisión de las demás:** `tools/medir_poses.js` (nuevo) proyecta cada vértice de cada pose con la cámara de la mascota: reposo,
+  saludo, pensar, alerta, vuelta y caminar quedan dentro con 20 px o más de margen; solo "celebrar" se salía. En "Probar en pantalla"
+  (medido en la app por DevTools, 480 casos: 4 lugares del tablero, 4 giros, 6 zooms y 5 posturas extremas de los servos) Otto se salía
+  de la imagen con el zoom acercado (la cámara miraba al medio entre Otto y la caja) y en una esquina con la caja lejos (4 px).
+  Además, el botón redondo de Otto escondido tapaba el pie del escenario.
+- **Archivos:** `www/js/mpr_otto3d.js` (`SALTO` = 20 mm), `www/js/mpr_simulador.js` (la cámara se centra en Otto al acercar la vista y
+  se corre como máximo `MIRA_CAJA_MAX` = 260 mm hacia la caja; el botón de Otto escondido se oculta mientras el escenario está abierto),
+  `tools/medir_poses.js`, `DOCUMENTACION_TECNICA.md` (4.7).
+- **Probado:** en la app (copia `C:\mprbp`, fotos): el baile se ve entero; escenario sin ningún caso fuera (margen mínimo 11 px); el
+  botón no tapa Misiones ni el recorrido (queda bajo el velo); sobre el cuadro de mensajes queda encima del fondo oscuro, como Otto
+  visible. Estado del usuario restaurado. Instalado con `probar.py` (archivos iguales).
+
 ### 2026-11-11 — Otto parte escondido, colores al azar, "Silenciar avisos" y el ícono del birrete
 - **Pedido:** (1) en vez de "Naranja de nuevo", un botón de colores aleatorios con efecto arcoíris; (2) "Avisos tranquilos" pasa a
   "Silenciar avisos"; (3) el consejo de los ejemplos muestra el ícono del birrete en vez de la palabra; (6) Otto parte escondido, con un

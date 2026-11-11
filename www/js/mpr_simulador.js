@@ -26,6 +26,7 @@ var MPRSimulador = {
 	// Cámara: gira alrededor de Otto (ángulo horizontal y altura) y se acerca o aleja. La vista inicial es la de siempre.
 	VISTA: { giro: 0.2, altura: 0.43, distancia: 765, fov: 32 },
 	ALTURA_MIN: 0.12, ALTURA_MAX: 1.3, ZOOM_MIN: 0.5, ZOOM_MAX: 1.9,
+	MIRA_CAJA_MAX: 260,   // mm que la cámara se puede correr de Otto hacia la caja (más, y Otto se salía por el borde)
 	abierto: false,
 	corrida: null,
 	n: 0,
@@ -159,6 +160,10 @@ MPRSimulador.abrir = function() {
 	if (typeof MPRMascota != 'undefined') { MPRMascota.cancelarPaseo(true); MPRMascota.cerrarGlobo(); }
 	self.mascotaVisible = !!(caja && caja.style.display != 'none');
 	if (caja) caja.style.display = 'none';
+	// El botón redondo de Otto escondido tapaba el pie del escenario (abajo a la derecha): se oculta mientras está abierto
+	var volver = document.getElementById('mpr_masc_volver');
+	self.volverVisible = !!(volver && volver.style.display == 'block');
+	if (volver) volver.style.display = 'none';
 	self.preparar3D(function(ok) {
 		if (!self.abierto) return;
 		self.con3d = ok && self.montarEscena();
@@ -181,6 +186,8 @@ MPRSimulador.cerrar = function() {
 	$('#btn_simular').removeClass('activo');
 	var caja = document.getElementById('mpr_masc');
 	if (caja && self.mascotaVisible) caja.style.display = 'block';
+	var volver = document.getElementById('mpr_masc_volver');
+	if (volver && self.volverVisible) volver.style.display = 'block';
 	if (typeof MPRMascota != 'undefined') {
 		if (self.mascotaVisible) MPRMascota.acomodar();
 		MPRMascota.planificar();
@@ -422,7 +429,14 @@ MPRSimulador.pose = function(ahora) {
 	var lejos = 1;
 	if (self.cajaVisible) {
 		var dx = obj.caja.position.x - objetivo.x, dz = obj.caja.position.z - objetivo.z, sep = Math.sqrt(dx * dx + dz * dz);
-		if (sep < 800) { objetivo.x += dx * 0.45; objetivo.z += dz * 0.45; lejos = Math.max(1, Math.min(1.7, sep / 360)); }
+		// Al acercar la vista (zoom < 1) ya no caben los dos: la cámara se va centrando en Otto (con el zoom máximo, solo Otto).
+		// Antes seguía mirando al medio y Otto quedaba fuera de la imagen.
+		var z = self.vistaVis ? self.vistaVis.zoom : 1, peso = 0.45 * Math.max(0, Math.min(1, (z - self.ZOOM_MIN) / (1 - self.ZOOM_MIN)));
+		// La desviación hacia la caja tiene un tope (MIRA_CAJA_MAX, mm) para que Otto no se salga por el borde cuando la caja está lejos
+		if (sep < 800) {
+			peso = Math.min(peso, self.MIRA_CAJA_MAX / sep);
+			objetivo.x += dx * peso; objetivo.z += dz * peso; lejos = Math.max(1, Math.min(1.7, sep / 360));
+		}
 	}
 	var k = dt ? Math.min(1, dt * 2.5) : 1;
 	self.mira.lerp(objetivo, k);
