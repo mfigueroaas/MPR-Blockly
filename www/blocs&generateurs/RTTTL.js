@@ -29,13 +29,14 @@ Blockly.Blocks['RTTTL_music'] = {
 //  - RTTTL_music_lat: canciones latinoamericanas (mpr_canciones.js, "Canción misteriosa N")
 //  - RTTTL_music: canciones extranjeras de la librería PlayRtttl (TV/dibujos y Navidad; el nombre del tipo se
 //    mantiene para que sigan abriendo los ejemplos y programas guardados).
-Blockly.MPR_CANCIONES_EXT = [
+// Primero las misteriosas propias de MPR (Blockly.MPR_CANCIONES_EXT_PROPIAS, en mpr_canciones.js), luego las de la librería.
+Blockly.MPR_CANCIONES_EXT = (Blockly.MPR_CANCIONES_EXT_PROPIAS || []).map(function(c) { return [c[0], c[1]]; }).concat([
   ['Simpsons','Simpsons'],['Flinstones','Flinstones'],['Muppets','Muppets'],['PinkPanther','PinkPanther'],
   ['Looney','Looney'],['Smurfs','Smurfs'],['Gadget','Gadget'],['A_Team','A_Team'],['Jeopardy','Jeopardy'],
   ['JingleBell','JingleBell'],['Rudolph','Rudolph'],['SilentNight','SilentNight'],['WinterWonderland','WinterWonderland'],
   ['WeWishYou','WeWishYou'],['OhDennenboom','OhDennenboom'],['LetItSnow','LetItSnow'],['Frosty','Frosty'],
   ['LastChristmas','LastChristmas'],['AllIWant','AllIWant'],['Short','Short']
-];
+]);
 
 Blockly.Blocks['RTTTL_music'] = {
   init: function() {
@@ -73,6 +74,9 @@ Blockly.Arduino['RTTTL_music'] = function(block) {
   var code;
   var card=window.localStorage.card;
   Blockly.Arduino.includes_['include_PlayRTTTL'] = '#include <PlayRtttl.hpp>\n';
+  // Canción propia de MPR (no está en la librería): se genera igual que las latinoamericanas
+  if ((Blockly.MPR_CANCIONES_EXT_PROPIAS || []).some(function(c) { return c[1] == melody; }))
+	return Blockly.Arduino['RTTTL_music_lat'].call(this, block);
   if (card =="MRTnode")
 	code= 'playRtttlBlocking('+PIN_BUZZER+',(char*)'+melody+');\n';
   else
@@ -88,7 +92,7 @@ Blockly.Arduino['RTTTL_music_lat'] = function(block) {
   Blockly.Arduino.includes_['include_PlayRTTTL'] = '#include <PlayRtttl.hpp>\n';
   // Las canciones latinoamericanas no están en la librería: se define cada etapa en el programa y se tocan en orden
   var etapas = [];
-  (Blockly.MPR_CANCIONES || []).forEach(function(c) {
+  (Blockly.MPR_CANCIONES || []).concat(Blockly.MPR_CANCIONES_EXT_PROPIAS || []).forEach(function(c) {
     if (c[1] != melody) return;
     c[3].forEach(function(e) {
       Blockly.Arduino.definitions_['mpr_cancion_' + e[0]] = 'static const char ' + e[0] + '[] PROGMEM = "' + e[1] + '";';

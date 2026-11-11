@@ -1001,11 +1001,13 @@ MPRSimulador.SENTENCIAS = {
 	},
 	RTTTL_music_lat: async function(b) {
 		var id = MPRSimulador.campo(b, 'MELODY');
-		var c = (Blockly.MPR_CANCIONES || []).filter(function(x) { return x[1] == id; })[0];
+		var c = Blockly.MPR_buscarCancion ? Blockly.MPR_buscarCancion(id) : null;
 		if (!c) return;
 		for (var i = 0; i < c[3].length; i++) await MPRSimulador.tocarRtttl(c[3][i][1]);
 	},
 	RTTTL_music: async function(b) {
+		// las misteriosas propias de MPR (mpr_canciones.js) no están en la librería: se tocan como las latinoamericanas
+		if (Blockly.MPR_buscarCancion && Blockly.MPR_buscarCancion(MPRSimulador.campo(b, 'MELODY'))) return MPRSimulador.SENTENCIAS.RTTTL_music_lat(b);
 		var t = MPRSimulador.melodiasLibreria()[MPRSimulador.campo(b, 'MELODY')];
 		if (t) await MPRSimulador.tocarRtttl(t); else MPRSimulador.noSimulado(b);
 	},

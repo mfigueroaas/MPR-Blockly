@@ -12,6 +12,18 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-11 — Canción extranjera "Misteriosa: melodía del bosque perdido"
+- **Pedido:** agregar a canciones extranjeras una melodía (notas Fa – La – Si ... entregadas por el usuario) con el acertijo
+  "melodía del bosque perdido".
+- **Archivos:** `www/blocs&generateurs/mpr_canciones.js` (`MPR_CANCIONES_EXT_PROPIAS`, `MPR_buscarCancion`, `MPR_cancionesUsadas`),
+  `RTTTL.js`, `www/js/mpr_simulador.js`, `DOCUMENTACION_TECNICA.md`.
+- **Hecho:** es Saria's Song (The Legend of Zelda). Las 84 notas del usuario, en orden y sin cambios (comprobado con un script), con el
+  ritmo de la melodía conocida; notas sin ' en octava 5 y con ' en octava 6, 140 pulsos/min. `validar`: 27,6 s, de D5 a F6, la toca
+  PlayRtttl. Va primera en "Tocar canción extranjera"; como no está en la librería se genera como las latinoamericanas (PROGMEM solo si
+  se usa), suena en "Probar en pantalla" y al subir se revela su nombre.
+- **Probado:** compila para Nano (3.946 bytes, 12 %). En la app: lista, definición generada y revelación correctas. En el robot y de
+  oído: no (el ritmo es una aproximación; ajustarlo si suena raro).
+
 ### 2026-11-11 — "Ayuda" del clic derecho lleva a miprimerrobot.utem.cl
 - **Pedido:** al hacer clic derecho en un bloque, "Ayuda" mandaba a www.ottodiy.com; que vaya a https://miprimerrobot.utem.cl/.
 - **Archivos:** `www/js/mpr_fixes.js`, `www/lang/Arduino_es.js` (`HELPURL`).

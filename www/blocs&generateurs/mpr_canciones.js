@@ -80,14 +80,29 @@ Blockly.MPR_CANCIONES = [
 	]],
 ];
 
+// Canciones misteriosas del bloque "Tocar canción extranjera" que no vienen en la librería PlayRtttl (mismo formato).
+// Aparecen primero en su lista; el generador (RTTTL.js) escribe la melodía en el programa solo si se usa.
+Blockly.MPR_CANCIONES_EXT_PROPIAS = [
+	// Saria's Song / Lost Woods (The Legend of Zelda), notas entregadas por el usuario (2026-11-11); 84 notas, ritmo de
+	// la melodía conocida. Validada con tools/rtttl/partitura_a_rtttl.py validar (27,6 s, de D5 a F6).
+	["Misteriosa: melodía del bosque perdido", "MPR_Bosque", "Canción del bosque perdido (Saria's Song, The Legend of Zelda)", [
+		["MPR_BosqueE1", "Bosque:d=8,o=5,b=140:f,a,4b,f,a,4b,f,a,b,e6,4d6,b,c6,b,g,2e.,d,e,g,2e.,f,a,4b,f,a,4b,f,a,b,e6,4d6,b,c6,e6,b,2g.,b,g,d,2e.,d,e,4f,g,a,4b,c6,b,2e.,d,e,4f,g,a,4b,c6,d6,2e6,d,e,4f,g,a,4b,c6,b,2e.,16f,16e,16g,16f,16a,16g,16b,16a,16c6,16b,16d6,16c6,16e6,16d6,4f6,4d6,2e.6"],
+	]],
+];
+
+// Busca una canción propia de MPR (latinoamericana o extranjera) por su identificador
+Blockly.MPR_buscarCancion = function(id) {
+	return (Blockly.MPR_CANCIONES || []).concat(Blockly.MPR_CANCIONES_EXT_PROPIAS || []).filter(function(c) { return c[1] == id; })[0];
+};
+
 // Devuelve las canciones misteriosas usadas en el espacio de trabajo: [[texto en la lista, nombre real], ...]
 Blockly.MPR_cancionesUsadas = function(ws) {
 	var usadas = [];
 	if (!ws) return usadas;
 	ws.getAllBlocks().forEach(function(b) {
-		if (b.type != 'RTTTL_music_lat') return;
+		if (b.type != 'RTTTL_music_lat' && b.type != 'RTTTL_music') return;
 		var id = b.getFieldValue('MELODY');
-		(Blockly.MPR_CANCIONES || []).forEach(function(c) {
+		(Blockly.MPR_CANCIONES || []).concat(Blockly.MPR_CANCIONES_EXT_PROPIAS || []).forEach(function(c) {
 			if (c[1] == id && !usadas.some(function(u) { return u[0] == c[0]; })) usadas.push([c[0], c[2]]);
 		});
 	});
