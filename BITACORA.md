@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — A1: "Declarar variable" parte como "entero"
+- **Pedido:** plan de pulido, punto A1.
+- **Causa:** el tipo por defecto del bloque era el primero de la lista (`carácter` → `char`): una distancia de 128 cm o más se volvía negativa en el robot y Otto esquivaba con el camino libre (en "Probar en pantalla" no se notaba).
+- **Archivos:** `www/blocs&generateurs/blockly_blocs.js` (`variables_set_init` fija `NUMBER` al crearse), `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`, por DevTools): un bloque nuevo sale "entero"; uno cargado de un archivo conserva su tipo guardado.
+
 ### 2026-11-12 — Plan de pulido (análisis completo)
 - **Pedido:** analizar todo el programa para pulirlo, con subagentes, sin perder rendimiento ni detalle del 3D; dejar el plan documentado y hacerlo por partes.
 - **Qué se hizo:** seis revisiones en paralelo (código de la app, textos, bloques y librería Otto con compilaciones de prueba, rendimiento 3D, arranque y memoria, repositorio e instalador). Resultado y decisiones del usuario en `PLAN_PULIDO.md` (bloques A a E, con estado por punto).

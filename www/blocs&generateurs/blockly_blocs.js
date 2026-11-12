@@ -632,6 +632,8 @@ Blockly.Blocks['variables_set_init'] = {
             .appendField(Blockly.Msg.VARIABLES_AS)
             .appendField(new Blockly.FieldDropdown(Blockly.Types.getValidTypeArray()), 'VARIABLE_SETTYPE_TYPE')
             .appendField(Blockly.Msg._AT);
+        // MPR: "entero" por defecto (antes era "carácter": las distancias de 128 cm o más salían negativas en el robot)
+        this.setFieldValue('NUMBER', 'VARIABLE_SETTYPE_TYPE');
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setInputsInline(true);

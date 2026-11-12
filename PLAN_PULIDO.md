@@ -18,7 +18,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
   sobrantes del instalador, y 31 Minutos en el aviso de las canciones.
 
 ## A. Bloques que fallan en el robot (prioridad 1)
-- [ ] A1. "Declarar variable" ofrece "carácter" como tipo por defecto (`char`: distancias ≥ 128 cm salen
+- [x] A1. "Declarar variable" ofrece "carácter" como tipo por defecto (`char`: distancias ≥ 128 cm salen
       negativas). Que la opción por defecto sea un número.
 - [ ] A2. "Declarar variable" se convierte en una global inicializada antes de `setup()` y no se ejecuta donde
       está el bloque; "Declarar d = Distancia" no compila. Declarar la global sin valor y asignar en el lugar del
