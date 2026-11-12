@@ -32,7 +32,7 @@ var MSG = {
   tour_bloques_t: "Mis bloques",
   tour_bloques: "Aquí viven mis bloques. Ábrelos y descubre qué hace cada uno.",
   tour_trabajo_t: "Tu mesa de trabajo",
-  tour_trabajo: "Arrastra los bloques hasta aquí y únelos, como piezas de Lego.",
+  tour_trabajo: "Arrastra los bloques hasta aquí y únelos, como piezas de un rompecabezas.",
   tour_ejemplos_t: "Ejemplos",
   tour_ejemplos: "¿No sabes por dónde empezar? Mira estos ejemplos y juega con ellos.",
   tour_puerto_t: "Conecta a Otto",
@@ -273,6 +273,6 @@ var MSG = {
   badXml: "Error de análisis XML: \n %1 \n\nSeleccione 'Aceptar' para cancelar sus cambios o 'Cancelar' para continuar editando el XML.",
   arduino_card: "Carga la configuración de la placa ",
   aboutModalLabel: "Acerca de",
-  aboutBody: "Este es un lenguaje de programación visual gratuito y de código abierto basado en blockly de Google, los códigos Arduino se crean simplemente combinando bloques, luego se compilan (comprueban) y finalmente se cargan en el robot Otto.",
+  aboutBody: "Este es un lenguaje de programación visual gratuito y de código abierto basado en Blockly, los códigos Arduino se crean simplemente combinando bloques, luego se compilan (comprueban) y finalmente se cargan en el robot Otto.",
   nanoWarning: "¿Tiene problemas para cargar en su placa Arduino Nano (el tiempo de espera de la operación de carga)? Intente seleccionar una variante diferente de la placa (Normal / Antiguo bootloader / Todos), de acuerdo con lo que tiene. Algunas son visualmente idénticas (antiguo y nuevo bootloader)!"
 };

@@ -12,6 +12,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — Sin marcas comerciales en los textos del recorrido y "Acerca de"
+- **Pedido:** en el tutorial de inicio decía "como piezas de Lego"; reemplazar por "piezas de un rompecabezas" y revisar que no
+  haya más marcas comerciales visibles.
+- **Archivos:** `www/lang/msg_es.js` (`tour_trabajo`: "como piezas de un rompecabezas"; `aboutBody`: "basado en Blockly" sin "de Google").
+- **Revisión:** búsqueda de marcas (Lego, Google, YouTube, Microsoft, Scratch, etc.) en `www` (html, js, xml, lang). Solo quedan
+  referencias internas (URLs de ayuda, código de librerías, agente de usuario) que no se muestran. "Arduino" se mantiene porque es el
+  nombre de la placa/compilador y aparece en bloques y mensajes técnicos.
+- **Probado:** `node --check` OK. Pendiente verlo en la app (F5 tras `probar.py`).
+
+
 ### 2026-11-11 — Otto ya no se corta: salto al celebrar, cámara del escenario y botón escondido
 - **Pedido:** al apretar "Colores al azar" Otto baila y se le corta la cabeza (captura del usuario); revisar que no pase con otras
   animaciones parecidas.
