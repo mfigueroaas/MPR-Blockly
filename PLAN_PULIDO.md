@@ -20,7 +20,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 ## A. Bloques que fallan en el robot (prioridad 1)
 - [x] A1. "Declarar variable" ofrece "carácter" como tipo por defecto (`char`: distancias ≥ 128 cm salen
       negativas). Que la opción por defecto sea un número.
-- [ ] A2. "Declarar variable" se convierte en una global inicializada antes de `setup()` y no se ejecuta donde
+- [x] A2. "Declarar variable" se convierte en una global inicializada antes de `setup()` y no se ejecuta donde
       está el bloque; "Declarar d = Distancia" no compila. Declarar la global sin valor y asignar en el lugar del
       bloque (igual que el simulador).
 - [ ] A3. Variables usadas sin "Declarar" (por ejemplo "contar con i desde 1 hasta 5" o "Fijar" solo) no se

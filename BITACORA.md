@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — A2: "Declarar variable" se ejecuta donde está el bloque
+- **Pedido:** plan de pulido, punto A2.
+- **Causa:** el generador solo escribía `tipo x = valor;` arriba de `setup()` y devolvía nada: en el Bucle no se ejecutaba en cada vuelta (el simulador sí, `mpr_simulador.js`), y "Declarar d = Distancia" no compilaba (`'ultrasound_distance_simple' was not declared`: las variables van antes que las funciones) y Otto lo explicaba como sensor sin configurar.
+- **Qué se hizo:** la variable se declara arriba (con su valor solo si es fijo: número, texto o verdadero/falso) y el bloque asigna el valor donde está. Si el bloque está suelto en la mesa (definición global) se comporta como antes; si su valor no es fijo se asigna en `setup()`. Sin valor ya no genera `int x = ;`.
+- **Archivos:** `www/blocs&generateurs/blockly_generateurs_cpp.js` (`variables_set_init`), `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`) generando el código por DevTools y compilando con el arduino-cli instalado (`nano:cpu=atmega328old`): "Declarar d = Distancia" en Configuración y "Declarar c = 0" en el Bucle compilan; los 6 ejemplos `mpr_*.xml` compilan (Cerro y Movimiento improvisado suman una asignación inicial equivalente; los demás, código idéntico).
+
 ### 2026-11-12 — A1: "Declarar variable" parte como "entero"
 - **Pedido:** plan de pulido, punto A1.
 - **Causa:** el tipo por defecto del bloque era el primero de la lista (`carácter` → `char`): una distancia de 128 cm o más se volvía negativa en el robot y Otto esquivaba con el camino libre (en "Probar en pantalla" no se notaba).

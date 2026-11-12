@@ -460,8 +460,19 @@ Blockly.Arduino['variables_set_init']=function(block){
 	var argument0 = Blockly.Arduino.valueToCode(block, 'VALUE', Blockly.Arduino.ORDER_ASSIGNMENT);
 	var varName = Blockly.Arduino.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
 	var typeBlock = Blockly.Arduino.getArduinoType_(Blockly.Types[block.getFieldValue('VARIABLE_SETTYPE_TYPE')]);
-	Blockly.Arduino.variables_[varName] = typeBlock + ' ' + varName + ' = ' + argument0 + ';';
-	return "";
+	// MPR: antes la variable solo se inicializaba arriba de setup() y el bloque no hacía nada donde estaba: en el Bucle
+	// no se ejecutaba en cada vuelta (el simulador sí) y con el valor de un sensor no compilaba (la variable va antes
+	// que las funciones). Ahora la variable se declara arriba (con su valor si es fijo) y se asigna donde está el bloque.
+	var valor = block.getInputTargetBlock('VALUE');
+	var fijo = argument0 && (!valor || /^(math_number|text|logic_boolean)$/.test(valor.type));
+	Blockly.Arduino.variables_[varName] = typeBlock + ' ' + varName + (fijo ? ' = ' + argument0 : '') + ';';
+	if (!argument0) return '';
+	if (!block.getParent()) {
+		// suelto en la mesa: es una definición global, como antes; un valor que no es fijo se asigna en setup()
+		if (!fijo) Blockly.Arduino.setups_['mpr_var_' + varName] = varName + ' = ' + argument0 + ';';
+		return '';
+	}
+	return varName + ' = ' + argument0 + ';\n';
 };
 Blockly.Arduino["base_define_const"]=function(block){
     var value_text1 = Blockly.Arduino.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
