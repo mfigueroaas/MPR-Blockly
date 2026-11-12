@@ -72,7 +72,21 @@ BlocklyDuino.save_com = function() {
 BlocklyDuino.renderArduinoCodePreview = function() {
 	var prog = window.localStorage.prog;
 	if (prog != "python") {
-		$('#pre_previewArduino').text(Blockly.Arduino.workspaceToCode(BlocklyDuino.workspace));
+		// MPR: si un bloque no sabe generar su código (por ejemplo uno antiguo de un archivo), antes la vista previa
+		// se quedaba con el programa anterior y Verificar/Subir lo mandaban sin avisar. Ahora el programa lleva un
+		// #error que el compilador muestra, con el texto del bloque (PLAN_PULIDO A5).
+		var codigo;
+		try {
+			codigo = Blockly.Arduino.workspaceToCode(BlocklyDuino.workspace);
+		} catch (e) {
+			var malo = BlocklyDuino.workspace.getAllBlocks().filter(function(b) {
+				return !b.disabled && typeof Blockly.Arduino[b.type] != 'function';
+			})[0];
+			var limpiar = function(s) { return String(s).replace(/["\\\r\n]/g, ' ').slice(0, 80); };
+			codigo = '#error "' + (malo ? 'El bloque ' + limpiar(malo.toString()) + ' no funciona en el robot: quítalo de la mesa'
+				: 'No se pudo armar el programa: ' + limpiar(e && e.message || e)) + '"\n';
+		}
+		$('#pre_previewArduino').text(codigo);
 		$('#pre_previewArduino').html(prettyPrintOne($('#pre_previewArduino').html(), 'cpp'));
 	} else {
 		$('#pre_previewArduino').text(Blockly.Python.workspaceToCode(BlocklyDuino.workspace));

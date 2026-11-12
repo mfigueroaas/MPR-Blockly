@@ -317,6 +317,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
   | B4 | Espacio vacío en un bloque (`expected primary-expression`, `invalid type argument of unary '*'`) | Completar el bloque marcado |
   | B5 | Algo repetido (`redefinition`) | Quitar la configuración o función duplicada |
   | B6 | Nombre que no existe (`was not declared`) | Ver en el detalle qué variable o función falta |
+  | B7 | Bloque sin código para Arduino (`#error "El bloque … no funciona en el robot"`, lo pone `blocklino.js`) | Quitar el bloque que nombra el detalle (suele venir de un archivo antiguo) |
   | M1 | Programa más grande que la memoria del Nano | Quitar canciones largas o bloques repetidos |
   | P5 | Se quedó pegado verificando o cargando y se detuvo (Detener, o el niño desenchufó el cable) | Desenchufar y enchufar; si se repite: cerrar otras MPR Blockly, otro USB u otro cable, reiniciar la app |
   | A1 | Falta arduino-cli o sus archivos (`ENOENT`, `spawn`) | Reinstalar MPR Blockly |

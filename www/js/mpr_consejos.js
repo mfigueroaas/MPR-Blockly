@@ -29,6 +29,11 @@ var MPRConsejos = {
 		  texto: 'Te encuentro, pero no te escucho. Revisa que el cable esté bien firme (algunos cables solo cargan y no sirven para programar) y que en la lista de arriba esté mi puerto. Luego vuelve a mandar tu programa.',
 		  monitor: 'La placa no responde al cargador: probar otro cable de datos, otro puerto USB, revisar que la placa tenga luz. La app ya prueba sola Nano y Nano Old.',
 		  anim: 'pensar' },
+		// el #error que pone blocklino.js (renderArduinoCodePreview) cuando un bloque no sabe generar su código
+		{ codigo: 'B7', re: /no funciona en el robot/,
+		  texto: 'Uno de tus bloques no funciona en mí (viene de otra versión del programa). Busca en la mesa el bloque que dice el detalle y llévalo a la papelera.',
+		  monitor: 'Bloque sin código para Arduino (por ejemplo, uno antiguo de un archivo). El detalle técnico dice cuál: quitarlo.',
+		  anim: 'pensar' },
 		{ codigo: 'B3', re: /ultrasound_distance\w*'? was not declared/,
 		  texto: 'Usas el sensor de distancia (mis ojos), pero falta su bloque de configuración dentro de Configuración. Búscalo en Sensores y ponlo debajo de Configuración Otto.',
 		  monitor: 'Falta el bloque de configuración del sensor ultrasónico (Trig 8, Echo 9) en Configuración.',

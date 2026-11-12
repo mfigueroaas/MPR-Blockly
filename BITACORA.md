@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — A5: un bloque sin código ya no hace mandar el programa anterior
+- **Pedido:** plan de pulido, punto A5.
+- **Causa:** `millis_start` ("iniciar un cronometraje") está en Tiempo pero no tiene generador C++. Al usarlo, `workspaceToCode` fallaba, la vista previa se quedaba con el programa anterior y Verificar/Subir lo mandaban sin avisar.
+- **Qué se hizo:** se oculta `millis_start` del menú. Además, si cualquier bloque no sabe generar su código (por ejemplo, uno de un archivo antiguo), la vista previa pone `#error "El bloque <texto del bloque> no funciona en el robot: quítalo de la mesa"`; el compilador lo muestra y Otto lo explica con el código nuevo **B7** (`mpr_consejos.js`, tabla de 4.13 en `DOCUMENTACION_TECNICA.md`).
+- **Archivos:** `www/toolbox/toolbox_arduino_all.xml`, `www/js/blocklino.js` (`renderArduinoCodePreview`), `www/js/mpr_consejos.js`, `DOCUMENTACION_TECNICA.md`, `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`, DevTools): con un `millis_start` en el Bucle, Verificar falla y muestra el mensaje B7 en el cuadro y en Otto; sin él, el programa normal verifica bien (7 s). `blocklino.js` sigue en CRLF.
+
 ### 2026-11-12 — A4: se oculta el bloque "mover servos"
 - **Pedido:** plan de pulido, punto A4.
 - **Causa:** `otto_moveservos` genera `Otto._moveServos(10, 90)`: la librería espera una lista de 4 posiciones y recibe el número 90, que el Nano usa como dirección de memoria (registros del chip). Los servos iban a posiciones al azar y el ajuste final podía no terminar. El simulador, en cambio, los movía a 90°.
