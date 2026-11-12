@@ -12,6 +12,11 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — Plan de pulido (análisis completo)
+- **Pedido:** analizar todo el programa para pulirlo, con subagentes, sin perder rendimiento ni detalle del 3D; dejar el plan documentado y hacerlo por partes.
+- **Qué se hizo:** seis revisiones en paralelo (código de la app, textos, bloques y librería Otto con compilaciones de prueba, rendimiento 3D, arranque y memoria, repositorio e instalador). Resultado y decisiones del usuario en `PLAN_PULIDO.md` (bloques A a E, con estado por punto).
+- **Archivos:** `PLAN_PULIDO.md` (nuevo).
+
 ### 2026-11-12 — Sin marcas comerciales en los textos del recorrido y "Acerca de"
 - **Pedido:** en el tutorial de inicio decía "como piezas de Lego"; reemplazar por "piezas de un rompecabezas" y revisar que no
   haya más marcas comerciales visibles.
