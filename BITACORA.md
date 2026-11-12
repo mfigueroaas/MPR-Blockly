@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — A6: "esperar" en segundos y "cada X" sin desbordes ni nombres inválidos
+- **Pedido:** plan de pulido, punto A6.
+- **Causa:** "esperar X segundos" generaba `delay(X*1000)`, que en el Nano es un `int` de 16 bits: desde 33 s el número se desbordaba y el robot quedaba detenido unos 49 días. "cada X" armaba el nombre de su temporizador con el valor (`long temps0.5` no compila; dos bloques con el mismo valor compartían temporizador) y lo guardaba con signo.
+- **Qué se hizo:** `delay((unsigned long)(X*1000UL))`; cada bloque "cada X" tiene su propio `unsigned long temporizador`, `temporizador2`…, y compara contra `(unsigned long)(...)`.
+- **Archivos:** `www/blocs&generateurs/arduino_generateurs_cpp.js` (`base_delay`, `tempo_sans_delay`), `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`) generando por DevTools y compilando con arduino-cli: esperar 40 s, cada 0.5 s, dos "cada 500 ms" iguales, "cada t s" con variable y "esperar (0.5 + t) s" compilan. Los 6 ejemplos `mpr_*.xml` compilan; Balance, Movimiento improvisado y Canto solo cambian `delay(1*1000)` por la forma nueva.
+
 ### 2026-11-12 — A5: un bloque sin código ya no hace mandar el programa anterior
 - **Pedido:** plan de pulido, punto A5.
 - **Causa:** `millis_start` ("iniciar un cronometraje") está en Tiempo pero no tiene generador C++. Al usarlo, `workspaceToCode` fallaba, la vista previa se quedaba con el programa anterior y Verificar/Subir lo mandaban sin avisar.

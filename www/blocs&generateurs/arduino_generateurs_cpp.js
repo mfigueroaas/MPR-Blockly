@@ -278,7 +278,8 @@ Blockly.Arduino["base_delay"]=function(block){
             var code="delay(" + delay_time + ");\n";
             break;
         case "s":
-            code="delay(" + delay_time + "*1000);\n";
+            // MPR: con "*1000" (int de 16 bits) desde 33 s el número se desbordaba y el robot quedaba detenido días
+            code="delay((unsigned long)(" + delay_time + "*1000UL));\n";
             break
     };
     return code
@@ -287,17 +288,19 @@ Blockly.Arduino["tempo_sans_delay"]=function(block){
     var _u=block.getFieldValue("unite");
     var delay_time=Blockly.Arduino.valueToCode(block, "DELAY_TIME", Blockly.Arduino.ORDER_ATOMIC);
 	var faire=Blockly.Arduino.statementToCode(block, "branche");
-	var temps="temps"+delay_time;
-	Blockly.Arduino.definitions_["temporisation"+delay_time]="long "+temps+"=0 ;";
+	// MPR: el nombre del temporizador salía del valor ("temps0.5" no compilaba y dos bloques con el mismo valor
+	// compartían temporizador). Ahora cada bloque tiene el suyo; el tiempo se guarda sin signo, como millis().
+	var temps=Blockly.Arduino.variableDB_.getDistinctName("temporizador", Blockly.Variables.NAME_TYPE);
+	Blockly.Arduino.definitions_["temporisation_"+temps]="unsigned long "+temps+" = 0;";
     switch (_u) {
         case "u":
-            var code="if ((micros()-"+temps+")>=" + delay_time + ") {\n  "+temps+"=micros();\n"+faire+"}\n";
+            var code="if ((micros()-"+temps+")>=(unsigned long)(" + delay_time + ")) {\n  "+temps+"=micros();\n"+faire+"}\n";
             break;
         case "m":
-            var code="if ((millis()-"+temps+")>=" + delay_time + ") {\n  "+temps+"=millis();\n"+faire+"}\n";
+            var code="if ((millis()-"+temps+")>=(unsigned long)(" + delay_time + ")) {\n  "+temps+"=millis();\n"+faire+"}\n";
             break;
         case "s":
-            code="if ((millis()-"+temps+")>=" + delay_time + "*1000) {\n  "+temps+"=millis();\n"+faire+"}\n";
+            code="if ((millis()-"+temps+")>=(unsigned long)(" + delay_time + "*1000UL)) {\n  "+temps+"=millis();\n"+faire+"}\n";
             break
     };
     return code

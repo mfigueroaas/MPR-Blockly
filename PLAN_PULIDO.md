@@ -29,7 +29,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [x] A5. Bloque `millis_start` sin generador C++: la vista de código no se actualiza y Verificar/Subir mandan el
       programa anterior sin avisar. Ocultarlo o darle generador, y que un bloque sin generador no deje el
       código viejo.
-- [ ] A6. "Esperar" en segundos se desborda desde 33 s (`int` de 16 bits); "cada X" arma el nombre de su
+- [x] A6. "Esperar" en segundos se desborda desde 33 s (`int` de 16 bits); "cada X" arma el nombre de su
       variable con el valor (con 0.5 no compila; dos bloques iguales comparten temporizador).
 - [ ] A7. Ultrasonido sin límite de espera: sin eco cada lectura tarda 1 s y devuelve 0 cm ("cerca").
 - [ ] A8. Bloques de sonido sin "Configuración Otto": la revisión previa no lo detecta (`mpr_revision.js`).
