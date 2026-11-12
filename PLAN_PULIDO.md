@@ -32,6 +32,9 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [x] A6. "Esperar" en segundos se desborda desde 33 s (`int` de 16 bits); "cada X" arma el nombre de su
       variable con el valor (con 0.5 no compila; dos bloques iguales comparten temporizador).
 - [ ] A7. Ultrasonido sin límite de espera: sin eco cada lectura tarda 1 s y devuelve 0 cm ("cerca").
+      **EN CURSO (pausa del 2026-11-12):** cambio hecho en `www/blocs&generateurs/sensors.js` (pulseIn con
+      30000 µs y 400 cm sin eco, como `MPRSimulador.SIN_ECO_CM`), SIN commit y SIN probar: falta compilar con el banco
+      de pruebas y commitear. Después: A8, y luego `py tools/probar.py` para instalar A1–A8 en `C:\MPRBlockly`.
 - [ ] A8. Bloques de sonido sin "Configuración Otto": la revisión previa no lo detecta (`mpr_revision.js`).
 - [ ] A9 (menores, librería Otto): `bendTones` puede no terminar; `_tone` con duración negativa.
 - [ ] A10 (menores): "y"/"o" generan `&`/`|`; "es primo" genera JavaScript; sin `randomSeed`; RTTTL
