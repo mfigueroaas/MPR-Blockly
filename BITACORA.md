@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — A4: se oculta el bloque "mover servos"
+- **Pedido:** plan de pulido, punto A4.
+- **Causa:** `otto_moveservos` genera `Otto._moveServos(10, 90)`: la librería espera una lista de 4 posiciones y recibe el número 90, que el Nano usa como dirección de memoria (registros del chip). Los servos iban a posiciones al azar y el ajuste final podía no terminar. El simulador, en cambio, los movía a 90°.
+- **Archivos:** `www/toolbox/toolbox_arduino_all.xml` (comentado entre bloques, con el motivo), `PLAN_PULIDO.md`. "Mover piernas" (`otto_movelegs`) sigue disponible.
+- **Probado:** en la app (copia `C:\mprbp`, DevTools): el menú carga sus 9 categorías, "mover servos" ya no está y "mover piernas" sí.
+
 ### 2026-11-12 — A3: las variables usadas sin "Declarar" se declaran solas
 - **Pedido:** plan de pulido, punto A3.
 - **Causa:** el tipado automático de variables está apagado (`typings.js`, `assignTypeToVars` comentado), así que "contar con i desde 1 hasta 5" o un "Fijar" sin "Declarar" no declaraban la variable: `'i' was not declared in this scope`. La misión "Cinco pasos" aceptaba un programa que el robot no compilaba.

@@ -25,7 +25,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
       bloque (igual que el simulador).
 - [x] A3. Variables usadas sin "Declarar" (por ejemplo "contar con i desde 1 hasta 5" o "Fijar" solo) no se
       declaran: no compila. Declararlas solas como número.
-- [ ] A4. Bloque "mover servos" (`otto_moveservos`) visible y roto (pasa un número donde va una lista): ocultarlo.
+- [x] A4. Bloque "mover servos" (`otto_moveservos`) visible y roto (pasa un número donde va una lista): ocultarlo.
 - [ ] A5. Bloque `millis_start` sin generador C++: la vista de código no se actualiza y Verificar/Subir mandan el
       programa anterior sin avisar. Ocultarlo o darle generador, y que un bloque sin generador no deje el
       código viejo.
