@@ -65,6 +65,26 @@ Blockly.Arduino.init = function(workspace) {
 		Blockly.Arduino.addVariable(varName,'undefined '+ Blockly.Arduino.variableDB_.getName(varName, Blockly.Variables.NAME_TYPE)+ ';');
 	}
   }
+  // MPR: el tipado automático está apagado (typings.js), así que una variable usada sin "Declarar" (la de "contar con i
+  // desde 1 hasta 5", o un "Fijar" solo) no se declaraba y el programa no compilaba. Se declara aquí como número entero
+  // largo (o texto/decimal según lo que se le asigna con "Fijar"); un "Declarar" de esa variable la reemplaza con su
+  // tipo. La clave es el nombre en C++, la misma que usa variables_set_init.
+  var tipos = Object.create(null);
+  workspace.getAllBlocks().forEach(function(b) {
+    if (b.disabled || !b.getVars) return;
+    b.getVars().forEach(function(v) {
+      if (!tipos[v]) tipos[v] = 'long';
+      var val = b.type == 'variables_set' && b.getInputTargetBlock('VALUE');
+      if (val && val.type == 'text') tipos[v] = 'String';
+      else if (val && val.type == 'math_number' && /[.eE]/.test(val.getFieldValue('NUM')) && tipos[v] == 'long') tipos[v] = 'float';
+    });
+  });
+  for (var v in tipos) {
+    var nombre = Blockly.Arduino.variableDB_.getName(v, Blockly.Variables.NAME_TYPE);
+    if (Blockly.Arduino.variables_[nombre] === undefined && Blockly.Arduino.variables_[v] === undefined) {
+      Blockly.Arduino.variables_[nombre] = tipos[v] + ' ' + nombre + ';';
+    }
+  }
 };
 Blockly.Arduino.recurseArrayType = function(varName, varsWithTypes) {
 	if (!varsWithTypes[varName].arrayType

@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-12 — A3: las variables usadas sin "Declarar" se declaran solas
+- **Pedido:** plan de pulido, punto A3.
+- **Causa:** el tipado automático de variables está apagado (`typings.js`, `assignTypeToVars` comentado), así que "contar con i desde 1 hasta 5" o un "Fijar" sin "Declarar" no declaraban la variable: `'i' was not declared in this scope`. La misión "Cinco pasos" aceptaba un programa que el robot no compilaba.
+- **Qué se hizo:** `Blockly.Arduino.init` declara cada variable usada en la mesa como `long` (o `String`/`float` si un "Fijar" le da un texto o un número con decimales). Un "Declarar" de la misma variable la reemplaza con su tipo (misma clave: el nombre en C++). Un parámetro de función con el mismo nombre la tapa dentro de la función (C++ lo permite).
+- **Archivos:** `www/js/generate_cpp.js`, `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`) generando por DevTools y compilando con arduino-cli: contar con `i`, Fijar sin declarar (con distancia, texto y 0.5), nombres con espacio o tilde ("mi cuenta", "año") y una función con parámetro compilan. Los 6 ejemplos `mpr_*.xml` dan código idéntico al de antes.
+
 ### 2026-11-12 — A2: "Declarar variable" se ejecuta donde está el bloque
 - **Pedido:** plan de pulido, punto A2.
 - **Causa:** el generador solo escribía `tipo x = valor;` arriba de `setup()` y devolvía nada: en el Bucle no se ejecutaba en cada vuelta (el simulador sí, `mpr_simulador.js`), y "Declarar d = Distancia" no compilaba (`'ultrasound_distance_simple' was not declared`: las variables van antes que las funciones) y Otto lo explicaba como sensor sin configurar.
