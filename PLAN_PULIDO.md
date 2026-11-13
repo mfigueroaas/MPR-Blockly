@@ -82,6 +82,6 @@ adaptativo con pilas bajas, `_moveServos` reescrito (suave, por trozos, 150°/s)
 en dos fases, conexión escalonada de servos.
 - [x] F1. Integrar `Otto.cpp`/`Otto.h` del paquete (con 3 ajustes MPR), ejemplos y README; nombres de la librería
       reservados en el generador. **Vuelve `OTTO_DIFF_LIMIT_DEFAULT` = 3 (era 240)**: probar el largo del paso en el robot.
-- [ ] F2. Alinear el simulador ("Probar en pantalla", `www/js/mpr_otto_lib.js`) con la librería nueva.
-- [ ] F3. Actualizar `DOCUMENTACION_TECNICA.md` 5.5, `ANALISIS_SERVOS.md`, y la regla de `CLAUDE.md`/`LEEME_MPR.md`.
+- [x] F2. Alinear el simulador ("Probar en pantalla", `www/js/mpr_otto_lib.js`) con la librería nueva.
+- [x] F3. Actualizar `DOCUMENTACION_TECNICA.md` 5.5, `ANALISIS_SERVOS.md`, y la regla de `CLAUDE.md`/`LEEME_MPR.md`.
 - [ ] F4. Probar con el robot (USB y pilas): `examples/OttoValidacionFinal`, ejemplos MPR, calibración (ver BITACORA).

@@ -957,7 +957,8 @@ MPRSimulador.llamar = async function(b, conValor) {
 };
 
 MPRSimulador.SENTENCIAS = {
-	otto_configuration: async function() { await MPRSimulador.otto.home(); },
+	// MPR: como el robot, Configuración Otto hace init() (conexión escalonada, limitador) y luego home() (PLAN_PULIDO F2)
+	otto_configuration: async function() { await MPRSimulador.otto.init(); },
 	otto_home: async function() { await MPRSimulador.otto.home(); },
 	otto_move: async function(b) {
 		var o = MPRSimulador.otto, T = +MPRSimulador.campo(b, 'otto_move_speed') || 2000;
@@ -1119,9 +1120,19 @@ MPRSimulador.VALORES = {
 	logic_null: async function() { return 0; },
 	logic_negate: async function(b) { return !(await MPRSimulador.entrada(b, 'BOOL', false)); },
 	logic_operation: async function(b) {
-		var S = MPRSimulador, y = b.getFieldValue('OP') == 'AND', a = !!(await S.entrada(b, 'A', false));
-		if (y ? !a : a) return a;
-		return !!(await S.entrada(b, 'B', false));
+		// MPR: los valores del desplegable van en minúscula ('and', 'or', 'xor', 'shiftL', 'shiftR'): antes se comparaba
+		// con 'AND' y "y" funcionaba como "o" en pantalla. Ahora hace lo mismo que el código del robot (&&, ||, ^, <<, >>).
+		var S = MPRSimulador, op = String(b.getFieldValue('OP')).toLowerCase();
+		if (op == 'and' || op == 'or') {
+			var a = !!(await S.entrada(b, 'A', false));
+			if (op == 'and' ? !a : a) return a;
+			return !!(await S.entrada(b, 'B', false));
+		}
+		var x = await S.entrada(b, 'A', 0), z = await S.entrada(b, 'B', 0);
+		if (op == 'xor') return Number(x) ^ Number(z);
+		if (op == 'shiftl') return Number(x) << Number(z);
+		if (op == 'shiftr') return Number(x) >> Number(z);
+		return false;
 	},
 	logic_compare: async function(b) {
 		var S = MPRSimulador, a = await S.entrada(b, 'A', 0), c = await S.entrada(b, 'B', 0);

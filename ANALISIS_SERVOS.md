@@ -1,5 +1,8 @@
 # Análisis del movimiento de los servos — librería Otto (octubre 2026)
 
+> **Nota (2026-11-13):** las secciones 1–5 describen la librería MPR de octubre de 2026. Desde la librería nueva
+> (sección 6) `OTTO_DIFF_LIMIT_DEFAULT` volvió a 3 y `_moveServos`, `home()` y el arranque cambiaron.
+
 Pedido: revisar por qué Otto se mueve lento y con pasos cortos en MPR Blockly, revisar el oscilador y las
 instrucciones que "mandan a 90 grados" sin importar dónde está el servo, y ver si se puede mejorar sin volver
 al problema que el limitador buscaba evitar (servos que "se pisan": arrancan todos a la vez, picos de corriente,
@@ -107,3 +110,46 @@ La simulación no reemplaza la prueba en el robot: no modela el peso, el roce ni
   diseño original; con el cambio en `attach()` ya no hay salto al reconectar.
 - Los reinicios de la placa en el fondo son de **alimentación**: los servos toman la corriente del Nano. Pilas
   nuevas (o un portapilas de 4×AA de buena calidad) ayudan más que cualquier ajuste del código.
+
+## 6. Librería nueva (2026-11-13)
+
+El 2026-11-13 se integró una librería Otto nueva, hecha y medida por otra persona en un robot con pilas
+(commit `315cd81`, `compilation/arduino/userlibs/libraries/Otto/README_LIB_NUEVA.md` y `CAMBIOS.diff`; bitácora,
+entrada F1). Solo cambian `Otto.h` y `Otto.cpp`; `Oscillator.h/.cpp` siguen siendo los de MPR (secciones 1 y 2).
+
+**Qué reemplaza de lo analizado aquí**
+
+| Antes (secciones 1–3) | Ahora |
+|---|---|
+| `OTTO_DIFF_LIMIT_DEFAULT` = 240 grados/s | **3** otra vez (ver abajo) |
+| `_moveServos`: un servo cada 10 ms (round-robin) y ajuste final con los 4 servos | Los 4 servos cada 10 ms, pies primero, con arranque y frenada graduales (15 % del recorrido en cada punta), tope de **150 grados/s sumando los 4 servos** (`OTTO_AGG_RATE_DEFAULT`) y recorridos grandes partidos en trozos de 50 grados (`OTTO_MV_TRV_CHUNK`). Ya no hay ajuste final. Sin recorrido no escribe nada (la calibración aplica el trim con `_moveSingle`) |
+| `home()`: un `_moveServos` de 1000 ms | Dos fases de 300 ms (`OTTO_HOME_T` = 600): pies y después caderas; con mucho recorrido el tope de 150 grados/s lo alarga |
+| Servos conectados de a uno, 200 ms entre cada uno (`OTTO_ATTACH_DELAY_MS`) | Pies primero, 300 ms después de cada uno (`OTTO_ATTACH_STAGGER_MS`, ~1,2 s) |
+| Marchas con el periodo pedido | Periodo mínimo de 50 ms por grado de la amplitud mayor (`OTTO_GAIT_T_PER_DEG`): walk y turn 1500 ms, bailes con tamaño 25: 1250, con tamaño 40: 2000 (crusaito, por sus caderas, nunca baja de 1250). El README dice que con el menú en español solo cambia Rápido + Grande, pero MPR tiene además "Muy rápido" (1000): con la librería nueva Caminar y Girar en Muy rápido van a 1500 (igual que Rápido); los bailes en Rápido o Muy rápido con tamaño Grande, a 2000; en Muy rápido con tamaño Normal, a 1250. Lento y Normal no cambian |
+| `shakeLeg`: pie de apoyo en 58 | 55 |
+| `_moveSingle`: fuera de rango se limita a 0–180 | Vuelve a mandar a 90 (no se conservó el cambio MPR; ningún bloque visible lo usa) |
+| — | Freno adaptativo (`OTTO_BRAKE`): mide la tensión de la placa y, si cae, frena marchas y `_moveServos` (hasta el doble de tiempo) |
+
+Se mantienen: el `Oscillator` de MPR (muestreo cada 20 ms exactos, reconexión sin salto con la última posición y
+su trim, pausa de más de 50 ms tratada como un pulso), el round-robin del
+oscilador y las trayectorias de las marchas.
+
+**Por qué `OTTO_DIFF_LIMIT_DEFAULT` vuelve a 3.** El autor midió el freno, el periodo mínimo de las marchas (que
+parte de un techo de ~47 grados/s por servo) y el nuevo `_moveServos` con 3, que con el `Oscillator` de MPR sigue
+siendo 1 grado por orden. `_moveServos` ya no depende de ese límite para la velocidad (la fija el tope de
+150 grados/s), pero las marchas sí: vuelve el recorte de pasos de la sección 1 (en la simulación de "Probar en
+pantalla", caminar a T=1500 recorre ~42 de los 60 grados de cadera; en la tabla de la sección 3, 18,5 de 30 por
+lado). Para volver a 240: `#define OTTO_DIFF_LIMIT_DEFAULT 240` en `Otto.h`; habría que medir de nuevo el periodo
+mínimo y el freno.
+
+**Qué queda por probar en el robot** (PLAN_PULIDO F4; nada de esto se ha probado todavía con la librería integrada
+en MPR):
+1. Los ejemplos `mpr_*.xml` y un programa con Caminar, Girar, Inclinar, Agitar pata, Sube y los bailes en Lento,
+   Normal, Rápido y Muy rápido, tamaños Pequeño/Mediano/Grande: que no se reinicie la placa ni se caiga, con pilas nuevas y usadas.
+2. Si el paso recortado (DIFF_LIMIT 3) se ve peor que antes de la librería nueva al caminar en Normal y Rápido, y
+   si "Muy rápido" sigue teniendo sentido (para caminar ahora es igual a Rápido).
+3. Al encender: los servos se acomodan de a uno, pies primero, en ~1,2 s.
+4. Gestos y "Mover piernas": movimiento suave, sin tirones al final.
+5. La calibración (orden T de `mpr_calibracion.js`) sigue mostrando el ajuste al instante.
+6. `OTTO_BRAKE_VMIN_ABS` (3900 mV) depende de la referencia interna de cada chip (±10 %): con otra placa puede
+   frenar de más o de menos.

@@ -12,6 +12,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — F2 y F3: "Probar en pantalla" imita la librería nueva; documentación
+- **Pedido:** plan de pulido F2/F3 (alinear el simulador y la documentación con la librería Otto nueva).
+- **Qué se hizo:**
+  - `www/js/mpr_otto_lib.js` imita `Otto.cpp` del paquete: DIFF_LIMIT 3 (1 grado por orden), `_moveServos` con los 4 servos cada 10 ms, rampas del 15 %, tope de 150°/s sumado y trozos de 50 grados (sin recorrido solo espera, como el paquete), `home()` en dos fases de 300 ms, `init()` pies primero con 300 ms por servo, periodo mínimo de las marchas (50 ms por grado), `shakeLeg` 55. El freno por tensión no se imita (no hay batería en pantalla).
+  - `www/js/mpr_simulador.js`: Configuración Otto llama a `init()` como el robot (antes solo `home()`, así que el limitador no se activaba en pantalla); "y"/"o"/"o exclusivo"/desplazamientos funcionan como en el robot (antes se comparaba con `'AND'` y "y" funcionaba como "o").
+  - Documentación: `DOCUMENTACION_TECNICA.md` 1, 4.10, 5.5 y 9; `ANALISIS_SERVOS.md` sección 6 "Librería nueva"; frase de DIFF_LIMIT en `CLAUDE.md` y `LEEME_MPR.md`. Nota: además de Rápido + Grande, con el menú MPR "Muy rápido" (1000) también cambia: Caminar/Girar van a 1500.
+- **Duraciones en pantalla (antes → ahora; README de la librería):** walk(1,250) 252 → 1502 ms (1544); swing(1,1500,40) 1502 → 2002 (2023); home tras caminar 1000 → 600; init + home 1600 → 1500.
+- **Archivos:** `www/js/mpr_otto_lib.js`, `www/js/mpr_simulador.js`, `DOCUMENTACION_TECNICA.md`, `ANALISIS_SERVOS.md`, `CLAUDE.md`, `LEEME_MPR.md`, `PLAN_PULIDO.md`. Simulador y documentación por un subagente; ajustes al paquete exacto, init y "y/o" por el coordinador.
+- **Probado:** en la app (copia `C:\mprbp`): el ejemplo Meneíto corre 20 s en "Probar en pantalla" sin errores y con los servos moviéndose (16 posturas distintas muestreadas). `node --check` OK.
+
 ### 2026-11-13 — F1 (corrección): Otto.cpp y Otto.h idénticos al paquete
 - **Pedido:** "el archivo que manda es el que ya está editado (el cpp de `LIB_OTTO_NUEVA.zip`): es el más probado en los servos, lo hizo otra persona, es el depurado".
 - **Qué se hizo:** `Otto.cpp` y `Otto.h` quedan **idénticos byte a byte** al paquete (SHA‑256 `ad9c15d7…` y `39bc5ee5…`, los de `SHA256SUMS.txt`): se quitaron los 3 ajustes MPR que el subagente había puesto encima (trims leídos antes de conectar, `_moveServos` sin recorrido reenviando la posición, comentario de DIFF_LIMIT). `OTTO_DIFF_LIMIT_DEFAULT` sigue en 3, como en el paquete. Regla nueva en `CLAUDE.md`.

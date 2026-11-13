@@ -3,10 +3,11 @@
 // MPR: la librería Otto del robot (compilation/arduino/userlibs/libraries/Otto, versión MPR: Otto.cpp, Oscillator.cpp,
 // Otto_sounds.h, Otto_gestures.h) traducida a JavaScript para "Probar en pantalla": el Otto 3D hace los mismos
 // movimientos de servos y los mismos sonidos que el robot real con el programa del niño. Traducción fiel: mismas
-// amplitudes, desfases, períodos y pasos, el limitador de velocidad (240 grados/s, DOCUMENTACION_TECNICA.md 5.5), el
-// refresco round-robin y la trayectoria de _moveServos, todas las canciones y gestos, con las cuentas redondeadas como
-// en el Nano (ver "Números"). Otro módulo interpreta los bloques y dibuja el robot; este calcula qué recibe cada servo
-// y el zumbador.
+// amplitudes, desfases, períodos y pasos, el limitador del oscilador (OTTO_DIFF_LIMIT_DEFAULT 3: un grado por orden,
+// DOCUMENTACION_TECNICA.md 5.5), el refresco round-robin, el piso de periodo de las marchas y el _moveServos de la
+// librería nueva (nov-2026: arranque y frenada graduales, tope de 150 grados/s sumando los 4 servos, por trozos), todas
+// las canciones y gestos, con las cuentas redondeadas como en el Nano (ver "Números"). Otro módulo interpreta los
+// bloques y dibuja el robot; este calcula qué recibe cada servo y el zumbador.
 //
 // API: var otto = MPROttoLib.crear(hw);  métodos async con los mismos argumentos (y valores por defecto) que el C++:
 //   init() (bloque Configuración Otto: conecta los servos de a uno y va a home), home(), jump, walk, turn, bend,
@@ -47,7 +48,10 @@
 // Lo que no se puede reproducir en pantalla:
 //  - Trims (calibración leída de la EEPROM en init(), setTrims, saveTrimsOnEEPROM): el Otto 3D no los necesita.
 //  - attach/detach: el robot real queda sin fuerza tras home() y en OttoFail (se desploma tras detachServos()); en
-//    pantalla los servos se quedan donde estaban. Los 200 ms entre servo y servo de init() sí se respetan.
+//    pantalla los servos se quedan donde estaban. Los 300 ms tras conectar cada servo en init() sí se respetan.
+//  - El freno adaptativo de la librería nueva (OTTO_BRAKE: con las pilas bajas frena marchas y _moveServos, hasta el
+//    doble de tiempo) mide la tensión de la placa: en pantalla no hay pilas, se mueve siempre al ritmo nominal (como el
+//    robot con pilas buenas). Tampoco el registro de diagnóstico (OTTO_INSTRUMENT, apagado en la entrega).
 //  - El servo real tarda en llegar (unos 450 grados/s, con peso y pilas); en pantalla llega al instante a lo ordenado.
 //  - millis() del Nano avanza a saltos de 1,024 ms y cada muestra del oscilador toma ~0,3 ms (a veces corre 1 ms la
 //    siguiente); aquí los milisegundos son exactos.
@@ -55,10 +59,22 @@
 
 var MPROttoLib = (function() {
 	// ---------------------------------------------------------------- constantes (Otto.h y Oscillator.h, versión MPR)
-	var DIFF_LIMIT_DEFAULT = 240;    // OTTO_DIFF_LIMIT_DEFAULT: límite de velocidad de los servos (grados por segundo)
-	var ATTACH_DELAY_MS = 200;       // OTTO_ATTACH_DELAY_MS: pausa entre servo y servo al conectarlos en init()
+	// MPR: valores de la librería nueva (commit 315cd81, PLAN_PULIDO F2)
+	var DIFF_LIMIT_DEFAULT = 3;      // OTTO_DIFF_LIMIT_DEFAULT: el Oscillator de MPR lo toma como grados por segundo; con
+	                                 // 3 y órdenes cada 10-50 ms la cuenta da 0 y queda en 1 grado por orden
+	var ATTACH_STAGGER_MS = 300;     // OTTO_ATTACH_STAGGER_MS: pausa tras conectar cada servo en init()
+	var ORDEN_PIES = [2, 3, 0, 1];   // pies antes que caderas (init() y _moveServos)
+	var AGG_RATE = 150;              // OTTO_AGG_RATE_DEFAULT: tope de _moveServos, grados/s sumando los 4 servos
+	var MV_TICK_MS = 10;             // OTTO_MV_TICK_MS: paso del lazo de _moveServos
+	var MV_RAMP_PCT = 15;            // OTTO_MV_RAMP_PCT: % del recorrido para acelerar (y otro tanto para frenar)
+	var MV_TRV_CHUNK = 50;           // OTTO_MV_TRV_CHUNK: recorrido sumado por trozo
+	var MIN_LOAD_PCT = 70;           // OTTO_BRAKE_MIN_LOAD_PCT: solo se trocea lo que va al tope del presupuesto
+	var HOME_T = 600;                // OTTO_HOME_T: home() en dos fases de 300 ms
+	var GAIT_T_PER_DEG = 50;         // OTTO_GAIT_T_PER_DEG: piso de periodo de las marchas, ms por grado de amplitud
 	var MAX_DT_MS = 50;              // OSCILLATOR_MAX_DT_MS: más tiempo sin órdenes es una pausa para el limitador
 	var SERVO_LIMIT_DEFAULT = 240;   // SERVO_LIMIT_DEFAULT: valor por defecto de enableServoLimit()
+	var SHAKE_APOYO = 55;            // shakeLeg(): pie de apoyo (antes 58)
+	var SHAKE_CRUCE = 90 + 30;       // shakeLeg(): 90 + OTTO_SHAKE_CROSS_DEG, el pie libre cruza el centro
 	// Reloj del simulador (ver "Tiempo")
 	var ATRASO_MAX_MS = 250;         // atraso dentro de una orden que se toma como pausa
 	var SIN_PAUSA_MAX = 1000;        // órdenes seguidas sin esperar antes de ceder un cuadro (no trabar la página)
@@ -108,6 +124,52 @@ var MPROttoLib = (function() {
 		if (typeof x == 'number') return lista[x] || null;
 		x = String(x == null ? '' : x).trim();
 		return lista.indexOf(x) >= 0 ? x : null;
+	}
+
+	// MPR: ottoMvShape() de Otto.cpp (PLAN_PULIDO F2). Perfil trapezoidal de _moveServos: entra la fracción de tiempo y
+	// sale la de recorrido, en milésimas (cuentas enteras sin signo, como en el C++).
+	function formaMv(u) {
+		if (u >= 1000) return 1000;
+		var r = MV_RAMP_PCT * 10;
+		if (r == 0 || r > 500) return u;
+		var den = (1000 - r) * 2 * r;
+		if (u < r) return Math.floor(u * u * 1000 / den);
+		if (u > 1000 - r) {
+			var v = 1000 - u;
+			return 1000 - Math.floor(v * v * 1000 / den);
+		}
+		return Math.floor(1000 * (u * 2 - r) / ((1000 - r) * 2));
+	}
+
+	// MPR: piso de periodo de _execute() (OTTO_GAIT_T_PER_DEG, PLAN_PULIDO F2): T no baja de 50 ms por grado de la
+	// amplitud mayor (walk y turn 1500, la mayoría de los bailes con tamaño 25: 1250, con tamaño 40: 2000). Nunca acelera.
+	function pisoT(A, T) {
+		var amax = 0;
+		for (var i = 0; i < 4; i++) amax = Math.max(amax, Math.abs(ent(A[i])));
+		var tmin = amax * GAIT_T_PER_DEG;
+		return tmin > T ? ent(tmin) : T;
+	}
+
+	// MPR: duración que tendrá _moveServos(time) de "desde" a "hasta" (para avisar al anfitrión la duración prevista):
+	// la misma cuenta del tiempo efectivo, el troceado y el paso de 10 ms que hace _moveServos.
+	function msMover(desde, hasta, time, trozo) {
+		var i, trv = 0;
+		for (i = 0; i < 4; i++) trv += Math.abs(ent(hasta[i]) - desde[i]);
+		var tReq = time > 0 ? time : 0;
+		if (trv == 0) return tReq;
+		var tCap = Math.floor(trv * 1000 / AGG_RATE);
+		var tEff = Math.max(tReq, tCap, MV_TICK_MS);
+		if (!trozo && MV_TRV_CHUNK > 0 && trv > MV_TRV_CHUNK && Math.floor(tCap * 100 / tEff) >= MIN_LOAD_PCT) {
+			var n = Math.min(8, Math.max(2, Math.ceil(trv / MV_TRV_CHUNK))), ms = 0, a = desde;
+			for (var k = 1; k <= n; k++) {
+				var wp = [];
+				for (i = 0; i < 4; i++) wp[i] = k == n ? ent(hasta[i]) : desde[i] + Math.trunc((ent(hasta[i]) - desde[i]) * k / n);
+				ms += msMover(a, wp, Math.floor(tEff / n), true);
+				a = wp;
+			}
+			return ms;
+		}
+		return MV_TICK_MS * Math.max(0, Math.ceil((tEff - MV_TICK_MS / 2) / MV_TICK_MS));
 	}
 
 	// ---------------------------------------------------------------- Oscillator (Oscillator.h y Oscillator.cpp)
@@ -194,8 +256,9 @@ var MPROttoLib = (function() {
 		this.hw = hw;
 		this.osc = [new Oscilador(0), new Oscilador(1), new Oscilador(2), new Oscilador(3)];
 		this.reposo = false;   // isOttoResting
-		this.rr = 0;           // "static rr" de _moveServos: servo que se actualiza en cada paso de 10 ms
-		this.nivel = 0;        // órdenes en curso (un gesto llama a sing, home...)
+		// MPR: ya no hay "static rr" en _moveServos: la librería nueva mueve los 4 servos en cada paso (PLAN_PULIDO F2)
+		this.trozando = false; // _mvSplit: _moveServos está partido en trozos (un solo nivel)
+		this.nivel = 0;       // órdenes en curso (un gesto llama a sing, home...)
 		this.sinPausa = 0;
 		this._encender();
 	}
@@ -296,6 +359,18 @@ var MPROttoLib = (function() {
 		for (var i = 0; i < 4; i++) this.osc[i].conectado = false;
 	};
 
+	// MPR: duración prevista de una serie de _moveServos (poses[k] en tiempos[k]) desde la posición actual, con las
+	// cuentas de la librería nueva (msMover, PLAN_PULIDO F2)
+	P._msPoses = function(poses, tiempos) {
+		var ms = 0, a = [];
+		for (var i = 0; i < 4; i++) a[i] = this.osc[i].pos;
+		for (var k = 0; k < poses.length; k++) {
+			ms += msMover(a, poses[k], ent(tiempos[k]));
+			a = poses[k].map(ent);
+		}
+		return ms;
+	};
+
 	// Avisa al anfitrión que empieza un movimiento (para deslizar o girar el cuerpo); ms = duración prevista
 	P._movimiento = function(tipo, pasos, T, dir, h, ms) {
 		if (typeof this.hw.movimiento != 'function') return;
@@ -307,18 +382,20 @@ var MPROttoLib = (function() {
 
 	// ---------------------------------------------------------------- inicio y conexión
 	// Otto.init(LeftLeg, RightLeg, LeftFoot, RightFoot, true, Buzzer) + Otto.home() del bloque Configuración Otto. Como
-	// al encender el robot: reloj en 0, servos en 90 y conectados de a uno (200 ms entre cada uno), limitador de
-	// 240 grados/s y home() (1 s). Si después se llama home(), no hace nada: ya está en reposo, como en el robot.
+	// al encender el robot: reloj en 0, servos en 90 y conectados de a uno, limitador (OTTO_DIFF_LIMIT_DEFAULT) y home().
+	// MPR: como Otto::init() de la librería nueva (PLAN_PULIDO F2): pies primero (2, 3, 0, 1) y 300 ms después de
+	// conectar cada uno (1,2 s); el home() siguiente, con todo en 90, no recorre nada y solo espera 300 ms. Si
+	// después se llama home(), no hace nada: ya está en reposo, como en el robot.
 	P.init = publico(async function(YL, YR, RL, RR, load_calibration, Buzzer) {
 		this._encender();
 		for (var i = 0; i < 4; i++) this.osc[i].reiniciar();
 		this.reposo = false;
-		this.rr = 0;
+		this.trozando = false;
 		if (this.hw.silencio) this.hw.silencio();
-		// load_calibration: el robot lee los trims de la EEPROM antes de conectar; en pantalla quedan en 0
+		// load_calibration: el robot lee los trims de la EEPROM después de conectar; en pantalla quedan en 0
 		for (i = 0; i < 4; i++) {
-			if (i > 0 && ATTACH_DELAY_MS > 0) await this._delay(ATTACH_DELAY_MS);
-			this.osc[i].conectar(this);
+			this.osc[ORDEN_PIES[i]].conectar(this);
+			await this._delay(ATTACH_STAGGER_MS);
 		}
 		for (i = 0; i < 4; i++) this.osc[i].limite = DIFF_LIMIT_DEFAULT;   // OTTO_LIMITER_DEFAULT_ON
 		this.reposo = false;
@@ -358,56 +435,84 @@ var MPROttoLib = (function() {
 	};
 
 	// ---------------------------------------------------------------- movimientos básicos
-	// _moveServos(): MPR, la trayectoria se calcula desde la posición inicial (float). Cada 10 ms se actualiza un solo
-	// servo (round-robin, el índice sigue de una llamada a otra) con el paso k de la trayectoria. Al final se ajusta
-	// cada 10 ms hasta llegar: con el limitador puede tardar más de lo pedido.
+	// _moveServos(): MPR, como Otto::_moveServos() de la librería nueva (PLAN_PULIDO F2). Tiempo efectivo: lo pedido, o
+	// más si el recorrido sumado de los 4 servos pasa de 150 grados/s (t_cap = recorrido·1000/150). Cada 10 ms mueve
+	// los 4 servos a la vez (pies primero) por un perfil trapezoidal (arranca y frena suave: 15 % del recorrido en cada
+	// punta) y termina justo al acabar el tiempo, sin ajuste final. Si va al tope de los 150 grados/s y recorre más de
+	// 50 grados en total, se parte en trozos de 50 (2 a 8) que suman el mismo tiempo. Sin recorrido: solo espera el
+	// tiempo pedido, sin escribir (igual que el paquete). El freno por tensión no aplica en pantalla.
 	P._moveServos = publico(async function(time, servo_target) {
 		time = ent(time);
-		var i, objetivo = [];
+		var i, k, objetivo = [];
 		for (i = 0; i < 4; i++) objetivo[i] = ent(servo_target ? servo_target[i] : 0);
 		this._conectarServos();
 		if (this.reposo) this.reposo = false;
-		var finalTime = this.millis() + time;
-		if (time > 10) {
-			var pasos = Math.trunc(time / 10);
-			var div = f32(time / 10);
-			var inicio = [], inc = [];
-			for (i = 0; i < 4; i++) {
-				inicio[i] = this.osc[i].pos;
-				inc[i] = f32((objetivo[i] - inicio[i]) / div);
-			}
-			for (var it = 1; this.millis() < finalTime; it++) {
-				var parcial = this.millis() + 10;
-				var k = it < pasos ? it : pasos;   // no pasarse del objetivo
-				var rr = this.rr;
-				this.osc[rr].escribir(this, ent(redondear(f32(inicio[rr] + f32(k * inc[rr])))), this.millis());
-				this.rr = (rr + 1) & 3;
-				await this._hasta(parcial, false);
-			}
-		} else {
-			for (i = 0; i < 4; i++) this.osc[i].escribir(this, objetivo[i], this.millis());
-			await this._hasta(finalTime, false);
+		var desde = [], delta = [], pend = [], trv = 0;
+		for (i = 0; i < 4; i++) {
+			desde[i] = this.osc[i].pos;
+			delta[i] = objetivo[i] - desde[i];
+			pend[i] = Math.abs(delta[i]);
+			trv += pend[i];
 		}
+		var tReq = time > 0 ? time : 0;
+		if (trv == 0) {
+			// como Otto.cpp del paquete: nada que recorrer, solo se consume el tiempo pedido (no se escribe)
+			await this._hasta(this.millis() + tReq, false);
+			return;
+		}
+		var tCap = Math.floor(trv * 1000 / AGG_RATE);
+		var tEff = Math.max(tReq, tCap, MV_TICK_MS);
+		var carga = Math.floor(tCap * 100 / tEff);
+		if (!this.trozando && MV_TRV_CHUNK > 0 && trv > MV_TRV_CHUNK && carga >= MIN_LOAD_PCT) {
+			var n = Math.min(8, Math.max(2, Math.ceil(trv / MV_TRV_CHUNK)));
+			var tTramo = Math.floor(tEff / n);
+			this.trozando = true;
+			try {
+				for (k = 1; k <= n; k++) {
+					var wp = [];
+					for (i = 0; i < 4; i++) wp[i] = k == n ? objetivo[i] : desde[i] + Math.trunc(delta[i] * k / n);
+					await this._moveServos(tTramo, wp);
+				}
+			} finally {
+				this.trozando = false;
+			}
+			return;
+		}
+		var t0 = this.millis(), mitad = MV_TICK_MS / 2;
 		for (;;) {
-			for (i = 0; i < 4 && objetivo[i] == this.osc[i].pos; i++);
-			if (i == 4) break;
-			for (i = 0; i < 4; i++) this.osc[i].escribir(this, objetivo[i], this.millis());
-			await this._hasta(this.millis() + 10, false);
+			var ahora = this.millis();
+			var prog = Math.min(ahora - t0, tEff);   // sin freno: el reloj virtual es el real
+			var s = formaMv(Math.floor(Math.min(prog + mitad, tEff) * 1000 / tEff));
+			var llegado = true;
+			for (k = 0; k < 4; k++) {
+				i = ORDEN_PIES[k];
+				if (pend[i] == 0) continue;
+				var hecho = Math.min(Math.floor((pend[i] * s + 500) / 1000), pend[i]);
+				var meta = desde[i] + (delta[i] < 0 ? -hecho : hecho);
+				// el limitador del oscilador avanza un grado por orden: se repite hasta llegar (guarda de 200)
+				for (var guarda = 200; this.osc[i].pos != meta && guarda > 0; guarda--) this.osc[i].escribir(this, meta, ahora);
+				if (this.osc[i].pos != objetivo[i]) llegado = false;
+			}
+			if (llegado && prog + mitad >= tEff) break;
+			await this._hasta(ahora + MV_TICK_MS, false);
 		}
 	});
 
-	// MPR: fuera de rango se limita a 0..180. Una sola orden: con el limitador avanza a lo más unos grados.
+	// Una sola orden: con el limitador avanza a lo más un grado. MPR: la librería nueva volvió a mandar a 90 lo que
+	// está fuera de 0..180 (la versión MPR anterior lo limitaba a 0..180); se imita al robot (PLAN_PULIDO F2).
 	P._moveSingle = publico(async function(position, servo_number) {
 		position = ent(position);
-		if (position > 180) position = 180;
-		if (position < 0) position = 0;
+		if (position > 180) position = 90;
+		if (position < 0) position = 90;
 		this._conectarServos();
 		if (this.reposo) this.reposo = false;
 		var n = ent(servo_number);
 		if (n >= 0 && n <= 3) this.osc[n].escribir(this, position, this.millis());
 	});
 
-	// oscillateServos(): "for (x = ref; x <= T*cycle + ref; x = millis())" refresca un servo por vuelta (round-robin;
+	// oscillateServos(): MPR, en la librería nueva el lazo es "while (virt <= lim)" con lim = (unsigned long)(T*cycle) y
+	// un reloj virtual que el freno puede frenar; sin freno (en pantalla) el reloj virtual es millis() - ref, así que
+	// termina igual que antes, en ref + lim + 1 (PLAN_PULIDO F2). Refresca un servo por vuelta (round-robin;
 	// el orden dentro de un mismo milisegundo no cambia nada). Cada servo toma su muestra cuando pasaron 20 ms desde la
 	// anterior, o de inmediato si ya pasaron (recién conectado, o tras una pausa). La fase no se reinicia entre
 	// llamadas: dos walk seguidos continúan la oscilación.
@@ -423,9 +528,9 @@ var MPROttoLib = (function() {
 			s.fase0 = f32(phase_diff[i]);
 		}
 		var ref = this.millis();
-		var fin = f32(f32(T * cycle) + ref);
-		if (ref > fin) return;
-		var ultimo = Math.floor(fin);   // último milisegundo dentro del lazo
+		var lim = Math.trunc(f32(T * cycle));   // (double)T * (double)cycle (float en el Nano), a unsigned long
+		if (lim < 0) return;
+		var ultimo = ref + lim;   // último milisegundo dentro del lazo
 		var prox = [];
 		for (i = 0; i < 4; i++) prox[i] = Math.max(this.osc[i].anterior + this.osc[i].muestreo, ref);
 		for (;;) {
@@ -439,25 +544,35 @@ var MPROttoLib = (function() {
 		await this._hasta(ultimo + 1, false);
 	});
 
+	// MPR: con el piso de periodo de Otto::_execute() de la librería nueva (pisoT, PLAN_PULIDO F2)
 	P._execute = publico(async function(A, O, T, phase_diff, steps = 1.0) {
 		this._conectarServos();
 		if (this.reposo) this.reposo = false;
+		T = pisoT(A, ent(T));
 		steps = f32(steps);
 		var cycles = ent(steps);
 		if (cycles >= 1) for (var i = 0; i < cycles; i++) await this.oscillateServos(A, O, T, phase_diff);
 		await this.oscillateServos(A, O, T, phase_diff, f32(steps - cycles));   // el ciclo final incompleto
 	});
 
+	// MPR: como Otto::home() de la librería nueva (PLAN_PULIDO F2): en dos fases de OTTO_HOME_T/2 = 300 ms, primero los
+	// pies (si no están en 90) y después las caderas; con mucho recorrido el tope de 150 grados/s lo alarga. Antes era
+	// un solo _moveServos de 1000 ms.
 	P.home = publico(async function() {
 		if (!this.reposo) {
-			await this._moveServos(1000, [90, 90, 90, 90]);   // MPR: en 1 s (antes 500 ms)
+			if (this.osc[2].pos != 90 || this.osc[3].pos != 90) {
+				await this._moveServos(HOME_T / 2, [this.osc[0].pos, this.osc[1].pos, 90, 90]);
+			}
+			await this._moveServos(HOME_T / 2, [90, 90, 90, 90]);
 			this._desconectarServos();
 			this.reposo = true;
 		}
 	});
 
-	// Movimientos con osciladores: avisa al anfitrión y oscila
+	// Movimientos con osciladores: avisa al anfitrión y oscila. MPR: el anfitrión recibe el periodo con el piso de
+	// _execute() (el que de verdad se usa), para que el cuerpo avance al mismo ritmo que las patas (PLAN_PULIDO F2).
 	P._oscilar = function(tipo, steps, T, dir, h, A, O, phase_diff) {
+		T = pisoT(A, T);
 		this._movimiento(tipo, steps, T, dir, h);
 		return this._execute(A, O, T, phase_diff, steps);
 	};
@@ -467,8 +582,9 @@ var MPROttoLib = (function() {
 	P.jump = publico(async function(steps = 1, T = 2000) {
 		steps = f32(steps);
 		T = ent(T);
-		this._movimiento('subir', steps, T, 0, undefined, 2 * Math.max(0, T));
-		await this._moveServos(T, [90, 90, 150, 30]);
+		var up = [90, 90, 150, 30];
+		this._movimiento('subir', steps, T, 0, undefined, this._msPoses([up, [90, 90, 90, 90]], [T, T]));
+		await this._moveServos(T, up);
 		await this._moveServos(T, [90, 90, 90, 90]);
 	});
 
@@ -513,7 +629,8 @@ var MPROttoLib = (function() {
 		}
 		var T2 = 800;
 		var pausa = f32(T * f32(0.8));   // delay(T*0.8)
-		this._movimiento('bend', steps, T, dir, undefined, Math.max(0, steps) * (T2 + Math.max(0, largo(pausa)) + 500));
+		this._movimiento('bend', steps, T, dir, undefined, Math.max(0, steps) *
+			(this._msPoses([bend1, bend2, homes], [T2 / 2, T2 / 2, 500]) + Math.max(0, largo(pausa))));
 		for (var i = 0; i < steps; i++) {
 			await this._moveServos(T2 / 2, bend1);
 			await this._moveServos(T2 / 2, bend2);
@@ -523,26 +640,28 @@ var MPROttoLib = (function() {
 	});
 
 	// shakeLeg: agitar una pata. Como en el C++, dir == -1 (RIGHT, el valor por defecto) usa los ángulos que el
-	// comentario original llama "pata izquierda".
+	// comentario original llama "pata izquierda". MPR: pie de apoyo en 55 (antes 58) y el pie libre cruzando el centro
+	// hasta 120, como Otto::shakeLeg() de la librería nueva (PLAN_PULIDO F2).
 	P.shakeLeg = publico(async function(steps = 1, T = 2000, dir = -1) {
 		steps = ent(steps);
 		var T0 = ent(T);
 		dir = ent(dir);
 		var numberLegMoves = 2;
-		var leg1 = [90, 90, 58, 35], leg2 = [90, 90, 58, 120], leg3 = [90, 90, 58, 60], homes = [90, 90, 90, 90];
+		var leg1 = [90, 90, SHAKE_APOYO, 35], leg2 = [90, 90, SHAKE_APOYO, SHAKE_CRUCE], leg3 = [90, 90, SHAKE_APOYO, 60];
+		var homes = [90, 90, 90, 90];
 		if (dir == -1) {
 			leg1[2] = 180 - 35;
-			leg1[3] = 180 - 58;
-			leg2[2] = 180 - 120;
-			leg2[3] = 180 - 58;
+			leg1[3] = 180 - SHAKE_APOYO;
+			leg2[2] = 180 - SHAKE_CRUCE;
+			leg2[3] = 180 - SHAKE_APOYO;
 			leg3[2] = 180 - 60;
-			leg3[3] = 180 - 58;
+			leg3[3] = 180 - SHAKE_APOYO;
 		}
 		var T2 = 1000;   // tiempo de la inclinación, fijo para no caerse
 		T = Math.max(ent(T0 - T2), 200 * numberLegMoves);
 		var tPata = Math.trunc(T / (2 * numberLegMoves));
-		this._movimiento('shakeLeg', steps, T0, dir, undefined,
-			Math.max(0, steps) * (T2 + 2 * numberLegMoves * tPata + 500) + T);
+		this._movimiento('shakeLeg', steps, T0, dir, undefined, Math.max(0, steps) *
+			this._msPoses([leg1, leg2, leg3, leg2, leg3, leg2, homes], [T2 / 2, T2 / 2, tPata, tPata, tPata, tPata, 500]) + T);
 		for (var j = 0; j < steps; j++) {
 			await this._moveServos(T2 / 2, leg1);
 			await this._moveServos(T2 / 2, leg2);
