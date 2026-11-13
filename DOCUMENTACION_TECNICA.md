@@ -321,6 +321,7 @@ Reemplaza `Blockly.FieldDropdown.prototype.showEditor_` para que las listas desp
   | M1 | Programa más grande que la memoria del Nano | Quitar canciones largas o bloques repetidos |
   | P5 | Se quedó pegado verificando o cargando y se detuvo (Detener, o el niño desenchufó el cable) | Desenchufar y enchufar; si se repite: cerrar otras MPR Blockly, otro USB u otro cable, reiniciar la app |
   | A1 | Falta arduino-cli o sus archivos (`ENOENT`, `spawn`) | Reinstalar MPR Blockly |
+  | A2 | Core de Arduino dañado en el PC (`undefined reference to 'main'`): una compilación se cortó a medias y su `core.a` quedó incompleto en `%TEMP%arduino-core-cache`. Pasaba con una sola placa (Nano o Nano Old). Desde la 1.5.2 la app borra esa caché y reintenta sola (`MPRSubida.limpiarCore`); A2 sale solo si el reintento también falla | Cerrar la app, borrar `%TEMP%arduino-core-cache` y `%TEMP%arduino-sketch-*`, abrirla de nuevo |
   | A9 | Error no reconocido | Abrir "Ver detalle técnico" y leer la primera línea con "error" |
 
   Los mensajes se probaron en la app: compilando cada error típico de un niño, con un puerto que no existe y con el puerto de Otto tomado por otro programa. Para agregar un error, basta con una línea en `ERRORES`. El orden importa: P2 va antes que P3, porque los dos traen `can't open device`.

@@ -148,13 +148,50 @@ MPRSubida.ejecutar = function(exe, args, op) {
 
 // codigo: el texto que se escribió en sketch.ino antes de compilar; si compila bien, queda anotado (ultimaCompilacion)
 // para no volver a compilarlo si se manda igual (ver compiladoVigente)
-MPRSubida.compilar = function(fqbn, baja, codigo) {
+MPRSubida.compilar = function(fqbn, baja, codigo, reintento) {
 	var self = MPRSubida;
 	self.ultimaCompilacion = null;   // MPR: mientras compila (o si falla) lo anterior ya no vale (PLAN_PULIDO C6)
 	return self.ejecutar(self.cli, ['compile', '--fqbn', fqbn, 'sketch/sketch.ino'], { baja: baja }).then(function(r) {
+		// MPR: core de Arduino dañado (ver CORE_DANADO): se borra su caché y se compila una vez más
+		if (!r.ok && !r.matado && !reintento && self.CORE_DANADO.test(r.texto)) {
+			console.log('[MPR] core de Arduino dañado para ' + fqbn + ': borro su caché y vuelvo a compilar');
+			self.limpiarCore(fqbn);
+			return self.compilar(fqbn, baja, codigo, true);
+		}
 		if (r.ok && typeof codigo == 'string') self.ultimaCompilacion = self.huellaCompilado(fqbn, codigo);
 		return r;
 	});
+};
+
+// MPR: arduino-cli 0.14 arma el "core" de Arduino agregando sus archivos de a uno a core.a y lo guarda en
+// %TEMP%\arduino-core-cache (un archivo por placa: Nano y Nano Old tienen el suyo). Si una compilación se corta a mitad
+// de ese paso (Detener, desenchufar, cerrar la app mientras precompila), core.a queda sin sus últimos archivos (main
+// entre ellos), arduino-cli lo da por bueno y lo copia a la caché: desde entonces esa placa falla SIEMPRE con
+// "undefined reference to `main'" (la otra sigue andando). Pasó en un PC del programa el 2026-11-13 con "Nano".
+MPRSubida.CORE_DANADO = /undefined reference to .main'|archive has no index|malformed archive|file format not recognized|file truncated/;
+
+MPRSubida.limpiarCore = function(fqbn) {
+	var self = MPRSubida, fs = self.fs, path = self.path, tmp = self.os.tmpdir();
+	function borrar(p) {   // Node 10: sin fs.rmSync ni rmdir recursivo
+		try {
+			if (fs.lstatSync(p).isDirectory()) {
+				fs.readdirSync(p).forEach(function(n) { borrar(path.join(p, n)); });
+				fs.rmdirSync(p);
+			} else fs.unlinkSync(p);
+		} catch (e) { console.log('[MPR] no pude borrar ' + p + ': ' + e.message); }
+	}
+	// caché del core de esta placa: core_<fqbn con _>_<32 hex>.a (la de Nano no debe tocar la de Nano Old)
+	var nombre = new RegExp('^core_' + fqbn.replace(/[:=]/g, '_') + '_[0-9a-f]{32}\\.a$', 'i');
+	try {
+		var cache = path.join(tmp, 'arduino-core-cache');
+		fs.readdirSync(cache).forEach(function(n) { if (nombre.test(n)) borrar(path.join(cache, n)); });
+	} catch (e) {}
+	// y la carpeta de compilación del programa (guarda el core.a a medias)
+	try {
+		var boceto = path.resolve(self.o.basepath, 'sketch');
+		var md5 = require('crypto').createHash('md5').update(boceto).digest('hex').toUpperCase();
+		borrar(path.join(tmp, 'arduino-sketch-' + md5));
+	} catch (e) {}
 };
 
 // ---------------------------------------------------------------- no recompilar lo mismo (PLAN_PULIDO C6)

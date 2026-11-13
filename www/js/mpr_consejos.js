@@ -58,6 +58,11 @@ var MPRConsejos = {
 		  texto: 'Tu programa es muy grande para mí. Prueba quitando canciones o bloques que no estés usando.',
 		  monitor: 'Programa sobre la memoria del Nano: quitar canciones largas o bloques repetidos.',
 		  anim: 'alerta' },
+		// core de Arduino dañado en el PC: la app ya borró su caché y reintentó una vez (mpr_subida.js, limpiarCore)
+		{ codigo: 'A2', re: /undefined reference to .main'|archive has no index|malformed archive|file format not recognized|file truncated/,
+		  texto: 'A la app se le desordenaron unos archivos para preparar programas. Prueba otra vez; si vuelve a pasar, llama a tu monitor.',
+		  monitor: 'Core de Arduino dañado en este PC (se cortó una compilación a medias). Cerrar la app, borrar la carpeta %TEMP%\\arduino-core-cache y las carpetas %TEMP%\\arduino-sketch-*, y abrirla de nuevo. Mientras tanto, elegir la otra placa (Nano / Nano Old) suele funcionar.',
+		  anim: 'pensar' },
 		{ codigo: 'A1', re: /enoent|spawn|no se reconoce|is not recognized|no such file or directory/,
 		  texto: 'A la app le falta una pieza para preparar programas. Esto no lo puedes arreglar tú: llama a tu monitor.',
 		  monitor: 'No se encontró arduino-cli o sus archivos: reinstalar MPR Blockly (C:\\MPRBlockly).',

@@ -12,6 +12,15 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Error "undefined reference to `main'" con Nano: la app repara el core dañado
+- **Pedido / problema:** al validar la 1.5.1 en otro PC, con la placa "Nano" toda compilación fallaba con `crtatmega328p.o:(.init9+0x0): undefined reference to 'main'` (A9), en dos placas distintas; con "Nano Old" funcionaba. "Nano" debe seguir siendo la placa por defecto y "Nano Old" quedar como respaldo (hay repuestos con ese bootloader).
+- **Causa (reproducida en este PC):** "Nano" y "Nano Old" compilan igual (mismo chip y opciones); solo cambia el archivo de caché del core de Arduino (`%TEMP%\arduino-core-cache\core_arduino_avr_nano_<hash>.a` y `..._nano_cpu_atmega328old_<hash>.a`). arduino-cli 0.14 arma `core.a` agregando los objetos de a uno; si una compilación se corta en ese paso (Detener, desenchufar, cerrar la app mientras precompila), queda sin sus últimos objetos (`main.cpp.o` entre ellos), lo da por bueno y lo copia a la caché: desde ahí esa placa falla siempre. Quitando `main.cpp.o` de la caché de Nano se obtuvo exactamente el mismo error.
+- **Qué se hizo:** `MPRSubida.compilar` reconoce ese error (`CORE_DANADO`), borra solo la caché del core de esa placa y la carpeta de compilación del programa (`limpiarCore`) y compila una vez más. Si aun así falla, Otto muestra el código nuevo **A2** con los pasos para el monitor. "Nano" ya era la placa por defecto (`nanooptiboot`); "Nano Old" sigue en la lista y en la detección automática.
+- **Archivos:** `www/js/mpr_subida.js`, `www/js/mpr_consejos.js`, `DOCUMENTACION_TECNICA.md` (tabla de 4.13).
+- **Probado:** el `mpr_subida.js` real cargado en Node, con la caché de Nano sin `main.cpp.o`: detecta el error, borra solo la caché de Nano (la de Nano Old queda igual), recompila y termina bien (47 s, rearma el core); la caché vuelve a 339.314 bytes. No se pudo probar dentro de la app porque la instalada estaba abierta (instancia única).
+- **Para el PC afectado, sin reinstalar:** cerrar la app y borrar `%TEMP%\arduino-core-cache` y las carpetas `%TEMP%\arduino-sketch-*`.
+- **Respuesta a otra pregunta:** el Monitor Serie no tiene atajo; quedó oculto (`btn_term` comentado en `index.html`; sección 9).
+
 ### 2026-11-13 — Versión 1.5.1 e instalador para validar
 - **Pedido:** generar el instalador nuevo para que lo valide otra persona.
 - **Qué se hizo:** `package.json` 1.5.0 → 1.5.1 (PLAN_PULIDO E4). Se descargó el instalador oficial `ottoblockly.Setup.1.5.0.exe` de GitHub (SHA‑256 `3c495447…` correcto), se borró a mano `C:\mprb\stage` (quedaba de pruebas anteriores) y `py tools/build_installer.py --official …` generó `dist\MPR_Blockly_Setup_1.5.1.exe` (139.040.370 bytes, SHA‑256 `7abff63219f7adf7a4fb6b8923fdd057b76d88599818364e34fa4b0de807e004`, versión 1.5.1.0 en el .exe, sin firma).
