@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — D3: canciones con nombre de marca se muestran como acertijo
+- **Pedido:** las canciones con marcas comerciales quedan como acertijo (se oculta el nombre) y la melodía no se toca (decisión del usuario del 2026-11-12).
+- **Qué se hizo:** en "Tocar canción extranjera" (`RTTTL.js`) 11 opciones muestran una pista en vez del nombre: Simpsons → "Misteriosa: dibujo animado de una familia amarilla", Flinstones → "…una familia de la edad de piedra", Muppets → "…show de títeres con una rana presentadora", PinkPanther → "…un felino rosado muy elegante", Looney → "…dibujos animados de un conejo y su pandilla", Smurfs → "…duendecitos azules con gorro blanco", Gadget → "…un inspector con un sombrero lleno de inventos", A_Team → "…cuatro aventureros en un furgón negro", Jeopardy → "…música para pensar en un concurso de la tele", Rudolph → "…un reno con la nariz roja", Frosty → "…un muñeco de nieve que cobra vida". La revelación de "melodía del bosque perdido" (`mpr_canciones.js`) ya no nombra el videojuego. El valor interno de cada opción (lo que se guarda en los `.bloc`) y las melodías no cambian.
+- **Pendiente de decidir (usuario):** 31 Minutos (Misteriosas 1–4 revelan el nombre); villancicos pop (LastChristmas, AllIWant); el ejemplo visible "🎼 Ring Tone sounds" (`RTTL.xml`) es para ESP8266 y muestra "Gadget" (proponer ocultarlo).
+- **Archivos:** `www/blocs&generateurs/RTTTL.js`, `www/blocs&generateurs/mpr_canciones.js`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Probado:** en la app (copia `C:\mprbp`, DevTools): el desplegable muestra los acertijos con tildes bien, el valor sigue siendo `Simpsons`, etc.; los ejemplos que usan canciones (Movimiento improvisado, Canto…) generan código idéntico al de antes y compilan.
+
 ### 2026-11-13 — D2: el ejemplo "⛰️ Cerro" usa solo bloques del menú
 - **Pedido:** arreglar el ejemplo del Cerro para los bloques que realmente se pueden utilizar (decisión del usuario del 2026-11-12).
 - **Causa:** usaba "Iniciar serie" (`serial_init`) e "Imprimir" (`serial_println` con un "text"), que no están en el menú; es justo el ejemplo que la misión final pide modificar.

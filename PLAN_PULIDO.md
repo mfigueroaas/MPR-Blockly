@@ -62,7 +62,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 ## D. Textos (parcial, según la decisión del usuario)
 - [x] D1. Tutear siempre (tooltips y mensajes que dicen "Escriba", "Especifique", "Verifique", "Está seguro"…).
 - [x] D2. Ejemplo "⛰️ Cerro" (`mpr_cerro.xml`): quitar `serial_init`/`serial_println` (no están en el menú).
-- [ ] D3. Canciones con nombre de marca (Simpsons, Pink Panther, Pitufos, Zelda…): mostrar como acertijo, sin
+- [x] D3. Canciones con nombre de marca (Simpsons, Pink Panther, Pitufos, Zelda…): mostrar como acertijo, sin
       el nombre; la melodía no se toca.
 - [-] D4. Traducir lo que sigue en inglés: en espera (decisión del usuario).
 - [ ] D5 (revisar con el usuario): otros ejemplos que usan bloques fuera del menú (🎤 Canto, canción `TakeOnMe`

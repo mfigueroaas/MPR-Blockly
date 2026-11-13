@@ -30,11 +30,20 @@ Blockly.Blocks['RTTTL_music'] = {
 //  - RTTTL_music: canciones extranjeras de la librería PlayRtttl (TV/dibujos y Navidad; el nombre del tipo se
 //    mantiene para que sigan abriendo los ejemplos y programas guardados).
 // Primero las misteriosas propias de MPR (Blockly.MPR_CANCIONES_EXT_PROPIAS, en mpr_canciones.js), luego las de la librería.
+// MPR: (PLAN_PULIDO D3) las que llevan nombre de marca, serie o personaje se muestran como acertijo; el valor interno
+// (lo que se guarda en los .bloc y va al código) sigue siendo el nombre de la melodía en la librería.
 Blockly.MPR_CANCIONES_EXT = (Blockly.MPR_CANCIONES_EXT_PROPIAS || []).map(function(c) { return [c[0], c[1]]; }).concat([
-  ['Simpsons','Simpsons'],['Flinstones','Flinstones'],['Muppets','Muppets'],['PinkPanther','PinkPanther'],
-  ['Looney','Looney'],['Smurfs','Smurfs'],['Gadget','Gadget'],['A_Team','A_Team'],['Jeopardy','Jeopardy'],
-  ['JingleBell','JingleBell'],['Rudolph','Rudolph'],['SilentNight','SilentNight'],['WinterWonderland','WinterWonderland'],
-  ['WeWishYou','WeWishYou'],['OhDennenboom','OhDennenboom'],['LetItSnow','LetItSnow'],['Frosty','Frosty'],
+  ['Misteriosa: dibujo animado de una familia amarilla','Simpsons'],
+  ['Misteriosa: una familia de la edad de piedra','Flinstones'],
+  ['Misteriosa: show de títeres con una rana presentadora','Muppets'],
+  ['Misteriosa: un felino rosado muy elegante','PinkPanther'],
+  ['Misteriosa: dibujos animados de un conejo y su pandilla','Looney'],
+  ['Misteriosa: duendecitos azules con gorro blanco','Smurfs'],
+  ['Misteriosa: un inspector con un sombrero lleno de inventos','Gadget'],
+  ['Misteriosa: cuatro aventureros en un furgón negro','A_Team'],
+  ['Misteriosa: música para pensar en un concurso de la tele','Jeopardy'],
+  ['JingleBell','JingleBell'],['Misteriosa: un reno con la nariz roja','Rudolph'],['SilentNight','SilentNight'],['WinterWonderland','WinterWonderland'],
+  ['WeWishYou','WeWishYou'],['OhDennenboom','OhDennenboom'],['LetItSnow','LetItSnow'],['Misteriosa: un muñeco de nieve que cobra vida','Frosty'],
   ['LastChristmas','LastChristmas'],['AllIWant','AllIWant'],['Short','Short']
 ]);
 

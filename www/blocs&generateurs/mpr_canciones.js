@@ -85,7 +85,8 @@ Blockly.MPR_CANCIONES = [
 Blockly.MPR_CANCIONES_EXT_PROPIAS = [
 	// Saria's Song / Lost Woods (The Legend of Zelda), notas entregadas por el usuario (2026-11-11); 84 notas, ritmo de
 	// la melodía conocida. Validada con tools/rtttl/partitura_a_rtttl.py validar (27,6 s, de D5 a F6).
-	["Misteriosa: melodía del bosque perdido", "MPR_Bosque", "Canción del bosque perdido (Saria's Song, The Legend of Zelda)", [
+	// MPR: (PLAN_PULIDO D3) la revelación no nombra el juego ni el personaje (marca comercial): queda como acertijo.
+	["Misteriosa: melodía del bosque perdido", "MPR_Bosque", "la canción de una amiga del bosque perdido, en un videojuego de aventuras con un héroe vestido de verde", [
 		["MPR_BosqueE1", "Bosque:d=8,o=5,b=140:f,a,4b,f,a,4b,f,a,b,e6,4d6,b,c6,b,g,2e.,d,e,g,2e.,f,a,4b,f,a,4b,f,a,b,e6,4d6,b,c6,e6,b,2g.,b,g,d,2e.,d,e,4f,g,a,4b,c6,b,2e.,d,e,4f,g,a,4b,c6,d6,2e6,d,e,4f,g,a,4b,c6,b,2e.,16f,16e,16g,16f,16a,16g,16b,16a,16c6,16b,16d6,16c6,16e6,16d6,4f6,4d6,2e.6"],
 	]],
 ];
