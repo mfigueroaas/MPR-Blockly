@@ -75,3 +75,13 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [ ] E4. Versión 1.5.1 en `package.json` antes del próximo instalador.
 - [x] E5. Actualizar `DOCUMENTACION_TECNICA.md` (secciones 7, 10 y 13 hablan de 1.2.0/1.4.x) y `CLAUDE.md`
       (`C:mprbp` → `C:\mprbp`).
+
+## F. Librería Otto nueva (`LIB_OTTO_NUEVA.zip`, pedido del usuario del 2026-11-13)
+Versión editada por otra persona (README en `compilation/arduino/userlibs/libraries/Otto/README_LIB_NUEVA.md`): freno
+adaptativo con pilas bajas, `_moveServos` reescrito (suave, por trozos, 150°/s), piso de periodo en las marchas, `home()`
+en dos fases, conexión escalonada de servos.
+- [x] F1. Integrar `Otto.cpp`/`Otto.h` del paquete (con 3 ajustes MPR), ejemplos y README; nombres de la librería
+      reservados en el generador. **Vuelve `OTTO_DIFF_LIMIT_DEFAULT` = 3 (era 240)**: probar el largo del paso en el robot.
+- [ ] F2. Alinear el simulador ("Probar en pantalla", `www/js/mpr_otto_lib.js`) con la librería nueva.
+- [ ] F3. Actualizar `DOCUMENTACION_TECNICA.md` 5.5, `ANALISIS_SERVOS.md`, y la regla de `CLAUDE.md`/`LEEME_MPR.md`.
+- [ ] F4. Probar con el robot (USB y pilas): `examples/OttoValidacionFinal`, ejemplos MPR, calibración (ver BITACORA).

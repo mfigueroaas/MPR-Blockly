@@ -12,6 +12,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — F1: librería Otto nueva integrada (LIB_OTTO_NUEVA.zip)
+- **Pedido:** "implementar todo lo que sale en esta librería en la versión actual" (archivo `LIB_OTTO_NUEVA.zip`, editado por otra persona, con documentación).
+- **Paquete:** SHA‑256 de `Otto.cpp`/`Otto.h` coinciden con `SHA256SUMS.txt`; `CAMBIOS.diff` parte de nuestro commit `9951584` (parche MPR nov-2025) y no incluye `8a7f619` ni `ce27643`. Solo se reemplazan `Otto.cpp` y `Otto.h`; el resto de la librería (Oscillator de MPR incluido) se conserva.
+- **Qué cambia en el robot (según el README y la revisión):** gestos y "mover piernas" suaves, por trozos, los 4 servos a la vez (máx. 150°/s en total); con pilas bajas se mueve más lento en vez de reiniciarse (freno adaptativo, `OTTO_BRAKE_VMIN_ABS` depende del chip); periodo mínimo en las marchas (solo cambia Rápido + Grande: 1500 → 2000); `home()` en dos fases (~600 ms); servos conectados escalonados (~1,2 s al encender); `shakeLeg` apoyo 58 → 55. La librería no abre el puerto serie (antes tampoco lo hacía en MPR).
+- **Ojo — `OTTO_DIFF_LIMIT_DEFAULT` vuelve de 240 a 3** (el autor midió todo con 3): reaparece el recorte de pasos que `ce27643` quería quitar (caminar a T=1500 hace ~18 de 30°). Para volver: `#define OTTO_DIFF_LIMIT_DEFAULT 240` en `Otto.h`. Decidir con el robot.
+- **Ajustes MPR sobre el paquete (marcados `// MPR:`):** los trims se leen antes de conectar los servos; si `_moveServos` no tiene recorrido reenvía la posición (si no, la orden T de la calibración no mostraba el ajuste y el arranque quedaba sin trim); comentario sobre DIFF_LIMIT. Se pierde el límite 0..180 de `_moveSingle` (ningún bloque visible lo usa).
+- **Generador:** `www/js/generate_cpp.js` reserva los nombres de la librería (`smile`, `heart`, `wave`, `zero`…`nine`, `S_*`, `note_*`, `Otto`, `Buzzer`…): una variable "smile" del alumno pasa a `smile2`.
+- **Archivos:** `compilation/arduino/userlibs/libraries/Otto/Otto.cpp`, `Otto.h`, `README_LIB_NUEVA.md`, `CAMBIOS.diff`, `examples/OttoDiagnostico/`, `examples/OttoValidacionFinal/`; `www/js/generate_cpp.js`; `PLAN_PULIDO.md` (bloque F). Hecho por un subagente; revisado por el coordinador.
+- **Probado:** compilado contra la librería del repo (subagente, con `-v` para confirmar cuál usaba): ejemplos MPR, una muestra por familia de bloques Otto, calibración y los ejemplos del paquete; +2,5 KB de flash y +27 B de RAM (cerro: 7.916 → 10.428 B). En la app: variable "smile" → `smile2`. **Falta:** probar en el robot (F4) y alinear el simulador (F2).
+
 ### 2026-11-13 — A9 y A10: arreglos menores de bloques
 - **Pedido:** plan de pulido, puntos A9 y A10.
 - **Qué se hizo:**

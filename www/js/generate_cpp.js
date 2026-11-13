@@ -7,7 +7,29 @@ goog.require('Blockly.StaticTyping');
 Blockly.Arduino = new Blockly.Generator('Arduino');
 Blockly.Arduino.StaticTyping = new Blockly.StaticTyping();
 Blockly.Arduino.addReservedWords('Blockly,setup,loop,if,else,for,switch,case,while,do,break,continue,return,goto,define,include,HIGH,LOW,INPUT,OUTPUT,INPUT_PULLUP,true,false,integer,constants,floating,point,void,boolean,char,unsigned,byte,int,word,long,float,double,string,String,array,static,volatile,const,sizeof,pinMode,digitalWrite,digitalRead,analogReference,analogRead,analogWrite,tone,noTone,shiftOut,shitIn,pulseIn,millis,micros,delay,delayMicroseconds,min,max,abs,constrain,map,pow,sqrt,sin,cos,tan,randomSeed,random,detachInterrupt,interrupts,noInterrupts');
-Blockly.Arduino.ORDER_ATOMIC = 0;         // 0 "" ...
+// MPR: nombres que la librería Otto define como macros (#define) o como objetos globales del programa. Si un niño llama
+// así a una variable, el programa declaraba "long smile;" y no compilaba (README de la librería nueva, sección 10).
+// Reservados, Blockly renombra la variable en C++ (smile -> smile2). Distingue mayúsculas, como C++.
+Blockly.Arduino.addReservedWords(
+  // Otto_mouths.h
+  'zero,one,two,three,four,five,six,seven,eight,nine,smile,happyOpen,happyClosed,heart,bigSurprise,smallSurprise,' +
+  'tongueOut,vamp1,vamp2,lineMouth,confused,diagonal,sad,sadOpen,sadClosed,okMouth,xMouth,interrogation,thunder,' +
+  'culito,angry,' +
+  // Otto_gestures.h
+  'adivinawi,wave,otto,dreamMouth,littleUuh,OttoHappy,OttoSuperHappy,OttoSad,OttoSleeping,OttoFart,OttoConfused,' +
+  'OttoLove,OttoAngry,OttoFretful,OttoMagic,OttoWave,OttoVictory,OttoFail,' +
+  // Otto_sounds.h (canciones; las notas note_XX se agregan abajo)
+  'S_connection,S_disconnection,S_buttonPushed,S_mode1,S_mode2,S_mode3,S_surprise,S_OhOoh,S_OhOoh2,S_cuddly,' +
+  'S_sleeping,S_happy,S_superHappy,S_happy_short,S_sad,S_confused,S_fart1,S_fart2,S_fart3,' +
+  // Otto.h, Oscillator.h y lo que define el bloque Configuración Otto (ottoesp.js)
+  'FORWARD,BACKWARD,LEFT,RIGHT,SMALL,MEDIUM,BIG,SERVO_LIMIT_DEFAULT,DEG2RAD,Otto,Oscillator,Servo,EEPROM,Otto_Matrix,' +
+  'LeftLeg,RightLeg,LeftFoot,RightFoot,Buzzer,buzzer,Otto_moveLegs');
+(function() {
+  var notas = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'], lista = [];
+  for (var i = 0; i < notas.length; i++) for (var o = 0; o <= 8; o++) lista.push('note_' + notas[i] + o);
+  Blockly.Arduino.addReservedWords(lista.join(','));
+})();
+Blockly.Arduino.ORDER_ATOMIC = 0;        // 0 "" ...
 Blockly.Arduino.ORDER_UNARY_POSTFIX = 1;  // expr++ expr-- () [] .
 Blockly.Arduino.ORDER_UNARY_PREFIX = 2;   // -expr !expr ~expr ++expr --expr
 Blockly.Arduino.ORDER_MULTIPLICATIVE = 3; // * / % ~/
