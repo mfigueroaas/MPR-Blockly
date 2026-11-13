@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Versión 1.5.1 e instalador para validar
+- **Pedido:** generar el instalador nuevo para que lo valide otra persona.
+- **Qué se hizo:** `package.json` 1.5.0 → 1.5.1 (PLAN_PULIDO E4). Se descargó el instalador oficial `ottoblockly.Setup.1.5.0.exe` de GitHub (SHA‑256 `3c495447…` correcto), se borró a mano `C:\mprb\stage` (quedaba de pruebas anteriores) y `py tools/build_installer.py --official …` generó `dist\MPR_Blockly_Setup_1.5.1.exe` (139.040.370 bytes, SHA‑256 `7abff63219f7adf7a4fb6b8923fdd057b76d88599818364e34fa4b0de807e004`, versión 1.5.1.0 en el .exe, sin firma).
+- **Comprobado:** en la carpeta armada, `Otto.cpp`/`Otto.h` (iguales al paquete), `examples.json`, `blocklino.js`, `mpr_otto3d.js`, `mpr_simulador.js`, `mpr_otto_lib.js`, `mpr_subida.js`, `generate_cpp.js`, `msg_es.js`, el menú, el logo y `electronApp.js` son idénticos a los del repositorio. Se cuela `www/media/Thumbs.db` (está en el disco aunque ya no en git; inofensivo).
+- **Archivos:** `package.json`, `DOCUMENTACION_TECNICA.md` (7.4 y 13.1), `PLAN_PULIDO.md`.
+- **Probado:** el instalador todavía no se ha ejecutado; lo validará otra persona.
+
 ### 2026-11-13 — Se oculta el ejemplo "🎼 Ring Tone sounds"
 - **Pedido:** "ese ejemplo de ring tone, si tiene bloques que no se pueden usar, sácalo".
 - **Causa:** `RTTL.xml` es para ESP8266 (pin D5) y usa `buzzer_music`, que no está en el menú; además mostraba "Gadget".

@@ -72,7 +72,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [-] E1. Respaldo en GitHub: en espera de decisión (requiere `gh auth login`).
 - [-] E2. Quitar librerías Arduino sobrantes (~51 MB menos en el instalador): en espera de decisión.
 - [x] E3. Sacar `www/media/Thumbs.db` de git.
-- [ ] E4. Versión 1.5.1 en `package.json` antes del próximo instalador.
+- [x] E4. Versión 1.5.1 en `package.json` antes del próximo instalador.
 - [x] E5. Actualizar `DOCUMENTACION_TECNICA.md` (secciones 7, 10 y 13 hablan de 1.2.0/1.4.x) y `CLAUDE.md`
       (`C:mprbp` → `C:\mprbp`).
 
