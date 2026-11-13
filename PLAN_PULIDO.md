@@ -32,7 +32,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [x] A6. "Esperar" en segundos se desborda desde 33 s (`int` de 16 bits); "cada X" arma el nombre de su
       variable con el valor (con 0.5 no compila; dos bloques iguales comparten temporizador).
 - [x] A7. Ultrasonido sin límite de espera: sin eco cada lectura tarda 1 s y devuelve 0 cm ("cerca").
-- [ ] A8. Bloques de sonido sin "Configuración Otto": la revisión previa no lo detecta (`mpr_revision.js`).
+- [x] A8. Bloques de sonido sin "Configuración Otto": la revisión previa no lo detecta (`mpr_revision.js`).
 - [ ] A9 (menores, librería Otto): `bendTones` puede no terminar; `_tone` con duración negativa.
 - [ ] A10 (menores): "y"/"o" generan `&`/`|`; "es primo" genera JavaScript; sin `randomSeed`; RTTTL
       personalizado arma un nombre inválido; dos sensores (#1/#2) redefinen la función; `otto_movelegs`.

@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — A8: Otto avisa si faltan la Configuración Otto para los sonidos
+- **Pedido:** plan de pulido, punto A8.
+- **Causa:** "reproducir nota", "tono" y "silencio" (`play`, `tone`, `notone`) usan la variable `buzzer` de Configuración Otto, pero la revisión previa solo vigilaba los bloques `otto_*`: sin Configuración Otto el programa fallaba al compilar con el error genérico B6.
+- **Qué se hizo:** `MPRRevision.USA_ZUMBADOR`; si hay alguno de esos bloques y no está Configuración Otto (ni el bloque antiguo `buzzer_init`, que usa el ejemplo Canto), Otto lo dice antes de compilar con el mismo aviso de "falta Configuración Otto" (y lo pone él si está activado).
+- **Archivos:** `www/js/mpr_revision.js`, `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`, DevTools, `MPRRevision.buscar`): "tono" sin configuración → aviso `sin_config_otto` marcando el bloque; con Configuración Otto o con `buzzer_init` → sin problemas.
+
 ### 2026-11-13 — A7: el sensor de distancia sin eco ya no dice "cerca"
 - **Pedido:** plan de pulido, punto A7.
 - **Causa:** `pulseIn(eco, HIGH)` sin límite: si no llega el eco (sensor flojo, o sin corriente cuando Otto va solo con el USB) cada lectura esperaba 1 s y devolvía 0 cm, así que "si distancia < 20" se cumplía y Otto retrocedía solo.

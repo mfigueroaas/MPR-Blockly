@@ -14,6 +14,8 @@ var MPRRevision = {
 	CONFIG_SENSOR: '<block type="ultrasonic_sensor"><field name="US_NUMBER">1</field><field name="PIN_TRIG">8</field><field name="PIN_ECHO">9</field></block>',
 	// bloques que usan la librería Otto (necesitan Configuración Otto)
 	USA_OTTO: /^otto_(?!configuration$)/,
+	// bloques del Zumbador que usan la variable "buzzer" de Configuración Otto (los de canciones llevan su pin)
+	USA_ZUMBADOR: { play: 1, tone: 1, notone: 1 },
 	// bloques que no hacen nada en Otto (configuraciones): un programa solo con ellos "no le pide nada"
 	SOLO_CONFIG: { otto_configuration: 1, ultrasonic_sensor: 1, buzzer_init: 1, serial_init: 1, otto_calibration: 1 },
 	// entradas que pueden quedar vacías sin error
@@ -139,6 +141,12 @@ MPRRevision.buscar = function() {
 	var usaOtto = hay(function(b) { return self.USA_OTTO.test(b.type); });
 	if (usaOtto.length && !existe('otto_configuration')) {
 		return { id: 'sin_config_otto', grave: true, bloques: usaOtto.slice(0, 1), texto: m('rev_sin_config_otto'), arreglo: self.ponerConfigOtto, accion: m('rev_ponerla') };
+	}
+	// MPR (PLAN_PULIDO A8): "reproducir nota", "tono" y "silencio" del Zumbador usan el zumbador que define
+	// Configuración Otto (o el bloque antiguo buzzer_init); sin él el programa no compila (B6)
+	var usaZumbador = hay(function(b) { return self.USA_ZUMBADOR[b.type]; });
+	if (usaZumbador.length && !existe('otto_configuration') && !existe('buzzer_init')) {
+		return { id: 'sin_config_otto', grave: true, bloques: usaZumbador.slice(0, 1), texto: m('rev_sin_config_otto'), arreglo: self.ponerConfigOtto, accion: m('rev_ponerla') };
 	}
 	var sensor = hay(function(b) { return b.type == 'ultrasonic_distance'; });
 	if (sensor.length && !existe('ultrasonic_sensor')) {
