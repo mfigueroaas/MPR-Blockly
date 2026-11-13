@@ -44,7 +44,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [x] B4. Abrir un `.bloc` dañado puede borrar la mesa sin aviso (`blocklino.js`).
 - [x] B5. Soltar un archivo sobre la ventana navega fuera de la app (`electronApp.js`).
 - [x] B6. Volver a abrir el mismo archivo no hace nada (el `<input>` no se vacía).
-- [ ] B7 (menores): `#` en el nombre del `.bloc`; `.ino`/`.py` por argumento; `openExternal` solo http(s);
+- [x] B7 (menores, hecho salvo el error rojo de typing.js, que no afecta): `#` en el nombre del `.bloc`; `.ino`/`.py` por argumento; `openExternal` solo http(s);
       doble apertura rápida del escenario; error rojo de `typing.js:95` (no afecta el código generado).
 
 ## C. Rendimiento sin perder calidad (medir antes y después en la app con `tools/medir_app.mjs`)
@@ -57,7 +57,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
       al limpiar `%TEMP%`.
 - [x] C6. No recompilar si el programa y la placa no cambiaron (~10 s por reenvío).
 - [x] C7. La vista de código se regenera con eventos de interfaz: ignorarlos.
-- [ ] C8 (menores): `webglcontextlost` sin manejo; `getBoundingClientRect` en cada `mousemove`; JS que no se usa.
+- [~] C8 (menores: hecho `webglcontextlost`; falta forzarlo en la app; el resto no vale la pena): `webglcontextlost` sin manejo; `getBoundingClientRect` en cada `mousemove`; JS que no se usa.
 
 ## D. Textos (parcial, según la decisión del usuario)
 - [x] D1. Tutear siempre (tooltips y mensajes que dicen "Escriba", "Especifique", "Verifique", "Está seguro"…).
@@ -85,3 +85,17 @@ en dos fases, conexión escalonada de servos.
 - [x] F2. Alinear el simulador ("Probar en pantalla", `www/js/mpr_otto_lib.js`) con la librería nueva.
 - [x] F3. Actualizar `DOCUMENTACION_TECNICA.md` 5.5, `ANALISIS_SERVOS.md`, y la regla de `CLAUDE.md`/`LEEME_MPR.md`.
 - [ ] F4. Probar con el robot (USB y pilas): `examples/OttoValidacionFinal`, ejemplos MPR, calibración (ver BITACORA).
+
+## Estado al 2026-11-13 (fin de la sesión)
+Hecho, probado en la app (copia `C:mprbp`) y **instalado en `C:MPRBlockly`** con `py tools/probar.py`: A1–A10, B1–B7,
+C1–C4, C6–C8, D1–D3, E3, E5, F1–F3. Detalle y pruebas de cada punto en `BITACORA.md`.
+
+Pendiente:
+- **Con el robot (F4 y otros):** subir `examples/OttoValidacionFinal` (USB y pilas); ejemplos MPR (largo del paso con
+  DIFF_LIMIT 3: si se ve corto, decidir volver a 240 — pero Otto.cpp/.h deben quedar iguales al paquete, ver
+  `CLAUDE.md`); calibración (el trim se aplica al instante); Detener durante "Cargando…" sin que quede avrdude;
+  cerrar la calibración mientras sube; mandar dos veces el mismo programa (la 2.ª sin compilar); sensor sin eco.
+- **Decisiones del usuario:** E1 (GitHub), E2 (librerías sobrantes, ~51 MB), 31 Minutos y villancicos pop, D5 (ejemplos
+  fuera del menú: Canto, "Biped random dancer" con TakeOnMe, "Ring Tone sounds" para ESP8266 con "Gadget" a la vista).
+- **Antes del próximo instalador:** E4 (versión 1.5.1), C5 (caché del core en el instalador).
+- C8: forzar la pérdida de contexto WebGL en la app; medir con `--disable-gpu` y en un PC del colegio.
