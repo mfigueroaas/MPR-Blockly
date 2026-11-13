@@ -106,13 +106,17 @@ function createWindow () {
 		mainWindow = null
 	})
 }
+// MPR: Monitor Serie (modo monitor, Ctrl + Mayús + M). Ya no es modal: el monitor puede cambiar bloques y subir con
+// la ventana abierta (antes de subir, la página la cierra con "cerrar-term" para soltar el puerto). Una sola a la vez.
 function createTerm() {
-	termWindow = new BrowserWindow({width: 640, height: 560, 'parent': mainWindow, resizable: false, movable: true, frame: false, modal: true, icon: APP_ICON})
+	if (termWindow && !termWindow.isDestroyed()) { termWindow.show(); termWindow.focus(); return }
+	termWindow = new BrowserWindow({width: 640, height: 560, 'parent': mainWindow, resizable: false, movable: true, frame: false, modal: false, icon: APP_ICON, title: 'Monitor Serie'})
 	termWindow.loadURL("file://" + path.join(APP_ROOT, "www/term.html"))
 	termWindow.setMenu(null)
 	protectNavigation(termWindow)
+	var esta = termWindow
 	termWindow.on('closed', function () {
-		termWindow = null
+		if (termWindow === esta) termWindow = null
 	})
 }
 function createRepl() {
@@ -177,6 +181,18 @@ ipcMain.on("version", function () {
 })
 ipcMain.on("prompt", function () {
 	createTerm()
+})
+// MPR: antes de subir (o de averiguar la placa), la página cierra el Monitor Serie para que suelte el puerto: con él
+// abierto, avrdude no podía abrir el COM (código P3). Responde "term-cerrado" con true si estaba abierto, un momento
+// después de que la ventana se cerró (el controlador USB tarda un poco en liberar el puerto).
+ipcMain.on("cerrar-term", function (event) {
+	var w = termWindow, quien = event.sender
+	var responder = function (estaba) {
+		if (!quien.isDestroyed()) quien.send('term-cerrado', estaba)
+	}
+	if (!w || w.isDestroyed()) { responder(false); return }
+	w.once('closed', function () { setTimeout(function () { responder(true) }, 400) })
+	w.close()
 })
 ipcMain.on("repl", function () {
 	createRepl()

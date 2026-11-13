@@ -620,6 +620,8 @@ BlocklyDuino.buildToolbox = function() {
 	var xmlValue = '<xml id="toolbox">';
 	var xmlids = loadIds.split(",");
 	for (var i = 0; i < xmlids.length; i++) {
+		// MPR: la categoría del modo monitor nunca sale de la lista guardada (toolboxids): solo se agrega abajo
+		if (xmlids[i] == 'CAT_MPR_MONITOR') continue;
 		if ($('#'+xmlids[i]).length) {
 			xmlValue += $('#'+xmlids[i])[0].outerHTML;
 		}
@@ -628,8 +630,18 @@ BlocklyDuino.buildToolbox = function() {
 			xmlValue += $('#CAT_SENSORES_EXTRA')[0].outerHTML;
 		}
 	}
+	// MPR: categoría "🛠️ Monitor", al final del menú, solo con el modo monitor activo (Ctrl + Mayús + M, js/mpr_monitor.js).
+	// Se lee de sessionStorage aquí mismo porque el menú se arma al abrir, antes que mpr_monitor.js haga nada: así sigue
+	// tras F5 y vuelve apagado al reabrir la app.
+	if (BlocklyDuino.modoMonitor() && $('#CAT_MPR_MONITOR').length) {
+		xmlValue += $('#CAT_MPR_MONITOR')[0].outerHTML;
+	}
 	xmlValue += '</xml>';
 	return xmlValue;
+};
+// MPR: modo monitor activo en esta ventana (sessionStorage mpr_modo_monitor = "1"; lo cambia js/mpr_monitor.js)
+BlocklyDuino.modoMonitor = function() {
+	try { return window.sessionStorage.getItem('mpr_modo_monitor') == '1'; } catch (e) { return false; }
 };
 
 

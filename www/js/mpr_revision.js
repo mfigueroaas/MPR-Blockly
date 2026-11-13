@@ -18,8 +18,9 @@ var MPRRevision = {
 	USA_ZUMBADOR: { play: 1, tone: 1, notone: 1 },
 	// bloques que no hacen nada en Otto (configuraciones): un programa solo con ellos "no le pide nada"
 	SOLO_CONFIG: { otto_configuration: 1, ultrasonic_sensor: 1, buzzer_init: 1, serial_init: 1, otto_calibration: 1 },
-	// entradas que pueden quedar vacías sin error
-	VACIO_OK: { serial_print: 1, serial_println: 1, procedures_ifreturn: 1 },
+	// entradas que pueden quedar vacías sin error (MPR: text_join, de la categoría 🛠️ Monitor, pone "" en un hueco
+	// vacío y compila igual; "📟 mostrar" sí se marca: sin valor mostraría un 0 que confunde)
+	VACIO_OK: { serial_print: 1, serial_println: 1, procedures_ifreturn: 1, text_join: 1 },
 	// Otto pone los bloques que faltan él mismo ("Ponlo tú, Otto"). Apagado por defecto: Otto explica qué falta y
 	// dónde buscarlo, y el niño lo pone. Ctrl + Mayús + P lo enciende o lo apaga (no se guarda: al abrir la app vuelve
 	// a estar apagado).

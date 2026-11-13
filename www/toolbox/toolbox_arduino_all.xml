@@ -1150,4 +1150,35 @@
 			</block>
 		</category>
 
+	<!-- MPR: categoría del modo monitor (Ctrl + Mayús + M, js/mpr_monitor.js). No va en defaultCategories1: blocklino.js
+	     (buildToolbox) la agrega al final del menú solo con el modo activo. Sin comentarios dentro de los <block>. -->
+	<category name="CAT_MPR_MONITOR" colour="#0060aa">
+		<label text="Mostrar en el Monitor Serie"></label>
+		<block type="serial_init"><field name="PINBAUDIOS">9600</field></block>
+		<block type="mpr_mostrar">
+			<field name="NOMBRE">distancia</field>
+			<value name="VALOR"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+		</block>
+		<block type="serial_println">
+			<value name="CONTENT"><shadow type="text"><field name="TEXT">Hola</field></shadow></value>
+		</block>
+		<block type="serial_print">
+			<value name="CONTENT"><shadow type="text"><field name="TEXT">Hola</field></shadow></value>
+		</block>
+		<block type="text"><field name="TEXT">Hola</field></block>
+		<block type="text_join">
+			<value name="ADD0"><shadow type="text"><field name="TEXT">Otto: </field></shadow></value>
+			<value name="ADD1"><shadow type="text"><field name="TEXT">listo</field></shadow></value>
+		</block>
+		<label text="Medir"></label>
+		<block type="mpr_bateria"></block>
+		<block type="millis"><field name="unite">m</field></block>
+		<block type="inout_digital_read"><field name="PIN">10</field></block>
+		<block type="inout_analog_read"><field name="broche">A0</field></block>
+		<label text="Recibir órdenes del Monitor Serie"></label>
+		<block type="serial_available"></block>
+		<block type="serial_read_number"><field name="LOGIC">TRUE</field></block>
+		<block type="serial_read_string"><field name="LOGIC">TRUE</field></block>
+	</category>
+
 </toolbox>

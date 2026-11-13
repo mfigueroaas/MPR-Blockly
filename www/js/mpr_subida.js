@@ -483,7 +483,7 @@ MPRSubida.terminar = function() {
 // ---------------------------------------------------------------- subir (flecha naranja)
 // alTerminar(ok), opcional: la usa la calibración (js/mpr_calibracion.js) para seguir cuando el programa ya está en Otto
 MPRSubida.cargar = function(codigo, alTerminar) {
-	var self = MPRSubida, subio = false;
+	var self = MPRSubida, subio = false, monitorAbierto = false;
 	if (self.ocupada) { if (alTerminar) alTerminar(false); return; }
 	var com = self.o.portserie.value, carte = localStorage.getItem('card');
 	if (com == 'com') {
@@ -495,6 +495,9 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	self.cancelada = null;
 	localStorage.setItem('verif', false);
 	var esperando = self.precompilando;
+	// MPR: el Monitor Serie (modo monitor) tiene tomado el puerto: se cierra ya, mientras se compila, y la placa se
+	// averigua cuando lo soltó. Si estaba abierto, se vuelve a abrir después de una subida buena.
+	var monitor = self.cerrarMonitor().then(function(estaba) { monitorAbierto = estaba; });
 	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0), 'compila');
 	Promise.race([esperando || Promise.resolve(), self.esperarCancelar()]).then(function() {
 		if (self.cancelada) return [{ ok: false, texto: 'detenido' }, {}];
@@ -503,7 +506,7 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 		// sigue ahí, no se vuelve a compilar (PLAN_PULIDO C6; antes solo justo después de Verificar)
 		if (self.compiladoVigente(fqbn, codigo)) compilacion = Promise.resolve({ ok: true, saltada: true });
 		else compilacion = self.compilar(fqbn, false, codigo);   // escribe sketch.ino cuando le toca
-		return Promise.all([compilacion, self.averiguarPlaca(com)]);
+		return Promise.all([compilacion, monitor.then(function() { return self.averiguarPlaca(com); })]);
 	}).then(function(r) {
 		var comp = r[0], prueba = r[1];
 		if (!comp.ok) { self.mostrarError('compila', comp.texto); return; }
@@ -531,7 +534,28 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	}).then(function() {
 		self.terminar();
 		if (alTerminar) { try { alTerminar(subio, com); } catch (e) { console.log(e); } }
+		// la calibración (alTerminar) abre el puerto ella misma: ahí el monitor no se reabre
+		else if (subio && monitorAbierto) self.abrirMonitor();
 	});
+};
+
+// ---------------------------------------------------------------- Monitor Serie (modo monitor)
+// Pide a electronApp.js que cierre la ventana del Monitor Serie (term.html) y espera a que suelte el puerto. Resuelve
+// true si estaba abierta. Sin Electron, o si no responde en 3 s, sigue igual (false).
+MPRSubida.cerrarMonitor = function() {
+	return new Promise(function(listo) {
+		var ipc = null;
+		try { ipc = require('electron').ipcRenderer; } catch (e) {}
+		if (!ipc) { listo(false); return; }
+		var t, alResponder = function(ev, estaba) { clearTimeout(t); listo(!!estaba); };
+		ipc.once('term-cerrado', alResponder);
+		t = setTimeout(function() { ipc.removeListener('term-cerrado', alResponder); listo(false); }, 3000);
+		ipc.send('cerrar-term');
+	});
+};
+
+MPRSubida.abrirMonitor = function() {
+	try { require('electron').ipcRenderer.send('prompt'); } catch (e) { console.log(e); }
 };
 
 // ---------------------------------------------------------------- precompilar al abrir

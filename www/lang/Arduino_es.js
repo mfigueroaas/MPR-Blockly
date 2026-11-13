@@ -56,6 +56,8 @@ Blockly.Msg.CAT_servo360 = "💿 Servo 360°";
 Blockly.Msg.CAT_actionneur = "⚙️ Motor";
 Blockly.Msg.CAT_ARDUINO_moteur="⚙️ Motor paso";
 Blockly.Msg.CAT_ultrason = "👂 Sensores";
+// MPR: categoría del modo monitor (Ctrl + Mayús + M, js/mpr_monitor.js)
+Blockly.Msg.CAT_MPR_MONITOR = "🛠️ Monitor";
 Blockly.Msg.CAT_SENSORS = "👂 Sensores";
 Blockly.Msg.CAT_SENSORES_EXTRA = "👂 Sensores extra";
 Blockly.Msg.CAT_numerique = "0️⃣ Digital";
@@ -306,19 +308,25 @@ Blockly.Msg.SSERIAL_ReadString="SoftwareSerial Leer como String";
 Blockly.Msg.SSERIAL_Readlf="hasta el salto de línea";
 
 // SERIAL 
-Blockly.Msg.SERIAL_Init="Ini Serial ";
+// MPR: textos claros para la categoría 🛠️ Monitor (modo monitor); el bloque antepone "Configuración"
+Blockly.Msg.SERIAL_Init=" del Monitor Serie";
 Blockly.Msg.SERIAL_TX="Pin TX#";
 Blockly.Msg.SERIAL_RX="Pin RX#";
 Blockly.Msg.SERIAL_BAUD="Baudios";
 Blockly.Msg.SERIAL_Read="Serial  Read byte";
-Blockly.Msg.SERIAL_Println="Serial Imprimir en una nueva linea";
-Blockly.Msg.SERIAL_Print="Serial Imprimir en la misma linea";
+Blockly.Msg.SERIAL_Println="Monitor Serie: escribir y pasar de línea";
+Blockly.Msg.SERIAL_Print="Monitor Serie: escribir (sigue en la misma línea)";
 Blockly.Msg.SERIAL_Write="Serial escribir"
-Blockly.Msg.SERIAL_Avai="Serial disponible?";
+Blockly.Msg.SERIAL_Avai="¿llegó algo del Monitor Serie?";
 Blockly.Msg.Serial_Print_Format="Serial Imprimir en formato";
-Blockly.Msg.SERIAL_ReadNum="Serial Leer como número";
-Blockly.Msg.SERIAL_ReadString="Serial Leer como String";
+Blockly.Msg.SERIAL_ReadNum="número que llegó del Monitor Serie";
+Blockly.Msg.SERIAL_ReadString="texto que llegó del Monitor Serie";
 Blockly.Msg.SERIAL_Readlf="hasta el salto de línea";
+// MPR: bloques nuevos del modo monitor (blocs&generateurs/mpr_monitor_bloques.js)
+Blockly.Msg.MPR_MOSTRAR = "📟 mostrar";
+Blockly.Msg.MPR_MOSTRAR_TOOLTIP = "Escribe en el Monitor Serie el nombre y el valor (número, texto o verdadero/falso) en una línea. Si el programa no tiene «Configuración del Monitor Serie», usa 9600 baudios.";
+Blockly.Msg.MPR_BATERIA = "🔋 batería (mV)";
+Blockly.Msg.MPR_BATERIA_TOOLTIP = "Tensión con que funciona el Nano, en milivoltios (5000 = 5 V). Con pilas cansadas baja de unos 4500 y Otto se puede reiniciar. Es aproximada (±10 %).";
 
 
 //Pantalla LCD

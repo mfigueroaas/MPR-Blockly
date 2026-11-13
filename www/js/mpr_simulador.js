@@ -75,7 +75,7 @@ MPRSimulador.crearUI = function() {
 			'<button type="button" id="mpr_esc_cerrar" title="' + m('sim_cerrar', 'Cerrar') + '">✕</button>' +
 		'</div>' +
 		'<div id="mpr_esc_vista">' +
-			'<div id="mpr_esc_distancia"></div><div id="mpr_esc_aviso"></div><div id="mpr_esc_estado"></div>' +
+			'<div id="mpr_esc_distancia"></div><div id="mpr_esc_aviso"></div><div id="mpr_esc_estado"></div><div id="mpr_esc_serie"></div>' +
 			'<div id="mpr_esc_camara">' +
 				'<button type="button" data-cam="izq" title="' + m('sim_cam_izq', 'Girar la vista a la izquierda') + '">↺</button>' +
 				'<button type="button" data-cam="der" title="' + m('sim_cam_der', 'Girar la vista a la derecha') + '">↻</button>' +
@@ -781,6 +781,7 @@ MPRSimulador.probar = function() {
 	self.aviso(typeof MPRRevision != 'undefined' ? MPRRevision.avisoSimulador() : '', 10000);
 	self.audio.despertar();
 	self.reiniciarPose();
+	self.limpiarSerie();
 	var c = self.corrida = { id: ++self.n, detenida: false, pendientes: [], vars: {}, inicio: performance.now(), pasos: 0, avisados: {}, temporizadores: {}, profundidad: 0 };
 	c.funciones = {};
 	BlocklyDuino.workspace.getTopBlocks(false).forEach(function(b) {
@@ -1040,8 +1041,14 @@ MPRSimulador.SENTENCIAS = {
 	},
 	notone: async function() { MPRSimulador.audio.silencio(); },
 	beep: async function() { MPRSimulador.audio.tono(440, 1000); await MPRSimulador.esperar(1000); },
-	serial_print: async function(b) { MPRSimulador.escribir(await MPRSimulador.entrada(b, 'CONTENT', '')); },
-	serial_println: async function(b) { MPRSimulador.escribir(await MPRSimulador.entrada(b, 'CONTENT', '')); },
+	serial_print: async function(b) { MPRSimulador.escribir(await MPRSimulador.entrada(b, 'CONTENT', ''), false); },
+	serial_println: async function(b) { MPRSimulador.escribir(await MPRSimulador.entrada(b, 'CONTENT', ''), true); },
+	// MPR: "📟 mostrar nombre = valor" del modo monitor (blocs&generateurs/mpr_monitor_bloques.js), como en el robot
+	mpr_mostrar: async function(b) {
+		var S = MPRSimulador, v = await S.entrada(b, 'VALOR', 0);
+		var palabras = Blockly.Arduino && Blockly.Arduino.mprEsLogico ? Blockly.Arduino.mprEsLogico(b.getInputTargetBlock('VALOR')) : false;
+		S.escribir((b.getFieldValue('NOMBRE') || '') + ' = ' + S.formato(v, palabras), true);
+	},
 	base_delay: async function(b) {
 		var S = MPRSimulador, t = await S.numero(b, 'DELAY_TIME', 0), u = S.campo(b, 'unite');
 		await S.esperar(u == 's' ? t * 1000 : u == 'u' ? t / 1000 : t);
@@ -1245,11 +1252,48 @@ MPRSimulador.VALORES = {
 		var ms = performance.now() - MPRSimulador.corrida.inicio, u = MPRSimulador.campo(b, 'unite');
 		return u == 's' ? Math.floor(ms / 1000) : u == 'u' ? Math.floor(ms * 1000) : Math.floor(ms);
 	},
-	procedures_callreturn: async function(b) { return await MPRSimulador.llamar(b, true); }
+	procedures_callreturn: async function(b) { return await MPRSimulador.llamar(b, true); },
+	// MPR: bloques del modo monitor. En pantalla no hay pilas ni Monitor Serie del que lleguen órdenes.
+	mpr_bateria: async function() { return 5000; },
+	serial_available: async function() { return 0; },
+	serial_read_number: async function() { return 0; },
+	serial_read_string: async function() { return ''; },
+	text_join: async function(b) {
+		var S = MPRSimulador, t = '';
+		for (var i = 0; i < (b.itemCount_ || 0); i++) t += S.formato(await S.entrada(b, 'ADD' + i, ''), false);
+		return t;
+	}
 };
 
-MPRSimulador.escribir = function(v) {
-	MPRSimulador.estado(MPRSimulador.msg('sim_escribe', 'Otto escribe: {t}').replace('{t}', String(v)));
+// MPR: lo que el programa manda al Monitor Serie se ve en un recuadro del escenario (#mpr_esc_serie, últimas líneas).
+// Antes se escribía en la barra de estado, que "Bucle: vuelta n" tapaba enseguida.
+MPRSimulador.SERIE_LINEAS = 4;
+// Como lo escribe el Nano: verdadero/falso como 1/0 (salvo en "mostrar" con un bloque de verdadero/falso) y los
+// números con decimales con 2 decimales.
+MPRSimulador.formato = function(v, palabras) {
+	if (typeof v == 'boolean') return palabras ? (v ? 'verdadero' : 'falso') : (v ? '1' : '0');
+	if (typeof v == 'number') return isFinite(v) && v % 1 != 0 ? v.toFixed(2) : String(v);
+	return String(v == null ? '' : v);
+};
+
+MPRSimulador.limpiarSerie = function() {
+	MPRSimulador.serie = { lineas: [], actual: '' };
+	var e = document.getElementById('mpr_esc_serie');
+	if (e) e.textContent = '';
+};
+
+MPRSimulador.escribir = function(v, salto) {
+	var self = MPRSimulador, s = self.serie || (self.serie = { lineas: [], actual: '' });
+	s.actual += self.formato(v, false);
+	if (salto || s.actual.length > 120) { s.lineas.push(s.actual.slice(0, 120)); s.actual = ''; }
+	if (s.lineas.length > self.SERIE_LINEAS) s.lineas = s.lineas.slice(-self.SERIE_LINEAS);
+	// se pinta una vez por cuadro aunque el programa escriba muchas veces seguidas
+	if (self.serieF) return;
+	self.serieF = requestAnimationFrame(function() {
+		self.serieF = null;
+		var e = document.getElementById('mpr_esc_serie'), x = self.serie;
+		if (e && x) e.textContent = x.lineas.concat(x.actual ? [x.actual] : []).slice(-self.SERIE_LINEAS).join('\n');
+	});
 };
 
 window.addEventListener('load', function() {

@@ -154,7 +154,10 @@ window.addEventListener('load', function load(event) {
 		$('#aboutModal').modal('hide')
 		ipcRenderer.send("version", "")
 	})
+	// MPR: botón "Monitor Serie" del modo monitor (Ctrl + Mayús + M, www/js/mpr_monitor.js). Durante una subida el puerto
+	// está ocupado: no se abre (la subida misma cierra el monitor antes de empezar, ver MPRSubida.cerrarMonitor).
 	$('#btn_term').on('click', function(){
+		if (typeof MPRSubida != 'undefined' && MPRSubida.ocupada) return
 		if (portserie.value=="com"){
 			$("#message").modal("show")
 			messageDiv.style.color = '#ff0000'

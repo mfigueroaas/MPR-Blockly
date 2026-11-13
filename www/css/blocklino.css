@@ -794,6 +794,15 @@ html, body { overflow: hidden; }
 	padding: 8px 12px; border-radius: 10px; background: rgba(45, 45, 100, 0.88); color: #ffffff; font-size: 14px;
 }
 #mpr_esc_estado:empty { display: none; }
+/* MPR: lo que el programa escribe al Monitor Serie (bloques "mostrar" y "escribir" del modo monitor): últimas líneas,
+   arriba de la barra de estado */
+#mpr_esc_serie {
+	position: absolute; z-index: 1; left: 10px; bottom: 54px; max-width: 70%;
+	padding: 6px 12px; border-radius: 10px; background: rgba(20, 20, 50, 0.85); color: #ffffff;
+	font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.35; white-space: pre; overflow: hidden;
+}
+#mpr_esc_serie::before { content: "📟 Monitor Serie"; display: block; font-family: inherit; font-size: 11px; color: #9aa0c8; }
+#mpr_esc_serie:empty { display: none; }
 /* controles de la cámara: círculos naranjas como los de la mesa de bloques (=, +, −) */
 #mpr_esc_camara { position: absolute; z-index: 1; right: 10px; bottom: 10px; width: 36px; }
 #mpr_esc_camara button {

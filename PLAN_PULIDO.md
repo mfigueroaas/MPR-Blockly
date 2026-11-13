@@ -99,3 +99,9 @@ Pendiente:
   fuera del menú: Canto, "Biped random dancer" con TakeOnMe, "Ring Tone sounds" para ESP8266 con "Gadget" a la vista).
 - **Antes del próximo instalador:** E4 (versión 1.5.1), C5 (caché del core en el instalador).
 - C8: forzar la pérdida de contexto WebGL en la app; medir con `--disable-gpu` y en un PC del colegio.
+
+## G. Herramientas para monitores (pedido del 2026-11-13)
+- [x] G1. Modo monitor (Ctrl + Mayús + M): categoría 🛠️ Monitor con bloques de depuración, botón del Monitor Serie,
+      bloques nuevos "📟 mostrar nombre = valor" y "🔋 batería (mV)"; la subida cierra el monitor (evita P3).
+- [x] G2. Hoja de códigos de error para los monitores (`Codigos_de_error_MPR_Blockly.docx`).
+- [ ] G3. Probar el Monitor Serie con el robot conectado (recibir líneas, mandar órdenes, subir con el monitor abierto).

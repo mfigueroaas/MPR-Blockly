@@ -7,7 +7,7 @@ var MSG = {
   btn_new: "Nuevo",
   btn_fakeload: "Abrir",
   btn_example: "Ejemplos",
-  btn_term: "Monitor serie",
+  btn_term: "Monitor Serie: ver lo que Otto escribe y mandarle órdenes (modo monitor)",
   btn_factory: "Fábrica de bloques",
   btn_saveXML: "Guardar",
   btn_print: "Captura de pantalla",
@@ -94,6 +94,9 @@ var MSG = {
   rev_config_afuera_tu: "Hay una configuración afuera de Configuración + Bucle (la marqué con un borde rojo). Arrástrala dentro de Configuración.",
   rev_otto_pone_si: "Otto pone los bloques que faltan: activado",
   rev_otto_pone_no: "Otto pone los bloques que faltan: desactivado",
+  // MPR: modo monitor (Ctrl + Mayús + M, js/mpr_monitor.js)
+  mon_activado: "Modo monitor activado: tienes la categoría 🛠️ Monitor y el botón del Monitor Serie",
+  mon_desactivado: "Modo monitor desactivado: se quitaron la categoría y el botón (los bloques de la mesa se quedan)",
   rev_programa_vacio: "Tu programa todavía no me pide nada: pon bloques dentro de Bucle, por ejemplo Mover ↑ Adelante.",
   rev_ponerla: "Ponlo tú, Otto",
   rev_meterla: "Ponla tú, Otto",
