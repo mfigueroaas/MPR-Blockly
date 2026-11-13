@@ -12,6 +12,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Versión 1.5.3 e instalador
+- **Pedido:** Víctor necesita una versión instalable con el modo monitor y la mejora del ultrasonido.
+- **Qué lleva:** G1 (modo monitor, Ctrl + Mayús + M) y F5 (ultrasonido de 25 µs, librería `LIB_OTTO_SENSORES.zip`), más todo lo de la 1.5.2.
+- **Qué se hizo:** `package.json` 1.5.2 → 1.5.3; se borró `C:\mprb\stage` y `py tools/build_installer.py --official …` generó `dist\MPR_Blockly_Setup_1.5.3.exe` (139.061.748 bytes, SHA‑256 `16138c509fe9918e7abcfed2379979374e594bdb2608d5ee320d4598cd2405eb`, sin firma).
+- **Comprobado:** en la carpeta armada, `sensors.js`, `Otto.cpp`, `Otto.h`, `mpr_monitor.js`, `mpr_monitor_bloques.js`, `mpr_subida.js`, `electronApp.js` y `term.js` son idénticos a los del repositorio.
+- **Archivos:** `package.json`, `DOCUMENTACION_TECNICA.md` (7.4).
+- **Probado:** el instalador todavía no se ha ejecutado; lo valida Víctor con el robot.
+
 ### 2026-11-13 — F5: paquete LIB_OTTO_SENSORES.zip (ultrasonido que sí mide)
 - **Pedido:** Víctor mandó `LIB_OTTO_SENSORES.zip` (librería con sensores y arreglo del bloque de ultrasonido, medido en su robot) para probarlo e incluirlo en la 1.5.3.
 - **Causa que midió:** el HC-SR04 clon, recién encendido, no responde a un disparo de 10 µs (0 de 4 lecturas; con 20 µs, 4 de 4). Con la lectura de la 1.5.0 (sin límite) eso daba 1 s congelado y 0 cm, "obstáculo pegado"; con A7 daba siempre 400 cm. Por eso fallaban las dos.
