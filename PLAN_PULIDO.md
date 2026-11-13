@@ -48,10 +48,10 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
       doble apertura rápida del escenario; error rojo de `typing.js:95` (no afecta el código generado).
 
 ## C. Rendimiento sin perder calidad (medir antes y después en la app con `tools/medir_app.mjs`)
-- [ ] C1. Otto 3D se rearma de cero al abrir "Probar en pantalla" o al llamarlo (~190 ms y fuga en la GPU):
+- [x] C1. Otto 3D se rearma de cero al abrir "Probar en pantalla" o al llamarlo (~190 ms y fuga en la GPU):
       reutilizar renderer y escena.
-- [ ] C2. El escenario quieto se redibuja 12 veces/s: dibujar solo cuando algo cambia.
-- [ ] C3. Falsos "equipo lento" que bajan el modelo 3D toda la sesión (`medA`/`lentos`).
+- [x] C2. El escenario quieto se redibuja 12 veces/s: dibujar solo cuando algo cambia.
+- [x] C3. Falsos "equipo lento" que bajan el modelo 3D toda la sesión (`medA`/`lentos`).
 - [x] C4. Logo "innova 2025" de 4351×1713 px para 35 px de alto (~30 MB de memoria) y `MPRBlockly.png`.
 - [ ] C5. Primera compilación en un PC nuevo: 33 s; con la caché del core en el instalador, ~19 s y no se pierde
       al limpiar `%TEMP%`.

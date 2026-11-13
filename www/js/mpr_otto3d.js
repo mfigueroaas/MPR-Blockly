@@ -59,42 +59,121 @@ MPROtto3D.geometria = function(nombre, matriz) {
 MPROtto3D.iniciar = function(canvas, colores) {
 	if (typeof THREE == 'undefined' || !window.OTTO3D) return false;
 	var self = MPROtto3D;
-	try {
-		self.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !self.economia, powerPreference: 'low-power' });
-	} catch (e) { return false; }
+	if (self.raf) { cancelAnimationFrame(self.raf); self.raf = 0; }   // MPR: nunca dos bucles a la vez (PLAN_PULIDO C1)
+	// MPR: PLAN_PULIDO C1. Volver a encender Otto (mostrar la mascota, abrir el escenario con Otto escondido) reutiliza el
+	// renderer, la escena y el modelo ya armados en el mismo canvas: antes se armaba todo de cero (~190 ms de bloqueo) y
+	// quedaban en la GPU los sombreadores y buffers del anterior. Mismo canvas, mismos materiales y modelo: imagen idéntica.
+	var reusar = !!(self.renderer && self.renderer.domElement === canvas && self.raiz && self.economiaArmada === self.economia);
+	if (!reusar) {
+		self.desechar();
+		try {
+			self.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !self.economia, powerPreference: 'low-power' });
+		} catch (e) { return false; }
+		self.economiaArmada = self.economia;
+		self.renderer.setClearColor(0x000000, 0);
+
+		self.escena = new THREE.Scene();
+		self.camara = new THREE.PerspectiveCamera(28, 150 / 190, 50, 2000);
+		self.camara.position.set(0, 82, 380);
+		self.camara.lookAt(new THREE.Vector3(0, 60, 0));
+		self.escena.add(new THREE.HemisphereLight(0xffffff, 0x6b6b8f, 0.85));
+		var luz = new THREE.DirectionalLight(0xffffff, 0.6);
+		luz.position.set(120, 260, 300);
+		self.escena.add(luz);
+
+		// Materiales: uno por grupo de piezas, así cada niño pinta su Otto
+		self.mat = {};
+		self.PARTES_COLOR.forEach(function(n) {
+			self.mat[n] = new THREE.MeshLambertMaterial({ color: (colores && colores[n]) || '#ff5700' });   // sin flatShading: este material lo ignora (avisaba en la consola); las caras planas vienen de la geometría
+		});
+		// Materiales del sensor ultrasónico (no se personalizan: son parte del robot)
+		self.matPlata = new THREE.MeshLambertMaterial({ color: 0xc7ccd4 });
+		self.matOscuro = new THREE.MeshBasicMaterial({ color: 0x14142b });
+
+		self.armar();
+		self.vigilarContexto(canvas);
+	} else {
+		// MPR: con Otto escondido pudo bajar la calidad (llega otro modelo) o cambiar los colores (solo se guardan)
+		if (self.nivelArmado !== window.OTTO3D.nivel) self.armar();
+		self.PARTES_COLOR.forEach(function(n) { self.colorear(n, (colores && colores[n]) || '#ff5700'); });
+	}
 	var w = canvas.clientWidth || 150, h = canvas.clientHeight || 190;
 	self.renderer.setPixelRatio(self.economia ? 1 : Math.min(window.devicePixelRatio || 1, 2));
 	self.renderer.setSize(w, h, false);
-	self.renderer.setClearColor(0x000000, 0);
+	self.camara.aspect = w / h;
+	self.camara.updateProjectionMatrix();
 
-	self.escena = new THREE.Scene();
-	self.camara = new THREE.PerspectiveCamera(28, w / h, 50, 2000);
-	self.camara.position.set(0, 82, 380);
-	self.camara.lookAt(new THREE.Vector3(0, 60, 0));
-	self.escena.add(new THREE.HemisphereLight(0xffffff, 0x6b6b8f, 0.85));
-	var luz = new THREE.DirectionalLight(0xffffff, 0.6);
-	luz.position.set(120, 260, 300);
-	self.escena.add(luz);
-
-	// Materiales: uno por grupo de piezas, así cada niño pinta su Otto
-	self.mat = {};
-	self.PARTES_COLOR.forEach(function(n) {
-		self.mat[n] = new THREE.MeshLambertMaterial({ color: (colores && colores[n]) || '#ff5700' });   // sin flatShading: este material lo ignora (avisaba en la consola); las caras planas vienen de la geometría
-	});
-	// Materiales del sensor ultrasónico (no se personalizan: son parte del robot)
-	self.matPlata = new THREE.MeshLambertMaterial({ color: 0xc7ccd4 });
-	self.matOscuro = new THREE.MeshBasicMaterial({ color: 0x14142b });
-
-	self.armar();
-
+	// MPR: parte de cero como la primera vez (de frente, quieto, en reposo) y sin mediciones viejas (PLAN_PULIDO C1 y C3)
+	var ahora = performance.now();
 	self.vivo = true;
-	self.estado = { nombre: 'reposo', inicio: performance.now() / 1000 };
-	self.prox.desde = performance.now();
+	self.estado = { nombre: 'reposo', inicio: ahora / 1000 };
+	self.rumbo = self.rumboObj = 0;
+	self.andar = self.andarObj = 0;
+	self.tPrev = 0;
+	self.reiniciarMedida(ahora);
+	self.tBucle = 0; self.huecoPrev = 0;
+	self.prox.cuadros = 0; self.prox.desde = ahora;
 	window.addEventListener('mousemove', self.alMover);
-	document.addEventListener('visibilitychange', function() { if (!document.hidden) self.ultimo = 0; });
-	self.ultimo = 0;
-	requestAnimationFrame(self.bucle);
+	// MPR: un solo oyente para siempre (antes se agregaba uno nuevo cada vez que Otto se volvía a encender)
+	if (!self.oyeVisibilidad) {
+		self.oyeVisibilidad = true;
+		document.addEventListener('visibilitychange', function() {
+			if (document.hidden) return;
+			self.reiniciarMedida(performance.now());   // lo que estuvo minimizado no cuenta como "equipo lento" (PLAN_PULIDO C3)
+			self.redibujar();
+		});
+	}
+	self.redibujar();
+	self.raf = requestAnimationFrame(self.bucle);
 	return true;
+};
+
+// MPR: PLAN_PULIDO C3. Empieza una ventana nueva para medir los cuadros por segundo y olvida las ventanas lentas
+MPROtto3D.reiniciarMedida = function(ahora) {
+	MPROtto3D.medA = { n: 0, t0: ahora };
+	MPROtto3D.lentos = 0;
+};
+
+// MPR: PLAN_PULIDO C2. Pide dibujar el próximo cuadro aunque la escena del simulador no haya cambiado
+MPROtto3D.redibujar = function() {
+	MPROtto3D.forzar = true;
+	MPROtto3D.ultimo = 0;
+};
+
+// MPR: libera de verdad lo que hay en la GPU (el dispose() del renderer de three r128 no borra sombreadores ni buffers).
+// Solo se usa si hay que armar otro renderer (no pasa al esconder y mostrar a Otto).
+MPROtto3D.desechar = function() {
+	var self = MPROtto3D;
+	if (self.raiz) {
+		self.raiz.traverse(function(o) { if (o.geometry) o.geometry.dispose(); });
+		if (self.escena) self.escena.remove(self.raiz);
+		self.raiz = null;
+	}
+	if (self.mat) for (var n in self.mat) self.mat[n].dispose();
+	if (self.matPlata) self.matPlata.dispose();
+	if (self.matOscuro) self.matOscuro.dispose();
+	self.mat = null; self.matPlata = null; self.matOscuro = null;
+	if (self.renderer) { self.renderer.dispose(); self.renderer = null; }
+};
+
+// MPR: PLAN_PULIDO C8. Si la GPU pierde el contexto WebGL (controlador reiniciado, suspensión) y no vuelve en 3 s, Otto
+// pasa a su respaldo 2D (alPerder, lo pone js/mpr_mascota.js). Si vuelve, three.js recarga solo el modelo y se redibuja.
+MPROtto3D.alPerder = null;
+MPROtto3D.vigilarContexto = function(canvas) {
+	var self = MPROtto3D;
+	if (canvas.mprVigilado) return;
+	canvas.mprVigilado = true;
+	canvas.addEventListener('webglcontextlost', function(e) {
+		e.preventDefault();   // permite que el contexto vuelva (three.js también lo hace)
+		clearTimeout(self.tPerdido);
+		self.tPerdido = setTimeout(function() {
+			if (self.alPerder && self.renderer && self.renderer.domElement === canvas) self.alPerder();
+		}, 3000);
+	}, false);
+	canvas.addEventListener('webglcontextrestored', function() {
+		clearTimeout(self.tPerdido);
+		self.redibujar();
+	}, false);
 };
 
 // Arma (o vuelve a armar, si se cambia de modelo) el robot con las piezas de window.OTTO3D
@@ -170,6 +249,7 @@ MPROtto3D.armar = function() {
 	// Otto siempre cabe entero en su canvas: sin el recorte por vista, three.js no calcula la esfera envolvente de cada
 	// pieza (recorre ~370 mil vértices al arrancar) ni la prueba en cada cuadro. La imagen es idéntica (comprobado píxel a píxel).
 	self.raiz.traverse(function(o) { o.frustumCulled = false; });
+	self.nivelArmado = window.OTTO3D.nivel;   // MPR: para saber si al volver a encender hay que armar otro modelo (C1)
 };
 
 MPROtto3D.alMover = function(e) {
@@ -208,10 +288,12 @@ MPROtto3D.animando = function() {
 		Math.abs(MPROtto3D.rumbo - MPROtto3D.rumboObj) > 0.01;
 };
 
+// MPR: PLAN_PULIDO C1. Solo detiene el bucle (no gasta CPU ni GPU mientras está escondido) y deja armado el renderer
+// con su modelo para volver a encenderlo al instante con iniciar().
 MPROtto3D.detener = function() {
 	MPROtto3D.vivo = false;
+	if (MPROtto3D.raf) { cancelAnimationFrame(MPROtto3D.raf); MPROtto3D.raf = 0; }
 	window.removeEventListener('mousemove', MPROtto3D.alMover);
-	if (MPROtto3D.renderer) { MPROtto3D.renderer.dispose(); MPROtto3D.renderer = null; }
 };
 
 function mprSuave(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
@@ -288,8 +370,14 @@ MPROtto3D.pose = function(t) {
 MPROtto3D.bucle = function(ahora) {
 	var self = MPROtto3D;
 	if (!self.vivo) return;
-	requestAnimationFrame(self.bucle);
+	self.raf = requestAnimationFrame(self.bucle);
 	if (document.hidden) return;
+	// MPR: PLAN_PULIDO C3. Una pausa aislada de más de 500 ms entre cuadros (ventana trabada un momento, minimizada) no
+	// cuenta como equipo lento: se empieza a medir de nuevo. Si TODOS los cuadros tardan (equipo de verdad lento), la
+	// pausa anterior tampoco fue corta y se sigue midiendo, así que la calidad igual baja cuando debe.
+	var hueco = self.tBucle ? ahora - self.tBucle : 0;
+	if (hueco > 500 && self.huecoPrev < 250) self.reiniciarMedida(ahora);
+	self.huecoPrev = hueco; self.tBucle = ahora;
 	// Ahorro de recursos: 30 cuadros/s al moverse, 12 en reposo (también en el escenario)
 	var esc = self.escenario, anima = esc ? esc.animando() : self.animando();
 	var meta = anima ? (self.economia ? 50 : 33) : (self.economia ? 125 : 80);
@@ -303,10 +391,19 @@ MPROtto3D.bucle = function(ahora) {
 			if (f < (self.economia ? 12 : 17) && self.alLento) { if (++self.lentos >= 2) { var cb = self.alLento; self.alLento = null; cb(f); } }
 			else self.lentos = 0;
 		}
-	} else self.medA = { n: 0, t0: ahora };
+	} else self.reiniciarMedida(ahora);   // MPR: en reposo también se olvidan las ventanas lentas (C3)
 	if (esc) {
 		esc.pose(ahora);
+		// MPR: PLAN_PULIDO C2. Escenario quieto (sin prueba, sin arrastre, cámara asentada): si nada de lo que se ve cambió
+		// desde el último cuadro dibujado, no se vuelve a dibujar el mismo cuadro (el canvas lo sigue mostrando). La pose
+		// se sigue calculando, así la cámara y la inclinación terminan de asentarse y cualquier cambio se dibuja enseguida.
+		// Por seguridad se redibuja igual una vez por segundo.
+		if (!anima && !self.forzar && ahora - self.tDibujo < 1000 && self.firmaIgual(esc.camara)) return;
 		self.renderer.render(self.escena, esc.camara);
+		self.tDibujo = ahora;
+		self.forzar = false;
+		if (anima) self.firmaPrev = null;
+		else self.guardarFirma();
 	} else {
 		self.pose(ahora / 1000);
 		self.renderer.render(self.escena, self.camara);
@@ -316,6 +413,46 @@ MPROtto3D.bucle = function(ahora) {
 		self.prox.fps = Math.round(self.prox.cuadros * 1000 / (ahora - self.prox.desde));
 		self.prox.cuadros = 0; self.prox.desde = ahora;
 	}
+};
+
+// MPR: PLAN_PULIDO C2. "Firma" de todo lo que decide la imagen del escenario: tamaño del canvas, cámara (posición,
+// orientación y proyección) y, de cada objeto de la escena, si se ve, su posición/giro/escala final y la opacidad y el
+// color de su material. Es genérica a propósito: lo que mueva el simulador o cambie el niño (caja, rayo, colores,
+// pose de Otto) cambia la firma y se dibuja, sin depender de que alguien avise.
+MPROtto3D.calcularFirma = function(camara, f) {
+	var self = MPROtto3D, n = 0, c = self.renderer.domElement, k;
+	function poner(e) { for (k = 0; k < 16; k++) f[n++] = e[k]; }
+	self.escena.updateMatrixWorld();   // lo mismo que hace render() antes de dibujar: no cambia la imagen
+	if (camara.parent === null) camara.updateMatrixWorld();
+	f[n++] = c.width; f[n++] = c.height;
+	poner(camara.matrixWorld.elements);
+	poner(camara.projectionMatrix.elements);
+	self.escena.traverse(function(o) {
+		f[n++] = o.visible ? 1 : 0;
+		poner(o.matrixWorld.elements);
+		var m = o.material;
+		if (m && !Array.isArray(m)) {
+			f[n++] = m.opacity;
+			if (m.color) { f[n++] = m.color.r; f[n++] = m.color.g; f[n++] = m.color.b; }
+		}
+	});
+	f.length = n;
+	return f;
+};
+
+// ¿Se vería igual que el último cuadro dibujado? Tolerancia 1e-5 (mm o radianes): mucho menos que un píxel.
+MPROtto3D.firmaIgual = function(camara) {
+	var self = MPROtto3D, a = self.firmaPrev;
+	if (!a) return false;
+	var b = self.calcularFirma(camara, self.firmaAct || (self.firmaAct = []));
+	if (a.length != b.length) return false;
+	for (var i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > 1e-5) return false;
+	return true;
+};
+
+MPROtto3D.guardarFirma = function() {
+	var self = MPROtto3D, esc = self.escenario;
+	if (esc) self.firmaPrev = self.calcularFirma(esc.camara, self.firmaGuardada || (self.firmaGuardada = []));
 };
 
 MPROtto3D.estadisticas = function() {

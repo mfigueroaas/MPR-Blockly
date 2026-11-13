@@ -12,6 +12,17 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — C1, C2, C3 y C8: Otto 3D más liviano con la imagen idéntica
+- **Pedido:** plan de pulido, rendimiento sin perder calidad ni detalle del 3D.
+- **Qué se hizo:**
+  - C1: esconder/mostrar a Otto y abrir/cerrar "Probar en pantalla" reutilizan el renderer, la escena y el modelo (antes se armaba todo de cero y quedaban sombreadores, buffers y un oyente `visibilitychange` por vez). Se vuelve a armar solo si cambió la calidad; se reaplican los colores.
+  - C2: con el escenario quieto, cada cuadro calcula una "firma" de lo que se vería (tamaño, cámara, matrices, opacidad y color); si es igual a la del último dibujo no se redibuja (redibujo de seguridad cada 1 s y siempre que algo despierta la escena).
+  - C3: la medición de "equipo lento" se reinicia al iniciar, al volver de minimizado, en reposo y tras una pausa aislada de más de 500 ms: ya no baja la calidad por error al abrir el escenario. Umbrales iguales.
+  - C8: si se pierde el contexto WebGL y no vuelve en 3 s, Otto pasa a 2D (y el escenario lo avisa); si vuelve, se redibuja.
+  - `tools/medir_app.mjs escenario`: mide aperturas, fugas, memoria y CPU con el escenario quieto.
+- **Archivos:** `www/js/mpr_otto3d.js`, `www/js/mpr_simulador.js`, `www/js/mpr_mascota.js`, `tools/medir_app.mjs`, `PLAN_PULIDO.md`. Hecho por un subagente; medido y revisado por el coordinador.
+- **Medido en la app** (copia `C:\mprbp`, este PC con GPU, `node tools/medir_app.mjs escenario`, antes → después): reabrir el escenario 164–248 ms → 56–139 ms (renderer reutilizado); oyentes `visibilitychange` tras 10 aperturas 1→11 → 1→2; memoria de procesos +46 MB → +32 MB (GPU +31 → +17 MB); escenario quieto 12 → 3,4 cuadros/s y CPU 26,9 % → 8,6 % de un núcleo. **Captura del escenario antes y después: idénticas byte a byte.** Falta: medir con `--disable-gpu` y en un PC del colegio; forzar la pérdida de contexto (C8).
+
 ### 2026-11-13 — B2, B3 y C6: Detener, calibración y no recompilar lo mismo
 - **Pedido:** plan de pulido, puntos B2, B3 y C6.
 - **Qué se hizo:**

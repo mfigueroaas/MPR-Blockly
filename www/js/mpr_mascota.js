@@ -198,6 +198,19 @@ MPRMascota.respaldo2D = function() {
 	MPRMascota.modo3d = false;
 };
 
+// MPR: PLAN_PULIDO C8. La GPU perdió el contexto WebGL y no volvió en 3 s (lo avisa js/mpr_otto3d.js): Otto pasa a 2D.
+// Si estaba en "Probar en pantalla", el escenario se cierra y se vuelve a abrir para que muestre su aviso de "sin 3D".
+MPRMascota.sinWebGL = function() {
+	var enEscenario = typeof MPRSimulador != 'undefined' && MPRSimulador.abierto;
+	if (enEscenario) MPRSimulador.cerrar();   // devuelve el canvas a la esquina de la mascota
+	if (window.MPROtto3D) MPROtto3D.detener();
+	MPRMascota.cancelarPaseo(true);
+	MPRMascota.respaldo2D();
+	try { console.log('[Otto 3D] se perdió el contexto WebGL: paso a 2D'); } catch (e) {}
+	if (enEscenario) MPRSimulador.abrir();
+};
+if (window.MPROtto3D) MPROtto3D.alPerder = MPRMascota.sinWebGL;
+
 MPRMascota.animar = function(nombre) {
 	if (MPRMascota.modo3d && window.MPROtto3D) MPROtto3D.animar(nombre);
 };

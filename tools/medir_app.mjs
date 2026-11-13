@@ -10,6 +10,8 @@
 //      recorrido  abre el recorrido y mide los cuadros por segundo de cada transición (lo ideal: 55-60)
 //      capas      capas del compositor con el recorrido abierto (tamaño y motivo de cada una)
 //      reposo     CPU y memoria de cada proceso de la app en reposo, N segundos (Otto no pasea mientras mide)
+//      escenario  "Probar en pantalla" con Otto escondido: tiempo hasta el 2.º cuadro al abrir (10 veces), sombreadores,
+//                 oyentes y memoria tras abrir y cerrar 10 veces, y cuadros/s y CPU con el escenario quieto (máx. 10 s)
 // 3) Al terminar, cerrar la app y abrirla normal (sin el puerto).
 import { execFileSync } from 'child_process';
 
@@ -129,10 +131,100 @@ async function reposo(app, seg) {
 	console.log('Con Otto visible, casi todo este consumo es su animación en reposo (12 cuadros/s, 8 sin aceleración gráfica).');
 }
 
+// MPR: PLAN_PULIDO C1/C2. Memoria privada (MB) y tiempo de CPU (ms) de cada proceso de la app en este momento
+function procesos() {
+	const ps = `Get-CimInstance Win32_Process -Filter "Name='MPR Blockly.exe'" | ForEach-Object { $k = if ($_.CommandLine -match '--type=(\\S+)') { $Matches[1] } else { 'principal' }; $p = Get-Process -Id $_.ProcessId; [string]::Format([Globalization.CultureInfo]::InvariantCulture, '{0};{1};{2:F0};{3:F0}', $_.ProcessId, $k, $p.TotalProcessorTime.TotalMilliseconds, $p.PrivateMemorySize64 / 1MB) }`;
+	const r = {};
+	for (const linea of execFileSync('powershell', ['-NoProfile', '-Command', ps]).toString().trim().split(/\r?\n/)) {
+		const [pid, tipo, cpu, mem] = linea.split(';');
+		if (pid) r[pid] = { tipo, cpu: +cpu, mem: +mem };
+	}
+	return r;
+}
+
+// Escenario "Probar en pantalla" con Otto escondido (como parte la app): cuánto tarda en abrir, cuánto gasta abierto y
+// quieto, y si queda algo acumulado tras abrirlo y cerrarlo 10 veces. No cambia nada guardado: si Otto estaba a la
+// vista, se esconde mientras mide y al final vuelve (con su marca "oculta" de antes).
+async function escenario(app, seg) {
+	seg = Math.min(seg, 10);
+	const antes = await app.eval(`(function(){
+		var caja = document.getElementById('mpr_masc'), r = { visible: !!(caja && caja.style.display != 'none'), paseaba: MPRMascota.paseando, oculta: localStorage.getItem('mpr_masc_oculta') };
+		MPRMascota.cancelarPaseo(true); MPRMascota.paseando = false; MPRMascota.cerrarGlobo();
+		if (MPRSimulador.abierto) MPRSimulador.cerrar();
+		if (r.visible) MPRMascota.esconder();
+		return r;
+	})()`);
+	const oyentes = async () => {
+		const d = await app.send('Runtime.evaluate', { expression: 'document' });
+		const l = (await app.send('DOMDebugger.getEventListeners', { objectId: d.result.objectId })).listeners;
+		return l.filter(x => x.type === 'visibilitychange').length;
+	};
+	const memoria = async () => {
+		try { await app.send('HeapProfiler.collectGarbage'); } catch (e) {}
+		await espera(500);
+		const js = await app.eval(`performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : -1`);
+		const p = procesos();
+		return { js, procesos: Object.values(p).reduce((s, x) => s + x.mem, 0), gpu: Object.values(p).filter(x => x.tipo === 'gpu-process').reduce((s, x) => s + x.mem, 0) };
+	};
+	// Abre el escenario y espera el SEGUNDO cuadro dibujado de Otto; "peorCuadroMs" = el mayor tiempo sin pintar la ventana
+	const abrir = () => app.eval(`new Promise(function(ok){
+		var O = window.MPROtto3D, r0 = O && O.renderer, f0 = r0 ? r0.info.render.frame : 0, ini = performance.now(), prev = ini, peor = 0;
+		MPRSimulador.abrir();
+		requestAnimationFrame(function f(){
+			var ahora = performance.now(), R = window.MPROtto3D && MPROtto3D.renderer;
+			peor = Math.max(peor, ahora - prev); prev = ahora;
+			if (R && MPRSimulador.con3d && R.info.render.frame >= (R === r0 ? f0 : 0) + 2) return ok({ ms: Math.round(ahora - ini), peorCuadroMs: Math.round(peor), rendererNuevo: R !== r0 });
+			if (ahora - ini > 20000) return ok({ ms: -1, peorCuadroMs: Math.round(peor), rendererNuevo: R !== r0 });
+			requestAnimationFrame(f);
+		});
+	})`);
+	try {
+		const m0 = await memoria(), o0 = await oyentes();
+		const filas = [];
+		for (let i = 1; i <= 10; i++) {
+			filas.push({ vez: i, ...(await abrir()) });
+			await espera(400);
+			await app.eval(`(function(){ MPRSimulador.cerrar(); return true; })()`);
+			await espera(400);
+		}
+		console.log('Abrir el escenario con Otto escondido hasta el 2.º cuadro (la 1.ª vez puede incluir cargar el modelo):');
+		console.table(filas);
+		const m1 = await memoria(), o1 = await oyentes();
+		await abrir();
+		const prog = await app.eval(`(function(){ var i = MPROtto3D.renderer.info; return { programas: i.programs ? i.programs.length : -1, geometrias: i.memory.geometries, texturas: i.memory.textures }; })()`);
+		console.log(`Tras abrir y cerrar 10 veces: sombreadores ${prog.programas}, geometrías ${prog.geometrias}, texturas ${prog.texturas}; oyentes visibilitychange ${o0} -> ${o1}`);
+		console.log(`Memoria (tras recolectar basura): JS ${m0.js} -> ${m1.js} MB; procesos ${m0.procesos} -> ${m1.procesos} MB (GPU ${m0.gpu} -> ${m1.gpu} MB)`);
+		// Escenario abierto y quieto: se deja asentar la cámara y se mide
+		await espera(3000);
+		const f0 = await app.eval('MPROtto3D.renderer.info.render.frame'), p0 = procesos(), t0 = Date.now();
+		await espera(seg * 1000);
+		const f1 = await app.eval('MPROtto3D.renderer.info.render.frame'), p1 = procesos(), dt = Date.now() - t0;
+		let total = 0;
+		for (const pid in p1) {
+			if (!p0[pid]) continue;
+			const c = (p1[pid].cpu - p0[pid].cpu) / dt * 100;
+			total += c;
+			console.log(`${p1[pid].tipo.padEnd(13)} CPU ${c.toFixed(2).padStart(6)} %   memoria privada ${String(p1[pid].mem).padStart(5)} MB`);
+		}
+		console.log(`Escenario abierto y quieto ${Math.round(dt / 1000)} s: ${((f1 - f0) * 1000 / dt).toFixed(1)} cuadros/s dibujados; CPU total ${total.toFixed(2)} % de un núcleo`);
+		console.log('(La CPU de PowerShell se mide en pasos de ~15 ms: para comparar, repetir 2 o 3 veces.)');
+	} finally {
+		await app.eval(`(function(){ if (MPRSimulador.abierto) MPRSimulador.cerrar(); MPRMascota.cancelarPaseo(true); if (${antes.visible}) MPRMascota.mostrar(); return true; })()`);
+		await espera(1200);
+		await app.eval(`(function(){
+			MPRMascota.cerrarGlobo();
+			var o = ${JSON.stringify(antes.oculta)};
+			if (o === null) localStorage.removeItem('mpr_masc_oculta'); else localStorage.setItem('mpr_masc_oculta', o);
+			MPRMascota.paseando = ${antes.paseaba}; if (MPRMascota.paseando) MPRMascota.planificar();
+			return true;
+		})()`);
+	}
+}
+
 const orden = process.argv[2], seg = Math.max(5, +(process.argv[3] || 20));
-const ordenes = { info, recorrido, capas, reposo };
+const ordenes = { info, recorrido, capas, reposo, escenario };
 if (!ordenes[orden]) {
-	console.log('Uso: node tools/medir_app.mjs info | recorrido | capas | reposo [segundos]');
+	console.log('Uso: node tools/medir_app.mjs info | recorrido | capas | reposo [segundos] | escenario');
 	process.exit(1);
 }
 const app = await conectar();

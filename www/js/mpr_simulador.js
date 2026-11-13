@@ -463,7 +463,8 @@ MPRSimulador.animando = function() {
 
 MPRSimulador.despertar = function() {
 	MPRSimulador.hastaMs = performance.now() + 1500;
-	if (window.MPROtto3D) MPROtto3D.ultimo = 0;
+	// MPR: PLAN_PULIDO C2. Con el escenario quieto Otto no redibuja cuadros iguales; esto pide dibujar el próximo sí o sí
+	if (window.MPROtto3D) { if (MPROtto3D.redibujar) MPROtto3D.redibujar(); else MPROtto3D.ultimo = 0; }
 };
 
 // ---------------------------------------------------------------- cuerpo sobre la mesa
