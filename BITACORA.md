@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — C4: logos con el tamaño que se necesita
+- **Pedido:** plan de pulido, punto C4 (rendimiento sin perder calidad).
+- **Causa:** "logo innova 2025.png" medía 4351×1713 px para verse a 89×35 px (Chromium lo decodifica entero: ~30 MB de memoria) y "MPRBlockly.png" 3055×232 px para verse a 396×30 px (~2,8 MB).
+- **Qué se hizo:** se redujeron con remuestreo bicúbico de alta calidad, conservando proporción, transparencia y nombre: innova a 762×300 px (8,6 veces el alto que se ve; 119 KB → 36 KB) y MPRBlockly a 1200×91 px (3 veces; 23,9 KB → 18,7 KB). No se usan en otro lugar (instalador e ícono usan `.ico`). Originales en la carpeta temporal del subagente.
+- **Archivos:** `www/media/logo innova 2025.png`, `www/media/MPRBlockly.png`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Probado:** en la app (copia `C:\mprbp`, pantalla al 125 %): se muestran a 396×30 y 89×35 px como antes; capturas por DevTools nítidas y con fondo transparente.
+
 ### 2026-11-13 — D3: canciones con nombre de marca se muestran como acertijo
 - **Pedido:** las canciones con marcas comerciales quedan como acertijo (se oculta el nombre) y la melodía no se toca (decisión del usuario del 2026-11-12).
 - **Qué se hizo:** en "Tocar canción extranjera" (`RTTTL.js`) 11 opciones muestran una pista en vez del nombre: Simpsons → "Misteriosa: dibujo animado de una familia amarilla", Flinstones → "…una familia de la edad de piedra", Muppets → "…show de títeres con una rana presentadora", PinkPanther → "…un felino rosado muy elegante", Looney → "…dibujos animados de un conejo y su pandilla", Smurfs → "…duendecitos azules con gorro blanco", Gadget → "…un inspector con un sombrero lleno de inventos", A_Team → "…cuatro aventureros en un furgón negro", Jeopardy → "…música para pensar en un concurso de la tele", Rudolph → "…un reno con la nariz roja", Frosty → "…un muñeco de nieve que cobra vida". La revelación de "melodía del bosque perdido" (`mpr_canciones.js`) ya no nombra el videojuego. El valor interno de cada opción (lo que se guarda en los `.bloc`) y las melodías no cambian.

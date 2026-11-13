@@ -52,7 +52,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
       reutilizar renderer y escena.
 - [ ] C2. El escenario quieto se redibuja 12 veces/s: dibujar solo cuando algo cambia.
 - [ ] C3. Falsos "equipo lento" que bajan el modelo 3D toda la sesión (`medA`/`lentos`).
-- [ ] C4. Logo "innova 2025" de 4351×1713 px para 35 px de alto (~30 MB de memoria) y `MPRBlockly.png`.
+- [x] C4. Logo "innova 2025" de 4351×1713 px para 35 px de alto (~30 MB de memoria) y `MPRBlockly.png`.
 - [ ] C5. Primera compilación en un PC nuevo: 33 s; con la caché del core en el instalador, ~19 s y no se pierde
       al limpiar `%TEMP%`.
 - [ ] C6. No recompilar si el programa y la placa no cambiaron (~10 s por reenvío).
