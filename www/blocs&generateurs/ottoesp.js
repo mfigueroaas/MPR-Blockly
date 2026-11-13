@@ -138,7 +138,8 @@ Blockly.Arduino.definitions_['otto_movelegs'] = ' void Otto_moveLegs(int T, int 
 
 Blockly.Arduino.setups_['otto_movelegs']='Otto_moveLegs('+200+','+90+','+90+','+90+','+90+');';
 
-var code = 'Otto_moveLegs('+TEMPO+','+PIN_YL+','+PIN_YR+','+PIN_RL+','+PIN_RR+');';
+// MPR: (PLAN_PULIDO A10) faltaba el salto de línea: el bloque siguiente quedaba pegado en la misma línea.
+var code = 'Otto_moveLegs('+TEMPO+','+PIN_YL+','+PIN_YR+','+PIN_RL+','+PIN_RR+');\n';
 return code;
 };
 
@@ -351,6 +352,34 @@ Blockly.Arduino['otto_tone'] = function(block) {
 return code;
 };
 
+// MPR: (PLAN_PULIDO A9) validación de los bloques de tono con números escritos (con variables lo decide la librería).
+// Una duración o silencio negativo en la librería se vuelve un "unsigned long" enorme (Otto queda sonando/esperando
+// casi para siempre); se generan como 0, que es lo que hace el simulador (esperar un tiempo negativo no espera).
+Blockly.MPR_numeroEscrito = function(code) {
+  return /^\s*-?\d+(\.\d+)?([eE][-+]?\d+)?\s*$/.test(code) ? parseFloat(code) : null;
+};
+Blockly.MPR_noNegativo = function(code) {
+  var n = Blockly.MPR_numeroEscrito(code);
+  return (n !== null && n < 0) ? '0' : code;
+};
+// bendTones de la librería usa una frecuencia "int" que se multiplica (o divide) por P y se trunca: con P <= 1, o con
+// una frecuencia baja y P cercano a 1 (40 * 1.02 = 40.8 -> 40), no avanza nunca y Otto queda pegado. Se repite la
+// misma cuenta (int de 16 bits, float de 32) para saber si termina.
+Blockly.MPR_bendTonesNoTermina = function(Hz1, Hz2, prop) {
+  var f0 = Blockly.MPR_numeroEscrito(Hz1), f1 = Blockly.MPR_numeroEscrito(Hz2), p = Blockly.MPR_numeroEscrito(prop);
+  if (f0 === null || f1 === null || p === null) return false;
+  var ent = function(x) { x = Math.trunc(x); return ((x + 32768) % 65536 + 65536) % 65536 - 32768; };
+  f0 = Math.fround(f0); f1 = Math.fround(f1); p = Math.fround(p);
+  var i = ent(f0), n = 0, sube = f0 < f1;
+  if (!(p > 1)) return sube ? i < f1 : i > f1;   // con P <= 1 no se acerca nunca (si el bucle llega a empezar)
+  while (sube ? i < f1 : i > f1) {
+    var sig = ent(Math.fround(sube ? i * p : i / p));
+    if (sig == i || ++n > 100000) return true;
+    i = sig;
+  }
+  return false;
+};
+
 Blockly.Blocks['otto_tonehz'] = {init: function() {
   this.appendDummyInput() .appendField("🎼 Hz")
   this.appendValueInput("Hz1")
@@ -369,6 +398,8 @@ Blockly.Arduino['otto_tonehz'] = function(block) {
   var Hz1 = Blockly.Arduino.valueToCode(block, 'Hz1', Blockly.Arduino.ORDER_ATOMIC);
   var duration = Blockly.Arduino.valueToCode(block, 'duration', Blockly.Arduino.ORDER_ATOMIC);
   var silent = Blockly.Arduino.valueToCode(block, 'silent', Blockly.Arduino.ORDER_ATOMIC);
+  duration = Blockly.MPR_noNegativo(duration);
+  silent = Blockly.MPR_noNegativo(silent);
 
 var code = "Otto._tone( " + Hz1 + "," + duration + "," + silent + "); //(float noteFrequency, long noteDuration, int silentDuration)\n";
 return code;
@@ -396,6 +427,10 @@ Blockly.Arduino['otto_bendtone'] = function(block) {
   var prop = Blockly.Arduino.valueToCode(block, 'prop', Blockly.Arduino.ORDER_ATOMIC);
   var duration = Blockly.Arduino.valueToCode(block, 'duration', Blockly.Arduino.ORDER_ATOMIC);
   var silent = Blockly.Arduino.valueToCode(block, 'silent', Blockly.Arduino.ORDER_ATOMIC);
+  duration = Blockly.MPR_noNegativo(duration);
+  silent = Blockly.MPR_noNegativo(silent);
+  if (Blockly.MPR_bendTonesNoTermina(Hz1, Hz2, prop))
+    return "// MPR: tono deslizante omitido: con Hz1=" + Hz1 + ", Hz2=" + Hz2 + ", P=" + prop + " Otto quedaría pegado (usa P mayor que 1, por ejemplo 1.05, o una frecuencia más alta)\n";
 
   var code = "Otto.bendTones( " + Hz1 + "," + Hz2 + "," + prop + "," + duration + "," + silent + "); // (float initFrequency, float finalFrequency, float prop, long noteDuration, int silentDuration) \n";
   return code;

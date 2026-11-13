@@ -132,10 +132,19 @@ Blockly.Arduino['RTTTL_music_custom'] = function(block) {
 
   var PIN_BUZZER = block.getFieldValue('PIN_BUZZER');
   var rtttl_melody = Blockly.Arduino.valueToCode(block, 'rtttl_melody', Blockly.Arduino.ORDER_ATOMIC);
-  var name_melody= rtttl_melody.slice(1,4);
   var card=window.localStorage.card;
   var code;
   Blockly.Arduino.includes_['include_PlayRTTTL'] = '#include <PlayRtttl.hpp>\n';
+  // MPR: (PLAN_PULIDO A10) el nombre salía de las letras 1 a 3 de la melodía ("Hi:d=..." daba melody_Hi:, que no
+  // compila, y dos melodías que empiezan igual se pisaban). Ahora: nombre de la melodía solo con letras, números y _,
+  // más un número sacado de todo el texto (misma melodía = mismo nombre, distinta = otro nombre).
+  if (!/^"[\s\S]*"$/.test(rtttl_melody)) {
+    // no es un texto escrito (variable, unir textos...): se toca desde la RAM, no se puede guardar en PROGMEM
+    return 'playRtttlBlocking(' + PIN_BUZZER + ', String(' + (rtttl_melody || '""') + ').c_str());\n';
+  }
+  var hash = 5381;
+  for (var k = 0; k < rtttl_melody.length; k++) hash = ((hash * 33) ^ rtttl_melody.charCodeAt(k)) >>> 0;
+  var name_melody = rtttl_melody.slice(1, -1).split(':')[0].replace(/[^A-Za-z0-9_]/g, '').slice(0, 12) + '_' + hash.toString(16);
  Blockly.Arduino.definitions_['Melody_'+name_melody] = 'static const char melody_'+ name_melody+'[] PROGMEM = '+rtttl_melody+';\n';
   if (card =="MRTnode")
 	code= 'playRtttlBlocking('+PIN_BUZZER+',(char*) melody_'+name_melody+');\n';

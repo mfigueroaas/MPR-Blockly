@@ -187,11 +187,16 @@ Blockly.Arduino['ultrasonic_sensor'] = function(block) {
 	// MPR: sin eco (sensor flojo o sin corriente con solo USB) pulseIn esperaba 1 s y daba 0 cm ("cerca"): Otto
 	// retrocedía solo. Ahora espera como máximo 30 ms (más de 4 m ida y vuelta) y sin eco da 400 cm, "nada adelante",
 	// igual que el simulador (MPRSimulador.SIN_ECO_CM).
+	// MPR: (PLAN_PULIDO A10) el número del sensor (#1-#4) se ignoraba: dos sensores definían dos veces
+	// ultrasound_distance_simple() y no compilaba. El #1 queda igual que antes (la tabla de errores de
+	// mpr_consejos.js lo reconoce); #2-#4 usan ultrasound_distance_2() ... y la lectura usa la de su número.
+	var clave = 'var_ultrasonic' + PIN_TRIG, funcion = 'ultrasound_distance_simple';
+	if (us_number && us_number != '1') { clave = 'var_ultrasonic_n' + us_number; funcion = 'ultrasound_distance_' + us_number; }
 
 
 if ((PIN_TRIG=="4") && (PIN_ECHO=="5"))
 	{
-	   Blockly.Arduino.definitions_['var_ultrasonic'+PIN_TRIG] = 'long ultrasound_distance_simple() {\n'+
+	   Blockly.Arduino.definitions_[clave] = 'long ' + funcion + '() {\n'+
         '   long duration, distance;\n'+
         '   digitalWrite('+PIN_TRIG+',LOW);\n'+
         '   delayMicroseconds(100);\n'+
@@ -206,7 +211,7 @@ if ((PIN_TRIG=="4") && (PIN_ECHO=="5"))
 	}
 	else
 	{
-		Blockly.Arduino.definitions_['var_ultrasonic'+PIN_TRIG] = 'long ultrasound_distance_simple() {\n'+
+		Blockly.Arduino.definitions_[clave] = 'long ' + funcion + '() {\n'+
         '   long duration, distance;\n'+
         '   digitalWrite('+PIN_TRIG+',LOW);\n'+
         '   delayMicroseconds(2);\n'+
@@ -239,7 +244,8 @@ Blockly.Arduino["ultrasonic_distance"]=function(block){
   var code;
   var us_number = this.getFieldValue('US_NUMBER');
 
-  code = 'ultrasound_distance_simple()';
+  // MPR: (PLAN_PULIDO A10) cada número lee su propio sensor (ver ultrasonic_sensor)
+  code = (us_number && us_number != '1') ? 'ultrasound_distance_' + us_number + '()' : 'ultrasound_distance_simple()';
 return [code, Blockly.Arduino.ORDER_ATOMIC];
 };
 

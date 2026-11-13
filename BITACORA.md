@@ -12,6 +12,20 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — A9 y A10: arreglos menores de bloques
+- **Pedido:** plan de pulido, puntos A9 y A10.
+- **Qué se hizo:**
+  - A9 (en el generador, `ottoesp.js`; la librería Otto no se tocó porque se reemplaza por la nueva): con números escritos, una duración o silencio negativo se genera como 0, y un "tono deslizante" que no terminaría nunca (P ≤ 1, o frecuencia baja con P cercano a 1, por la cuenta entera de `bendTones`) se reemplaza por un comentario que explica qué cambiar. El simulador sigue sonando en ese caso.
+  - "y"/"o" generan `&&`/`||` (antes `&`/`|`, que evaluaban los dos lados), con el orden de operaciones correcto.
+  - "es primo" genera una función C++ `mpr_esPrimo` (antes generaba JavaScript y no compilaba); par/impar/entero/divisible usan `fmod` (antes `random_int(...) % 2` no compilaba porque es `double`).
+  - Con números al azar se agrega `randomSeed(analogRead(A7))` en setup (A7 queda libre en Otto): Movimiento improvisado ya no repite la misma secuencia en cada encendido.
+  - Melodía personalizada: el nombre de su variable sale del nombre de la melodía más un número del texto (antes `"Hi:..."` daba `melody_Hi:` y no compilaba; dos melodías que empezaban igual se pisaban). Si la melodía no es un texto escrito se toca desde la RAM.
+  - Sensores #2 a #4 tienen su propia función (`ultrasound_distance_2()`…); el #1 genera exactamente el mismo código que antes.
+  - "Mover piernas" termina su línea con salto de línea.
+- **Archivos:** `www/blocs&generateurs/blockly_generateurs_cpp.js`, `ottoesp.js`, `RTTTL.js` (solo la melodía personalizada), `sensors.js`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Detectado y pendiente:** en el simulador "y" funciona como "o" (`mpr_simulador.js` compara `'AND'` y el valor es `'and'`); `MPRRevision` no comprueba que el número de sensor leído esté configurado; `Otto.getSensor()` (`ottoesp.js`) no existe en la librería (bloque no visible).
+- **Probado:** en la app (copia `C:\mprbp`) generando por DevTools y compilando con arduino-cli (librería instalada): y/o con primo/par/impar y azar, dos melodías "Hi:…", sensores #1 y #2, mover piernas + tono deslizante 40/100/1.02 (sale el comentario) compilan; los 6 ejemplos `mpr_*.xml` compilan (Movimiento improvisado suma `randomSeed`).
+
 ### 2026-11-13 — E3 y E5: Thumbs.db fuera de git y documentación al día
 - **Pedido:** plan de pulido, puntos E3 y E5.
 - **Qué se hizo:** `www/media/Thumbs.db` (caché de miniaturas de Windows) sale de git (`git rm --cached`) y `.gitignore` ignora `Thumbs.db` y `/versiones/` (no estaban). Documentación: versión 1.5.0 y fila del instalador 1.5.0 en 7.4 (con la errata `distMPR` corregida), 7.3 y 10.1 sin el "instalador 1.2.0", sección 13 con estado al 2026-11-13 y referencia a `PLAN_PULIDO.md`, `py` en vez de `python` en los comandos de Windows (`CLAUDE.md`, `LEEME_MPR.md`, 6.2, 7.1, 9) y `C:\mprbp` bien escrito en `CLAUDE.md`.

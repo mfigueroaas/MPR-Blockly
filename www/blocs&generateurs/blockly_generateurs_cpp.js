@@ -175,13 +175,17 @@ Blockly.Arduino["controls_flow_statements"]=function(block){
 Blockly.Arduino["logic_operation"]=function(block){
     var mode = block.getFieldValue("OP");
 	var operator = Blockly.Arduino.logic_operation.OPERATORS[mode];
-    var order = operator == "&&" ? Blockly.Arduino.ORDER_LOGICAL_AND : Blockly.Arduino.ORDER_LOGICAL_OR;
+    // MPR: (PLAN_PULIDO A10) "y"/"o" generaban & y | (de bits): con números distintos de 0 y 1 daban otro resultado
+    // que el simulador (2 & 1 es 0). Ahora && y ||, y cada operador con su precedencia para que los paréntesis salgan bien.
+    var order = Blockly.Arduino.logic_operation.ORDERS[mode] || Blockly.Arduino.ORDER_LOGICAL_OR;
     var argument0 = Blockly.Arduino.valueToCode(block, "A", order);
     var argument1 = Blockly.Arduino.valueToCode(block, "B", order);
     var code = argument0 + " " + operator + " " + argument1;
     return [code, order]
 };
-Blockly.Arduino.logic_operation.OPERATORS = {and: "&", or: "|", xor: "^", shiftL: "<<", shiftR: ">>"};
+Blockly.Arduino.logic_operation.OPERATORS = {and: "&&", or: "||", xor: "^", shiftL: "<<", shiftR: ">>"};
+Blockly.Arduino.logic_operation.ORDERS = {and: Blockly.Arduino.ORDER_LOGICAL_AND, or: Blockly.Arduino.ORDER_LOGICAL_OR,
+    xor: Blockly.Arduino.ORDER_BITWISE_XOR, shiftL: Blockly.Arduino.ORDER_SHIFT, shiftR: Blockly.Arduino.ORDER_SHIFT};
 Blockly.Arduino["logic_negate"]=function(block){
     var order = Blockly.Arduino.ORDER_UNARY_PREFIX;
     var argument0 = Blockly.Arduino.valueToCode(block, "BOOL", order);
@@ -340,33 +344,37 @@ Blockly.Arduino["math_constant"]=function(block){
     return CONSTANTS[block.getFieldValue("CONSTANT")]
 };
 Blockly.Arduino["math_number_property"]=function(block){
-    var number_to_check = Blockly.Arduino.valueToCode(block, "NUMBER_TO_CHECK", Blockly.Arduino.ORDER_MODULUS);
+    // MPR: (PLAN_PULIDO A10) "es primo" generaba una función en JavaScript (no compilaba) y par/impar/divisible usaban
+    // ORDER_MODULUS, que no existe (sin paréntesis: "a + b % 2" en vez de "(a + b) % 2"), y % no compila con decimales
+    // (el bloque de número al azar devuelve double). Ahora fmod(), que sirve para enteros y decimales y da lo mismo
+    // que el simulador (impar con fabs, para que -3 también sea impar; divisible por 0 da falso).
     var dropdown_property = block.getFieldValue("PROPERTY");
     var code;
     if (dropdown_property == "PRIME") {
-        var functionName = Blockly.Arduino.provideFunction_("math_isPrime", ["function " + Blockly.Arduino.FUNCTION_NAME_PLACEHOLDER_ + "(n) {", "  // https://en.wikipedia.org/wiki/Primality_test#Naive_methods", "  if (n == 2 || n == 3) {", "    return true;", "  }", "  // False if n is NaN, negative, is 1, or not whole.", "  // And false if n is divisible by 2 or 3.", "  if (isNaN(n) || n <= 1 || n % 1 != 0 || n % 2 == 0 ||" + " n % 3 == 0) {", "    return false;", "  }", "  // Check all the numbers of form 6k +/- 1, up to sqrt(n).", "  for (var x = 6; x <= sqrt(n) + 1; x += 6) {", "    if (n % (x - 1) == 0 || n % (x + 1) == 0) {", "      return false;", "    }", "  }", "  return true;", "}"]);
-        code = functionName + "(" + number_to_check + ")";
-        return [code, Blockly.Arduino.ORDER_FUNCTION_CALL]
+        var number_arg = Blockly.Arduino.valueToCode(block, "NUMBER_TO_CHECK", Blockly.Arduino.ORDER_NONE) || "0";
+        var functionName = Blockly.Arduino.provideFunction_("mpr_esPrimo", ["boolean " + Blockly.Arduino.FUNCTION_NAME_PLACEHOLDER_ + "(double n) {", "  // MPR: primo = entero mayor que 1 sin divisores (como el simulador)", "  if (n < 2 || n != (long) n) return false;", "  long m = (long) n;", "  for (long i = 2; i * i <= m; i++) {", "    if (m % i == 0) return false;", "  }", "  return true;", "}"]);
+        code = functionName + "(" + number_arg + ")";
+        return [code, Blockly.Arduino.ORDER_UNARY_POSTFIX]
     }
+    if (dropdown_property == "POSITIVE" || dropdown_property == "NEGATIVE") {
+        var number_cmp = Blockly.Arduino.valueToCode(block, "NUMBER_TO_CHECK", Blockly.Arduino.ORDER_RELATIONAL) || "0";
+        code = number_cmp + (dropdown_property == "POSITIVE" ? " > 0" : " < 0");
+        return [code, Blockly.Arduino.ORDER_RELATIONAL]
+    }
+    var number_to_check = Blockly.Arduino.valueToCode(block, "NUMBER_TO_CHECK", Blockly.Arduino.ORDER_NONE) || "0";
     switch (dropdown_property) {
         case "EVEN":
-            code = number_to_check + " % 2 == 0";
+            code = "fmod(" + number_to_check + ", 2) == 0";
             break;
         case "ODD":
-            code = number_to_check + " % 2 == 1";
+            code = "fabs(fmod(" + number_to_check + ", 2)) == 1";
             break;
         case "WHOLE":
-            code = number_to_check + " % 1 == 0";
-            break;
-        case "POSITIVE":
-            code = number_to_check + " > 0";
-            break;
-        case "NEGATIVE":
-            code = number_to_check + " < 0";
+            code = "fmod(" + number_to_check + ", 1) == 0";
             break;
         case "DIVISIBLE_BY":
-            var divisor = Blockly.Arduino.valueToCode(block, "DIVISOR", Blockly.Arduino.ORDER_MODULUS);
-            code = number_to_check + " % " + divisor + " == 0";
+            var divisor = Blockly.Arduino.valueToCode(block, "DIVISOR", Blockly.Arduino.ORDER_NONE) || "0";
+            code = "fmod(" + number_to_check + ", " + divisor + ") == 0";
             break
     }
     return [code, Blockly.Arduino.ORDER_EQUALITY]
@@ -374,16 +382,19 @@ Blockly.Arduino["math_number_property"]=function(block){
 Blockly.Arduino["math_round"] = Blockly.Arduino["math_single"];
 Blockly.Arduino["math_trig"] = Blockly.Arduino["math_single"];
 Blockly.Arduino["math_modulo"]=function(block){
-    var argument0 = Blockly.Arduino.valueToCode(block, "DIVIDEND", Blockly.Arduino.ORDER_MODULUS);
-    var argument1 = Blockly.Arduino.valueToCode(block, "DIVISOR", Blockly.Arduino.ORDER_MODULUS);
+    // MPR: (PLAN_PULIDO A10) ORDER_MODULUS no existe: "2 * resto" salía "2 * (a) % (b)" = (2*a) % b. % es multiplicativo.
+    var argument0 = Blockly.Arduino.valueToCode(block, "DIVIDEND", Blockly.Arduino.ORDER_NONE);
+    var argument1 = Blockly.Arduino.valueToCode(block, "DIVISOR", Blockly.Arduino.ORDER_NONE);
     var code = "("+argument0 + ") % (" + argument1+")";
-    return [code, Blockly.Arduino.ORDER_MODULUS]
+    return [code, Blockly.Arduino.ORDER_MULTIPLICATIVE]
 };
 Blockly.Arduino["math_random_int"]=function(block){
     var argument0 = Blockly.Arduino.valueToCode(block, "FROM", Blockly.Arduino.ORDER_COMMA);
     var arg = Blockly.Arduino.valueToCode(block, "TO", Blockly.Arduino.ORDER_COMMA);
     var functionName = Blockly.Arduino.provideFunction_("random_int", ["double " + Blockly.Arduino.FUNCTION_NAME_PLACEHOLDER_ + "(int a,int b) {", "  if (a > b) {",  "    int c = a;", "    a = b;", "    b = c;", "  }", "  return (double) random(a,b+1);", "}"]);
-   // Blockly.Arduino.setups_["randomseed"] = "randomSeed(analogRead(0));";
+    // MPR: (PLAN_PULIDO A10) sin semilla random() repite la misma secuencia en cada encendido. A7 del Nano es solo
+    // analógica y en Otto MPR queda libre (servos 2-5, zumbador 13, ultrasonido 8/9): su ruido sirve de semilla.
+    Blockly.Arduino.setups_["mpr_randomSeed"] = "randomSeed(analogRead(A7));";
 	var code = functionName + "(" + argument0 + ", " + arg + ")";
     return [code, Blockly.Arduino.ORDER_FUNCTION_CALL]
 };
