@@ -22,3 +22,6 @@
 /dist/
 ottoblockly.Setup*.exe
 __pycache__/
+# MPR: miniaturas de Windows y versiones/parches locales (no van al repositorio)
+Thumbs.db
+/versiones/

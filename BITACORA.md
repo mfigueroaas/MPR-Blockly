@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — E3 y E5: Thumbs.db fuera de git y documentación al día
+- **Pedido:** plan de pulido, puntos E3 y E5.
+- **Qué se hizo:** `www/media/Thumbs.db` (caché de miniaturas de Windows) sale de git (`git rm --cached`) y `.gitignore` ignora `Thumbs.db` y `/versiones/` (no estaban). Documentación: versión 1.5.0 y fila del instalador 1.5.0 en 7.4 (con la errata `distMPR` corregida), 7.3 y 10.1 sin el "instalador 1.2.0", sección 13 con estado al 2026-11-13 y referencia a `PLAN_PULIDO.md`, `py` en vez de `python` en los comandos de Windows (`CLAUDE.md`, `LEEME_MPR.md`, 6.2, 7.1, 9) y `C:\mprbp` bien escrito en `CLAUDE.md`.
+- **Archivos:** `.gitignore`, `www/media/Thumbs.db` (fuera de git; sigue en el disco), `DOCUMENTACION_TECNICA.md`, `CLAUDE.md`, `LEEME_MPR.md`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Probado:** `git check-ignore` confirma que se ignoran `www/media/Thumbs.db` y `versiones/`.
+
 ### 2026-11-13 — C4: logos con el tamaño que se necesita
 - **Pedido:** plan de pulido, punto C4 (rendimiento sin perder calidad).
 - **Causa:** "logo innova 2025.png" medía 4351×1713 px para verse a 89×35 px (Chromium lo decodifica entero: ~30 MB de memoria) y "MPRBlockly.png" 3055×232 px para verse a 396×30 px (~2,8 MB).

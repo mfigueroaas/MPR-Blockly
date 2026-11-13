@@ -38,7 +38,8 @@ core arduino:avr 1.8.3, avr-gcc, avrdude) y pone encima el código de este repos
    https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 y dejarlo en la raíz del repo.
 2. Instalar herramientas (una vez): `winget install 7zip.7zip NSIS.NSIS` (Node.js y
    Python ya deben estar instalados).
-3. Ejecutar: `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`
+3. Ejecutar: `py tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`
+   (en Windows `py`; `python` también sirve si no abre la tienda de Microsoft)
 4. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe` (la carpeta de trabajo es
    `C:\mprb`, corta a propósito por el límite de 260 caracteres de Windows).
 
@@ -46,7 +47,7 @@ La versión se cambia en `package.json` (`"version"`).
 
 ## Probar cambios en la app instalada (lo más rápido)
 
-`python tools/probar.py` copia a `C:\MPRBlockly` solo los archivos que cambiaron
+`py tools/probar.py` copia a `C:\MPRBlockly` solo los archivos que cambiaron
 (interfaz, bloques, textos, ejemplos, librería Otto). Después basta con F5 en la app.
 El instalador nuevo solo hace falta para repartir la versión a otros PCs.
 

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Producto** | MPR Blockly (programa *Mi Primer Robot*, Crecer en Renca) |
-| **Versión de la app** | 1.4.0 (`package.json`) |
+| **Versión de la app** | 1.5.0 (`package.json`) |
 | **Tipo** | Aplicación de escritorio Windows (Electron) para programar robots Otto DIY por bloques |
 | **Base** | [OttoDIY/blockly](https://github.com/OttoDIY/blockly), master `fdb2026` del 2026‑08‑14 |
 | **Repositorio previsto** | `https://github.com/Admin-Proteinlab/blockly_mpr` (aún no publicado desde esta máquina) |
@@ -382,7 +382,7 @@ El bloque `RTTTL_music` (Zumbador) toca melodías RTTTL con la librería PlayRtt
 ### 6.2 Ciclo de un cambio
 1. Pedir/hacer un cambio **pequeño** (un tema por commit, mensaje en español).
 2. `node --check` sobre los `.js` modificados.
-3. `python tools/probar.py` — copia a `C:\MPRBlockly` solo lo que difiere (`www/`, `userlibs/`, `arduino-cli.yaml`, `electronApp.js`, `index.js`, `factory.js`, `term.js`, `repl.js`). Pide permiso de administrador (la carpeta instalada es de solo lectura para Usuarios) y continúa en una ventana de administrador. `--simular` muestra qué copiaría; `--destino` cambia la ruta.
+3. `py tools/probar.py` — copia a `C:\MPRBlockly` solo lo que difiere (`www/`, `userlibs/`, `arduino-cli.yaml`, `electronApp.js`, `index.js`, `factory.js`, `term.js`, `repl.js`). Pide permiso de administrador (la carpeta instalada es de solo lectura para Usuarios) y continúa en una ventana de administrador. `--simular` muestra qué copiaría; `--destino` cambia la ruta.
 4. En la app: **F5** recarga `www/`. Si cambió `electronApp.js`, cerrar y reabrir. Los cambios de la librería Otto se usan en la próxima compilación.
 5. Verificar en la app; si toca bloques o generadores, **compilar un ejemplo**:
    `compilation\arduino\arduino-cli.exe compile --fqbn arduino:avr:nano:cpu=atmega328old sketch\sketch.ino` desde `C:\MPRBlockly\compilation\arduino`.
@@ -414,7 +414,7 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 1. Descargar `ottoblockly.Setup.1.5.0.exe` de https://github.com/OttoDIY/blockly/releases/tag/v1.5.0 y dejarlo en la raíz del repo (el script verifica su SHA‑256).
 2. Una vez: `winget install 7zip.7zip NSIS.NSIS` (NSIS 3.08 o más nuevo; Node.js y Python ya instalados).
 3. Subir la versión en `package.json`.
-4. `python tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`. Con certificado de firma, agregar `--firma "/sha1 <huella>"` (ver 7.5).
+4. `py tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`. Con certificado de firma, agregar `--firma "/sha1 <huella>"` (ver 7.5).
 5. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe`. En el notebook tarda unos 14 minutos.
 
 `tools/build_installer.py` extrae el instalador oficial, conserva el runtime de Electron y los paquetes AVR mínimos (`arduino:avr` 1.8.3, avr-gcc, avrdude, arduinoOTA), pone encima el código del repo, cambia ícono y datos de versión del `.exe` (resedit‑cli), y compila `build/installer.nsi` con `makensis -INPUTCHARSET UTF8 -DSTAGE -DVERSION -DOUTFILE` (el `.nsi` es UTF-8 sin BOM). La carpeta de trabajo es `C:\mprb` (corta a propósito por el límite de 260 caracteres de Windows). No usa 7za (no abre instaladores NSIS).
@@ -438,7 +438,7 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 | `UNIR_ARCHIVOS.bat`, `UNIR_INSTALADOR_1.1.1.bat` | Reúnen archivos grandes entregados por partes (`.parteNN`) y verifican SHA‑256 (1.1.1: `148ce62d9434b2bca4f3ca6ac26918915f1d63f05710097afa083ac1ac991b87`; 1.1.0: `b4afe355df2b045928cd156d096184adcbe29d07193c39b6f55b87df2a49467c`) |
 | `MPR_cambios_vs_OttoBlockly.patch` | Resumen legible de los cambios reales del parche frente a upstream |
 
-**Importante:** los bundles y los instaladores 1.1.0/1.1.1 **no contienen** los cambios de octubre de 2026. Esos cambios están en el instalador 1.2.0 (`dist\`). Los bundles no se han regenerado (`git bundle create` si se necesitan).
+**Importante:** los bundles y los instaladores 1.1.0/1.1.1 **no contienen** los cambios de octubre de 2026. Esos cambios están en los instaladores desde la 1.2.0 (`dist\`; el último es la 1.5.0, ver 7.4). Los bundles no se han regenerado (`git bundle create` si se necesitan).
 
 ### 7.4 Versiones
 | Versión | Contenido |
@@ -447,8 +447,9 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 | 1.1.1 | Driver CH340 marcado por defecto en el instalador; sin otros cambios de la app |
 | 1.2.0 | Incluye los cambios de octubre 2026 de la sección 8. Generado el 2026-10-02: `dist\MPR_Blockly_Setup_1.2.0.exe`, 138 MB, SHA‑256 `e54bbe5cddc798a0879926154472b35fb9cb1617006fe80d594cb0d0cdbd54e3`. Pendiente de pruebas en otros PCs |
 | 1.3.0 | Cambios del 18 y 23 de octubre de 2026 (velocidad Muy rápido, búsqueda de bloques, canciones RTTTL, bloque map, acentos del instalador, driver CH340 obligatorio). Generado el 2026-10-23: `dist\MPR_Blockly_Setup_1.3.0.exe`, 138 MB, SHA‑256 `549fcf71ed2f3cd6f0c46192006016e940a83dd235998d6def2923ca612b6769`. Pendiente de pruebas |
-| 1.4.0 | Cambios de noviembre 2026: recorrido inicial "Conoce a Otto", mascota Otto 3D (consejos, errores comunes, colores personalizables, paseos; modelos completo/liviano/mínimo que siempre se ven en 3D, también sin GPU), ventana principal siempre maximizada, arreglos visuales (contorno verde del botón de cargar, buscador). Generado el 2026-11-08: `distMPR_Blockly_Setup_1.4.0.exe`, 139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`. Pendiente de pruebas (en especial el 3D en Electron 4 y en un notebook sin GPU) |
+| 1.4.0 | Cambios de noviembre 2026: recorrido inicial "Conoce a Otto", mascota Otto 3D (consejos, errores comunes, colores personalizables, paseos; modelos completo/liviano/mínimo que siempre se ven en 3D, también sin GPU), ventana principal siempre maximizada, arreglos visuales (contorno verde del botón de cargar, buscador). Generado el 2026-11-08: `dist\MPR_Blockly_Setup_1.4.0.exe`, 139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`. Pendiente de pruebas (en especial el 3D en Electron 4 y en un notebook sin GPU) |
 | 1.4.1 | Recorrido fluido en gráfica integrada, recorrido que espera a Otto 3D, Otto sin recorte por vista (13.7) e instalador de un clic y desatendido (`/S`), que cierra solo la app (7.2). Generado el 2026-11-08 en el notebook: `dist\MPR_Blockly_Setup_1.4.1.exe`, 139 MB, SHA‑256 `49749d6553d28c30677b3ddcc3c070064c11034d39e60ab5935b29791c7a90c9`, **sin firma** (7.5). Probado en el notebook: instalación de un clic sobre la 1.4.0 con la app abierta (155 s); desinstalación e instalación silenciosas (72 s y 109 s); preferencias conservadas |
+| 1.5.0 | Mejoras de aprendizaje del evento, etapas 1 y 2 (13.8, 13.9), Otto ataja los errores de programación (4.13, 13.10) y cambios del 2026-11-10 (13.11). Generado el 2026-11-10: `dist\MPR_Blockly_Setup_1.5.0.exe`, 139 MB (139.047.350 bytes), SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`, **sin firma**. Pendiente: ejecutarlo en un PC (el notebook y un PC del colegio). Los cambios posteriores (desde el 2026-11-11) están en git pero todavía en ningún instalador |
 
 La versión de `package.json` se pasa al `.nsi` (`-DVERSION`) al generar el instalador.
 
@@ -527,14 +528,14 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Interruptor bloques / código (editor de texto) | En `www/index.html` quitar el comentario `OCULTO` de `codeORblock`. Ojo: `blocklino.js` igual parte siempre en modo bloques (el texto del editor no se guarda) |
 | Limitador de servos como antes (más lento y suave) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h`: 3 (ahora 240); valores intermedios 150–180; **probar en el robot** |
 
-Después de cualquiera: `python tools/probar.py` y F5.
+Después de cualquiera: `py tools/probar.py` y F5.
 
 
 ---
 
 ## 10. Pendientes, riesgos y puntos a vigilar
 
-1. **Instalador 1.2.0 sin validar:** falta probarlo en otros PCs, idealmente sin internet (instalar, abrir, compilar y subir a un Nano). Los bundles de git no incluyen los cambios de octubre.
+1. **Instalador sin validar en otros PCs:** el último, la 1.5.0, aún no se ha ejecutado en ningún PC (la 1.4.1 se probó solo en el notebook). Falta probarlo en un PC del colegio, idealmente sin internet (instalar, abrir, compilar y subir a un Nano). Los bundles de git no incluyen los cambios desde octubre.
 2. **Verificaciones pendientes** de los cambios marcados "sin confirmar" en la sección 8, en especial las listas desplegables (`mpr_fixes.js`).
 3. **`overflow: hidden` en `html, body`:** se agregó para que la ventana no se desplace; comprobar que ninguna pantalla (modales, ayudas, `factory.html`, `term.html`) necesite desplazarse.
 4. **Estados guardados en `localStorage`** (`card`, `toolbox`, `prog`, `toolboxids`, `content`): los cambios en listas de placas o categorías pueden requerir borrarlos en PCs que ya usaron la app. La placa predeterminada solo se nota en instalaciones sin placa guardada.
@@ -570,20 +571,21 @@ Después de cualquiera: `python tools/probar.py` y F5.
 - Repositorio base: https://github.com/OttoDIY/blockly
 - Instalador oficial 1.5.0: https://github.com/OttoDIY/blockly/releases/tag/v1.5.0
 - Librería Otto original: https://github.com/OttoDIY/OttoDIYLib
-- Más contexto: `LEEME_MPR.md`, `CLAUDE.md`, `BITACORA.md`, `ANALISIS_SERVOS.md`, `git log`
+- Más contexto: `LEEME_MPR.md`, `CLAUDE.md`, `BITACORA.md`, `ANALISIS_SERVOS.md`, `PLAN_PULIDO.md` (trabajo en curso), `git log`
 - **Para retomar el trabajo (por ejemplo en otro PC): sección 13 (Traspaso).**
 
 ---
 
-## 13. Traspaso: estado al 2026-11-08 y cómo continuar (por ejemplo, desde el notebook)
+## 13. Traspaso: estado al 2026-11-13 y cómo continuar (por ejemplo, desde el notebook)
 
-Esta sección resume la sesión del 8 de noviembre de 2026 para retomar el trabajo sin el contexto de la conversación. Detalle cambio a cambio en `BITACORA.md` (entradas "2026-11-08") y mecanismos en 4.6 y 4.7.
+Esta sección resume el estado del proyecto para retomar el trabajo sin el contexto de la conversación. Nació con la sesión del 8 de noviembre de 2026 (13.2 a 13.7 conservan lo de ese día) y se completó con lo hecho hasta el 2026-11-12 (13.8 a 13.11). Detalle cambio a cambio en `BITACORA.md` y `git log`; mecanismos en la sección 4. **El trabajo en curso está en `PLAN_PULIDO.md`** (lista de pulido desde la 1.5.0, con su estado).
 
 ### 13.1 Estado actual
-- **Al 2026-11-10: instalador 1.5.0 generado** (`dist\MPR_Blockly_Setup_1.5.0.exe`, 139 MB, sin firma, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`). Lleva las etapas 1 y 2 (13.8, 13.9), Otto ataja los errores (13.10) y lo del 2026-11-10 (13.11). Se comprobó que lleva los archivos nuevos (`mpr_misiones.js`, `mpr_revision.js`, `blocklino.js`, `index.html`, iguales a los del repositorio). Falta instalarlo y probarlo en el notebook y en un PC del colegio. Lo que sigue en esta sección es el estado del 2026-11-08.
-- **Rama `main`.** `package.json`: 1.4.0. Después del instalador 1.4.0 (`afd7b0e`) vinieron la documentación de traspaso y, el mismo día en el notebook, la revisión de rendimiento (13.7): recorrido fluido, espera del recorrido a Otto 3D y Otto sin recorte por vista. Ver `git log`.
-- **Instalador generado:** `dist\MPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`). `dist/` está en `.gitignore`: el `.exe` no está en git, solo en la carpeta (OneDrive).
-- **Instalado en el PC principal** (`C:\MPRBlockly`) con `python tools/probar.py`, no con el instalador. **En el notebook NB0003** (Ryzen 5 4600H con gráfica Radeon integrada, sin GPU dedicada, como los PCs donde se usará el programa) está el instalador 1.4.0 más los cambios de rendimiento, copiados con `probar.py` el 2026-11-08. Eso incluye el `electronApp.js` de git (mínimo 1100×650).
+- **Al 2026-11-13:** rama `main`, `package.json` en **1.5.0**. El último instalador es el 1.5.0, generado el 2026-11-10 (`dist\MPR_Blockly_Setup_1.5.0.exe`, 139 MB, sin firma, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`; 7.4). Lleva las etapas 1 y 2 (13.8, 13.9), Otto ataja los errores (13.10) y lo del 2026-11-10 (13.11). Se comprobó que lleva los archivos nuevos (`mpr_misiones.js`, `mpr_revision.js`, `blocklino.js`, `index.html`, iguales a los del repositorio). **Falta ejecutarlo** en el notebook y en un PC del colegio.
+- **Después del instalador 1.5.0** (en git, todavía en ningún instalador): los cambios del 2026-11-11 (Otto parte escondido, colores al azar, Otto ya no se corta en el escenario, ayuda del clic derecho a miprimerrobot.utem.cl, una canción nueva) y del 2026-11-12 (textos sin marcas comerciales y el comienzo de `PLAN_PULIDO.md`). Se prueban con `probar.py` en la app instalada o en la copia de prueba `C:\mprbp`. El próximo instalador se generará cuando termine el desarrollo.
+- **Historial del 2026-11-08** (lo que sigue en 13.1 a 13.7 es el estado de ese día): después del instalador 1.4.0 (`afd7b0e`) vinieron la documentación de traspaso y, el mismo día en el notebook, la revisión de rendimiento (13.7): recorrido fluido, espera del recorrido a Otto 3D y Otto sin recorte por vista.
+- **Instalador 1.4.0:** `dist\MPR_Blockly_Setup_1.4.0.exe` (139 MB, SHA‑256 `5c53b29aeb7312f86576974edcaea3f9e25167232a0d7e04f3f8de3b8b44081a`). `dist/` está en `.gitignore`: los `.exe` no están en git, solo en la carpeta (OneDrive).
+- **Instalado en el PC principal** (`C:\MPRBlockly`) con `py tools/probar.py`, no con el instalador. **En el notebook NB0003** (Ryzen 5 4600H con gráfica Radeon integrada, sin GPU dedicada, como los PCs donde se usará el programa) está el instalador 1.4.0 más los cambios de rendimiento, copiados con `probar.py` el 2026-11-08. Eso incluye el `electronApp.js` de git (mínimo 1100×650).
 - **Instalador 1.4.1 generado** (`dist\MPR_Blockly_Setup_1.4.1.exe`, sin firma; 7.4): lleva las correcciones de rendimiento y el instalador de un clic y desatendido (7.2). Los PCs con la 1.4.0 tienen todavía el recorrido lento. Probado el 2026-11-08 en el notebook (7.4), donde quedó instalada la 1.4.1.
 - **Novedades de la 1.4.0** (probadas en un Chrome moderno; el 2026-11-08 también en la app instalada del notebook, ver 13.4):
   1. Arreglos visuales: contorno verde del botón de cargar (`.btn-arduino` en `blocklino.css`) y placeholder cortado del buscador (ancho 330 px).
@@ -598,14 +600,14 @@ Ya están en git (commit `d8558f9`): `Otto DIY 2026.3mf.zip` (1,3 MB; **fuente d
 | Elemento | Qué es | Nota |
 |---|---|---|
 | `Logo Crecer en Renca.svg` | Logo, sin usar aún | |
-| `versiones/` (354 MB) | Instaladores y bundles antiguos | No commitear |
+| `versiones/` (354 MB) | Instaladores y bundles antiguos | No commitear (en `.gitignore` desde el 2026-11-13) |
 | `electronApp.js` | Ya no hay cambio sin commit: el archivo del disco es igual al de git (mínimo **1100×650**). El instalador 1.4.0 trae **1060×700** | En el notebook se reemplazó por el de git al usar `probar.py`. Con la ventana siempre maximizada no influye |
 | Faltan en el disco | Dos PNG del ejemplo de la librería Firebase (ESP32); su ruta en OneDrive mide 282 caracteres. No están en el disco ni en OneDrive | Inofensivo: es una librería que MPR no usa. Se pueden borrar de git o recuperar con `git checkout` |
 
-**Revisión de OneDrive (2026-11-08, desde el notebook):** los 5.136 archivos y las 1.481 carpetas del proyecto, incluido `.git`, están sincronizados y marcados "Siempre disponible en este dispositivo". Se comprobó con el estado del Explorador y con la base de datos de OneDrive, y `git fsck` no da errores. La carpeta raíz igual aparece "Sincronización pendiente" porque OneDrive excluye siempre `www/media/Thumbs.db`, una caché de miniaturas de Windows que viene de Otto Blockly y está en git. Por eso en el otro PC ese archivo figura como borrado. Para que la carpeta quede en verde hay que sacar `Thumbs.db` de git y agregarlo a `.gitignore`.
+**Revisión de OneDrive (2026-11-08, desde el notebook):** los 5.136 archivos y las 1.481 carpetas del proyecto, incluido `.git`, están sincronizados y marcados "Siempre disponible en este dispositivo". Se comprobó con el estado del Explorador y con la base de datos de OneDrive, y `git fsck` no da errores. La carpeta raíz igual aparece "Sincronización pendiente" porque OneDrive excluye siempre `www/media/Thumbs.db`, una caché de miniaturas de Windows que viene de Otto Blockly y está en git. Por eso en el otro PC ese archivo figura como borrado. El 2026-11-13 se sacó de git (`git rm --cached`) y `.gitignore` lo cubre, así que la carpeta debería quedar en verde.
 
 ### 13.3 Probar en el notebook (checklist)
-1. Instalar `MPR_Blockly_Setup_1.4.0.exe` (encima de la versión anterior o desinstalando antes).
+1. Instalar el último instalador, hoy `MPR_Blockly_Setup_1.5.0.exe` (encima de la versión anterior o desinstalando antes). La lista se escribió para la 1.4.0 y sigue valiendo; desde la 1.5.0 el recorrido tiene 9 pasos (13.9), y desde el 2026-11-11 (aún sin instalador) Otto parte escondido (punto 5).
 2. **Ventana:** debe abrir maximizada y no poder restaurarse. Sin botón de maximizar; minimizar y cerrar funcionan.
 3. **Recorrido** (primera vez): 7 pasos; el paso del puerto USB solo aparece en la app instalada. Se repite con "?". Debe ir fluido: 55–60 cuadros/s con `node tools/medir_app.mjs recorrido` (6.5).
 4. **Mascota 3D:** abrir F12 (consola) y buscar `[Otto 3D]`. Muestra el modelo elegido (`completo`, `liviano` o `minimo`), triángulos, llamadas, cuadros/s y memoria. Si baja de nivel por lentitud aparece `[Otto 3D] equipo lento: modelo ...`.
@@ -619,8 +621,8 @@ Ya están en git (commit `d8558f9`): `Otto DIY 2026.3mf.zip` (1,3 MB; **fuente d
 ### 13.4 Temas pendientes o por revisar
 - **Verificado el 2026-11-08:** `three.min.js` r128 y WebGL funcionan en Electron 4 en el notebook, tanto con la gráfica integrada (ANGLE/Direct3D 11, modelo completo, 12 cuadros/s en reposo) como simulando un PC sin GPU con `--disable-gpu` (SwiftShader, modelo mínimo, modo económico). Falta probarlo en un PC del colegio con gráfica Intel (`tools/medir_app.mjs`, 6.5).
 - **Revisión del usuario en el notebook:** el 3D funcionaba bien; el recorrido iba muy lento (corregido, ver 13.7). Regla del usuario: los PCs no tienen GPU dedicada sino la gráfica integrada del procesador, y las optimizaciones **no pueden bajar gráficos, calidad de animaciones ni quitar funciones** del programa ni de Otto 3D.
-- **Instalador 1.4.1:** generado y probado en el notebook. Falta probarlo en un PC del colegio (gráfica Intel, quizás con el Control inteligente de aplicaciones activo).
-- **Mejoras de aprendizaje (13.8):** la Etapa 1 está hecha e instalada en el notebook con `probar.py` (aún no hay instalador con ella). La Etapa 2 también está hecha (13.9).
+- **Instaladores:** el 1.4.1 se probó en el notebook; el 1.5.0 está generado pero aún no se ha ejecutado en ningún PC. Falta probar en un PC del colegio (gráfica Intel, quizás con el Control inteligente de aplicaciones activo).
+- **Mejoras de aprendizaje (13.8, 13.9):** las etapas 1 y 2 están hechas, instaladas en el notebook con `probar.py` e incluidas en el instalador 1.5.0.
 - **Certificado de firma de código:** hoy Windows muestra "editor desconocido" y, si el archivo viene de Internet, "Windows protegió su PC". Con el Control inteligente de aplicaciones activo, bloquearía el programa. Opciones y costos en 7.5; el script ya firma todo con `--firma`.
 - **Consumo en reposo de Otto:** ~9 % de un núcleo en el notebook; la app con Otto en pausa usa ~0,15 %. Bajarlo cambiaría lo que se ve o cómo se comporta (menos cuadros, pausar a Otto sin foco o tras minutos sin actividad), así que queda a decisión del usuario (13.7).
 - **Error heredado al cargar** (ya estaba en la 1.4.0 y en la base de Otto Blockly): los pedidos a `microbit.js` y `microbit_es.js`, que no existen, se quitaron el 2026-11-10. Sigue esto: `typing.js:95` lanza `TypeError` porque `Blockly.Blocks.digital_read` no existe, así que las líneas 95–161 de `typing.js` (tipos de dato de algunos bloques) nunca se ejecutan. Si se corrige, hacerlo con cuidado: afecta los tipos de las variables en el código generado.
