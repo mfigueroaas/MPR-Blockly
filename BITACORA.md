@@ -12,6 +12,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — B2, B3 y C6: Detener, calibración y no recompilar lo mismo
+- **Pedido:** plan de pulido, puntos B2, B3 y C6.
+- **Qué se hizo:**
+  - B2 (`mpr_subida.js`, `cancelar`): "Detener" mataba primero al proceso padre y después `taskkill /T` ya no encontraba el árbol, así que avrdude/arduino-cli (Go, no cierra a sus hijos) quedaban vivos con el puerto tomado. Ahora `h.kill()` se usa solo si taskkill falla. Comprobado por el subagente con un árbol de procesos real.
+  - B3 (`mpr_calibracion.js`): cerrar la calibración durante su subida ya no deja el puerto abierto (número de sesión; el callback de subida y el de apertura del puerto revisan que la calibración siga abierta, y un `close`/`error` de un puerto viejo no borra el actual).
+  - C6 (`mpr_subida.js`): cada compilación correcta (Verificar, flecha o precompilación) anota programa, placa, carpeta y fecha/tamaño del `.hex`; la flecha se salta la compilación (~10 s) si todo coincide y el `.hex` sigue igual. Ante cualquier diferencia compila. Reemplaza a `MPRSubida.verificado`.
+  - La lista de puertos no se consulta con la ventana minimizada; al volver se revisa enseguida.
+- **Archivos:** `www/js/mpr_subida.js`, `www/js/mpr_calibracion.js`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador. Falta actualizar 4.9 de `DOCUMENTACION_TECNICA.md` (menciona `MPRSubida.verificado`).
+- **Probado:** en la app (copia `C:\mprbp`, sin robot): Verificar funciona (12 s); después, `compiladoVigente` reconoce el mismo programa y rechaza otro código u otra placa; abrir y cerrar la calibración sin errores. **Falta con el robot (COM7):** Detener durante "Cargando…" sin que quede `avrdude.exe`; cerrar la calibración durante "Preparar Otto" y subir enseguida; mandar dos veces el mismo programa (la 2.ª sin compilar).
+
 ### 2026-11-13 — B1, B4, B5, B6, B7 y C7: abrir archivos y la vista de código
 - **Pedido:** plan de pulido, puntos B1, B4, B5, B6, B7 (en parte) y C7.
 - **Qué se hizo:**

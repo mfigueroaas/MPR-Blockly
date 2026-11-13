@@ -8,6 +8,7 @@
 
 var MPRCalibracion = {
 	abierto: false,
+	sesion: 0,                    // sube al cerrar: lo que termina después de cerrar no abre el puerto
 	puerto: null,
 	trims: [0, 0, 0, 0],          // pierna izq., pierna der., pie izq., pie der. (grados)
 	guardados: null,              // los que Otto tiene guardados en su memoria (se actualiza al guardar)
@@ -150,6 +151,7 @@ MPRCalibracion.abrir = function() {
 MPRCalibracion.cerrar = function() {
 	var self = MPRCalibracion;
 	self.abierto = false;
+	self.sesion++;   // MPR: lo que estaba en curso (subida, apertura del puerto) ya no abre nada (PLAN_PULIDO B3)
 	var e = document.getElementById('mpr_cal');
 	if (e) e.style.display = 'none';
 	self.cerrarPuerto();
@@ -183,7 +185,11 @@ MPRCalibracion.preparar = function() {
 	document.getElementById('mpr_cal_ajustes').style.display = 'none';
 	self.estado(self.msg('cal_subiendo', 'Subiendo el programa de calibración...'));
 	localStorage.setItem('verif', false);
+	var sesion = self.sesion;
 	MPRSubida.cargar(self.PROGRAMA, function(ok, com) {
+		// MPR: si cerraron la calibración mientras subía (~15 s), no se abre el puerto: quedaba tomado y la flecha
+		// ya no podía subir (PLAN_PULIDO B3)
+		if (!self.abierto || sesion !== self.sesion) return;
 		if (!ok) { self.estado(self.msg('cal_no_subio', 'No se pudo subir el programa: revisa el mensaje y el cable.'), 'error'); return; }
 		setTimeout(function() { $('#message').modal('hide'); }, 1500);
 		self.abrirPuerto(com);
@@ -191,21 +197,25 @@ MPRCalibracion.preparar = function() {
 };
 
 MPRCalibracion.abrirPuerto = function(com) {
-	var self = MPRCalibracion, SP = MPRSubida.o.sp, resto = '';
+	var self = MPRCalibracion, SP = MPRSubida.o.sp, resto = '', p;
 	self.estado(self.msg('cal_conectando', 'Conectando con Otto...'));
 	try {
-		self.puerto = new SP(com, { baudRate: 9600 }, function(err) {
-			if (err) { self.puerto = null; self.estado(self.msg('cal_sin_puerto', 'No pude abrir el puerto de Otto.') + ' ' + err.message, 'error'); }
+		p = self.puerto = new SP(com, { baudRate: 9600 }, function(err) {
+			if (err) { if (self.puerto === p) { self.puerto = null; self.estado(self.msg('cal_sin_puerto', 'No pude abrir el puerto de Otto.') + ' ' + err.message, 'error'); } return; }
+			// MPR: si cerraron la calibración mientras el puerto se abría, cerrarPuerto no lo cerró (aún no estaba
+			// abierto): se cierra ahora para no dejarlo tomado (PLAN_PULIDO B3)
+			if (self.puerto !== p || !self.abierto) { try { p.close(); } catch (e) {} }
 		});
 	} catch (e) { self.puerto = null; self.estado(String(e), 'error'); return; }
-	self.puerto.on('data', function(datos) {
+	p.on('data', function(datos) {
+		if (self.puerto !== p) return;
 		resto += datos.toString();
 		var lineas = resto.split(/\r?\n/);
 		resto = lineas.pop();
 		lineas.forEach(self.alRecibir);
 	});
-	self.puerto.on('close', function() { self.puerto = null; });
-	self.puerto.on('error', function(e) { self.estado(String(e && e.message || e), 'error'); });
+	p.on('close', function() { if (self.puerto === p) self.puerto = null; });   // MPR: un puerto viejo no borra al nuevo
+	p.on('error', function(e) { if (self.puerto === p) self.estado(String(e && e.message || e), 'error'); });
 	// Al abrir el puerto la placa se reinicia: el programa avisa sus ajustes guardados ("MPR_CAL G ...") al arrancar
 	clearTimeout(self.tEspera);
 	self.tEspera = setTimeout(function() { if (!self.guardados) self.enviar('?'); }, 5000);

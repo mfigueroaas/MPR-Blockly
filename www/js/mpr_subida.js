@@ -29,6 +29,7 @@ var MPRSubida = {
 	listo: false,
 	ocupada: false,
 	precompilando: null,
+	ultimaCompilacion: null,   // { codigo, fqbn, dir, hex, fecha, tam } de la última compilación correcta (C6)
 	hijos: [],          // procesos en curso (arduino-cli, avrdude): se detienen si el envío se traba
 	cancelada: null     // 'cable' (Otto se desenchufó durante la espera) o 'boton' (el niño apretó Detener)
 };
@@ -54,7 +55,9 @@ MPRSubida.iniciar = function(o) {
 	self.avrdude = self.buscarAvrdude();
 	self.listo = true;
 	self.actualizarPuertos(true);
-	setInterval(function() { self.actualizarPuertos(false); }, self.CADA_MS_PUERTOS);
+	// MPR: con la ventana minimizada no se revisan los puertos (PLAN_PULIDO); al volver a verla se revisan enseguida
+	setInterval(function() { if (!document.hidden) self.actualizarPuertos(false); }, self.CADA_MS_PUERTOS);
+	document.addEventListener('visibilitychange', function() { if (!document.hidden) self.actualizarPuertos(false); });
 	$(o.portserie).on('mouseover focus', function() { self.actualizarPuertos(false); });
 	setTimeout(self.precompilarCuandoListo, 8000);
 };
@@ -143,8 +146,62 @@ MPRSubida.ejecutar = function(exe, args, op) {
 	});
 };
 
-MPRSubida.compilar = function(fqbn, baja) {
-	return MPRSubida.ejecutar(MPRSubida.cli, ['compile', '--fqbn', fqbn, 'sketch/sketch.ino'], { baja: baja });
+// codigo: el texto que se escribió en sketch.ino antes de compilar; si compila bien, queda anotado (ultimaCompilacion)
+// para no volver a compilarlo si se manda igual (ver compiladoVigente)
+MPRSubida.compilar = function(fqbn, baja, codigo) {
+	var self = MPRSubida;
+	self.ultimaCompilacion = null;   // MPR: mientras compila (o si falla) lo anterior ya no vale (PLAN_PULIDO C6)
+	return self.ejecutar(self.cli, ['compile', '--fqbn', fqbn, 'sketch/sketch.ino'], { baja: baja }).then(function(r) {
+		if (r.ok && typeof codigo == 'string') self.ultimaCompilacion = self.huellaCompilado(fqbn, codigo);
+		return r;
+	});
+};
+
+// ---------------------------------------------------------------- no recompilar lo mismo (PLAN_PULIDO C6)
+// MPR: arduino-cli 0.14 deja lo compilado en %TEMP%\arduino-sketch-<MD5 de la carpeta del programa> y "upload" sube el
+// sketch.ino.hex de ahí. Si el programa y la placa son los de la última compilación correcta y ese .hex sigue igual
+// (misma fecha y tamaño), la flecha va directo a enviar. Ante cualquier duda, compila.
+MPRSubida.carpetaCompilado = function(fqbn) {
+	var self = MPRSubida, tmp = self.os.tmpdir();
+	var boceto = self.path.resolve(self.o.basepath, 'sketch', 'sketch.ino');
+	function sirve(d) {
+		try {
+			var op = JSON.parse(self.fs.readFileSync(self.path.join(tmp, d, 'build.options.json'), 'utf8'));
+			return op.fqbn == fqbn && String(op.sketchLocation).toLowerCase() == boceto.toLowerCase();
+		} catch (e) { return false; }
+	}
+	try {
+		var md5 = require('crypto').createHash('md5').update(self.path.dirname(boceto)).digest('hex').toUpperCase();
+		if (sirve('arduino-sketch-' + md5)) return self.path.join(tmp, 'arduino-sketch-' + md5);
+		var dirs = self.fs.readdirSync(tmp);
+		for (var i = 0; i < dirs.length; i++) {
+			if (dirs[i].indexOf('arduino-sketch-') == 0 && sirve(dirs[i])) return self.path.join(tmp, dirs[i]);
+		}
+	} catch (e) {}
+	return null;
+};
+
+MPRSubida.huellaCompilado = function(fqbn, codigo) {
+	var self = MPRSubida, dir = self.carpetaCompilado(fqbn);
+	if (!dir) return null;
+	try {
+		var hex = self.path.join(dir, 'sketch.ino.hex'), st = self.fs.statSync(hex);
+		if (!st.size) return null;
+		return { codigo: codigo, fqbn: fqbn, dir: dir, hex: hex, fecha: st.mtime.getTime(), tam: st.size };
+	} catch (e) { return null; }
+};
+
+MPRSubida.compiladoVigente = function(fqbn, codigo) {
+	var self = MPRSubida, u = self.ultimaCompilacion;
+	if (!u || u.codigo !== codigo || u.fqbn !== fqbn) return false;
+	try {
+		var st = self.fs.statSync(u.hex);
+		if (st.mtime.getTime() != u.fecha || st.size != u.tam) return false;
+		var op = JSON.parse(self.fs.readFileSync(self.path.join(u.dir, 'build.options.json'), 'utf8'));
+		if (op.fqbn != fqbn) return false;
+		// y sketch.ino sigue siendo ese programa (nadie lo reemplazó desde entonces)
+		return self.fs.readFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), 'utf8') === codigo;
+	} catch (e) { return false; }
 };
 
 MPRSubida.enviar = function(fqbn, com) {
@@ -260,9 +317,13 @@ MPRSubida.cancelar = function(motivo) {
 	if (!self.ocupada || self.cancelada) return;
 	self.cancelada = motivo;
 	self.dejarDeVigilar();
+	// MPR: h.kill() solo si taskkill falló. Si se mataba al padre enseguida, cuando taskkill buscaba el árbol el padre ya
+	// no existía y sus hijos (avrdude) quedaban vivos con el puerto tomado (PLAN_PULIDO B2)
 	self.hijos.forEach(function(h) {
-		try { self.cp.execFile('taskkill', ['/pid', String(h.pid), '/T', '/F'], { windowsHide: true }, function() {}); } catch (e) {}
-		try { h.kill(); } catch (e) {}
+		var matar = function() { try { h.kill(); } catch (e) {} };
+		try {
+			self.cp.execFile('taskkill', ['/pid', String(h.pid), '/T', '/F'], { windowsHide: true }, function(err) { if (err) matar(); });
+		} catch (e) { matar(); }
 	});
 };
 
@@ -315,8 +376,8 @@ MPRSubida.sinPuerto = function() {
 };
 
 // ---------------------------------------------------------------- verificar (botón del visto bueno)
-// Como el paso 1 de la flecha naranja: mismo cuadro, errores explicados con su código. Solo si compila queda
-// "verificado" ese mismo código (antes quedaba marcado aunque fallara y la flecha mandaba lo último que sí compiló).
+// Como el paso 1 de la flecha naranja: mismo cuadro, errores explicados con su código. Solo si compila queda anotado
+// ese mismo código (ultimaCompilacion; antes quedaba marcado aunque fallara y la flecha mandaba lo último que sí compiló).
 MPRSubida.verificar = function(codigo) {
 	var self = MPRSubida, carte = localStorage.getItem('card');
 	if (self.ocupada) return;
@@ -327,11 +388,10 @@ MPRSubida.verificar = function(codigo) {
 	(esperando || Promise.resolve()).then(function() {
 		if (self.cancelada) return { ok: false, texto: 'detenido' };
 		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
-		return self.compilar(window.profile[carte].upload_arg, false);
+		return self.compilar(window.profile[carte].upload_arg, false, codigo);
 	}).then(function(c) {
-		if (!c.ok) { self.verificado = null; self.mostrarError('compila', c.texto); return; }
+		if (!c.ok) { self.mostrarError('compila', c.texto); return; }
 		self.recordar('compila', c.ms);
-		self.verificado = { codigo: codigo, placa: carte };
 		if (typeof MPRConsejos != 'undefined') MPRConsejos.registrar(null);
 		var div = self.o.messageDiv;
 		div.style.color = '#009000';
@@ -362,19 +422,18 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	}
 	self.ocupada = true;
 	self.cancelada = null;
-	// "Verificar" ya compiló exactamente este código para esta placa: no se vuelve a compilar
-	var v = self.verificado, verificado = !!(v && v.codigo == codigo && v.placa == carte);
-	self.verificado = null;
 	localStorage.setItem('verif', false);
 	var esperando = self.precompilando;
 	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0), 'compila');
 	(esperando || Promise.resolve()).then(function() {
 		if (self.cancelada) return [{ ok: false, texto: 'detenido' }, {}];
-		var compilacion;
-		if (verificado) compilacion = Promise.resolve({ ok: true, saltada: true });
+		var compilacion, fqbn = window.profile[carte].upload_arg;
+		// MPR: si este mismo programa ya se compiló bien para esta placa (con Verificar o con la flecha) y lo compilado
+		// sigue ahí, no se vuelve a compilar (PLAN_PULIDO C6; antes solo justo después de Verificar)
+		if (self.compiladoVigente(fqbn, codigo)) compilacion = Promise.resolve({ ok: true, saltada: true });
 		else {
 			self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
-			compilacion = self.compilar(window.profile[carte].upload_arg, false);
+			compilacion = self.compilar(fqbn, false, codigo);
 		}
 		return Promise.all([compilacion, self.averiguarPlaca(com)]);
 	}).then(function(r) {
@@ -422,7 +481,7 @@ MPRSubida.precompilar = function() {
 	try {
 		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), self.PROGRAMA_PRECOMPILA);
 	} catch (e) { return; }
-	self.precompilando = self.compilar(perfil.upload_arg, true).then(function(r) {
+	self.precompilando = self.compilar(perfil.upload_arg, true, self.PROGRAMA_PRECOMPILA).then(function(r) {
 		console.log('[MPR] precompilación ' + (r.ok ? 'lista' : 'con error') + ' en ' + r.ms + ' ms');
 		self.precompilando = null;
 	});

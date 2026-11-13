@@ -39,8 +39,8 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 
 ## B. Fallos de la app
 - [x] B1. F5 recarga el ejemplo o `.bloc` original (la URL conserva `?url=`) y se pierden los cambios.
-- [ ] B2. "Detener" durante la subida puede dejar avrdude vivo con el puerto tomado (`mpr_subida.js`).
-- [ ] B3. Cerrar la calibración durante su subida deja el puerto abierto (`mpr_calibracion.js`).
+- [x] B2. "Detener" durante la subida puede dejar avrdude vivo con el puerto tomado (`mpr_subida.js`).
+- [x] B3. Cerrar la calibración durante su subida deja el puerto abierto (`mpr_calibracion.js`).
 - [x] B4. Abrir un `.bloc` dañado puede borrar la mesa sin aviso (`blocklino.js`).
 - [x] B5. Soltar un archivo sobre la ventana navega fuera de la app (`electronApp.js`).
 - [x] B6. Volver a abrir el mismo archivo no hace nada (el `<input>` no se vacía).
@@ -55,7 +55,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [x] C4. Logo "innova 2025" de 4351×1713 px para 35 px de alto (~30 MB de memoria) y `MPRBlockly.png`.
 - [ ] C5. Primera compilación en un PC nuevo: 33 s; con la caché del core en el instalador, ~19 s y no se pierde
       al limpiar `%TEMP%`.
-- [ ] C6. No recompilar si el programa y la placa no cambiaron (~10 s por reenvío).
+- [x] C6. No recompilar si el programa y la placa no cambiaron (~10 s por reenvío).
 - [x] C7. La vista de código se regenera con eventos de interfaz: ignorarlos.
 - [ ] C8 (menores): `webglcontextlost` sin manejo; `getBoundingClientRect` en cada `mousemove`; JS que no se usa.
 
