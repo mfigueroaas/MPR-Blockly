@@ -31,7 +31,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
       código viejo.
 - [x] A6. "Esperar" en segundos se desborda desde 33 s (`int` de 16 bits); "cada X" arma el nombre de su
       variable con el valor (con 0.5 no compila; dos bloques iguales comparten temporizador).
-- [-] A7. (REVERTIDO el 2026-11-13: en la 1.5.1 el sensor "no tomaba los valores"; volver a evaluarlo con el robot a pilas) Ultrasonido sin límite de espera: sin eco cada lectura tarda 1 s y devuelve 0 cm ("cerca").
+- [x] A7. (Revertido el 2026-11-13 y retomado en F5 con el disparo de 25 µs que midió Víctor: con 10 µs el sensor clon recién encendido no responde) Ultrasonido sin límite de espera: sin eco cada lectura tarda 1 s y devuelve 0 cm ("cerca").
 - [x] A8. Bloques de sonido sin "Configuración Otto": la revisión previa no lo detecta (`mpr_revision.js`).
 - [x] A9 (menores, librería Otto): `bendTones` puede no terminar; `_tone` con duración negativa.
 - [x] A10 (menores): "y"/"o" generan `&`/`|`; "es primo" genera JavaScript; sin `randomSeed`; RTTTL
@@ -84,6 +84,7 @@ en dos fases, conexión escalonada de servos.
       reservados en el generador. **Vuelve `OTTO_DIFF_LIMIT_DEFAULT` = 3 (era 240)**: probar el largo del paso en el robot.
 - [x] F2. Alinear el simulador ("Probar en pantalla", `www/js/mpr_otto_lib.js`) con la librería nueva.
 - [x] F3. Actualizar `DOCUMENTACION_TECNICA.md` 5.5, `ANALISIS_SERVOS.md`, y la regla de `CLAUDE.md`/`LEEME_MPR.md`.
+- [x] F5. Paquete `LIB_OTTO_SENSORES.zip` (Víctor, 2026-11-13): librería idéntica (NUEVA + `getDistance`/`getNoise`/`getSensor`) y su arreglo del ultrasonido llevado a `sensors.js` (disparo 25 µs, límite 25 ms, 400 cm sin eco): retoma A7 con la causa medida.
 - [ ] F4. Probar con el robot (USB y pilas): `examples/OttoValidacionFinal`, ejemplos MPR, calibración (ver BITACORA).
 
 ## Estado al 2026-11-13 (fin de la sesión)

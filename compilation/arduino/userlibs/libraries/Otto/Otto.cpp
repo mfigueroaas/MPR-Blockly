@@ -531,6 +531,8 @@ void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int Buzze
 
   //-- Techo de velocidad angular agregada (Fase 2b). La Fase 4 lo hara dinamico.
   _aggRate = OTTO_AGG_RATE_DEFAULT;
+  //-- Sensores: fuera de cualquier #if, no dependen del freno.
+  _usLastMs = 0;  _usLastCm = (float)OTTO_US_SIN_ECO_CM;
   _mvSplit = 0;
   _mvChunks = 1;
 
@@ -2028,4 +2030,89 @@ void Otto::disableServoLimit() {
   for (int i = 0; i < 4; i++) {
     servo[i].DisableLimiter();
   }
+}
+//==============================================================================
+//-- SENSORES (anadido 2026-11-13, rama feat/sensores)
+//==============================================================================
+//
+//-- POR QUE ESTO NO ESTABA. El generador de Blockly emite Otto.getSensor() y la
+//-- libreria no lo tenia, asi que cualquier programa con ese bloque moria con
+//-- "error: 'class Otto' has no member named 'getSensor'". No es algo que se
+//-- rompiera: el fork llego asi, y se comprobo en b2c182f.
+//
+//-- EL ENREDO DE NOMBRES, que conviene conocer antes de tocar nada:
+//--
+//--   bloque            emite               etiqueta en espanol   existe el bloque
+//--   otto_getsensor    Otto.getSensor()    "Ruido medido"        SI
+//--   (ninguno)         --                  "Distancia [cm]"      NO: el texto
+//--                                                               esta en el
+//--                                                               idioma pero el
+//--                                                               bloque no se
+//--                                                               define en
+//--                                                               ottoesp.js
+//--
+//-- O sea que el unico bloque Otto de sensor que existe es el de RUIDO, aunque su
+//-- funcion se llame getSensor. Por eso getSensor() es alias de getNoise(): si
+//-- devolviera distancia, un bloque etiquetado "Ruido medido" mentiria, que es
+//-- peor que no compilar.
+//--
+//-- PARA MEDIR DISTANCIA DESDE BLOCKLY HAY DOS CAMINOS, y los dos son decision
+//-- del propietario porque tocan www/:
+//--   a) usar el bloque generico "ultrasonic_sensor" de la categoria Sensores,
+//--      que NO depende de esta libreria: se genera su propia funcion con
+//--      pulseIn y ya funciona hoy. Ojo: usa el pulseIn por defecto, o sea
+//--      timeout de UN SEGUNDO, con lo que puede congelar una marcha.
+//--   b) definir el bloque otto_getdistance en ottoesp.js -el texto en espanol ya
+//--      existe- y que emita Otto.getDistance(), que es lo que se anade aqui.
+//==============================================================================
+
+float Otto::getDistance() {
+  //-- El HC-SR04 necesita ~60 ms entre disparos o le llega el eco del anterior.
+  //-- Entre medias se devuelve la ultima lectura: es correccion de hardware, no
+  //-- un atajo, y de paso evita que un bucle de Blockly lo dispare a destiempo.
+  const unsigned long ahora = millis();
+  if (_usLastMs != 0 && (ahora - _usLastMs) < (unsigned long)OTTO_US_INTERVALO_MS) {
+    return _usLastCm;
+  }
+  _usLastMs = ahora;
+
+  pinMode(OTTO_US_TRIGGER_PIN, OUTPUT);
+  pinMode(OTTO_US_ECHO_PIN, INPUT);
+
+  //-- Pulso de disparo: 10 us en alto, precedido de un nivel bajo limpio.
+  digitalWrite(OTTO_US_TRIGGER_PIN, LOW);
+  delayMicroseconds(4);
+  digitalWrite(OTTO_US_TRIGGER_PIN, HIGH);
+  delayMicroseconds(OTTO_US_DISPARO_US);   //-- 25, no 10: ver la nota en Otto.h
+  digitalWrite(OTTO_US_TRIGGER_PIN, LOW);
+
+  //-- TIMEOUT EXPLICITO. Sin el, pulseIn espera un segundo entero cuando no hay
+  //-- eco y se lleva por delante el temporizado de la marcha.
+  const unsigned long dur = pulseIn(OTTO_US_ECHO_PIN, HIGH, OTTO_US_TIMEOUT_US);
+
+  if (dur == 0) {                       //-- no volvio eco dentro del plazo
+    _usLastCm = (float)OTTO_US_SIN_ECO_CM;
+    return _usLastCm;
+  }
+
+  //-- 58 us por centimetro de ida y vuelta: 2 cm / 0.0343 cm-por-us.
+  float cm = (float)dur / 58.0f;
+  if (cm > (float)OTTO_US_SIN_ECO_CM) cm = (float)OTTO_US_SIN_ECO_CM;
+  _usLastCm = cm;
+  return cm;
+}
+
+int Otto::getNoise() {
+  //-- Promedio corto: la salida de estos modulos de sonido es muy ruidosa y una
+  //-- sola lectura da saltos que no significan nada.
+  long suma = 0;
+  for (uint8_t i = 0; i < (uint8_t)OTTO_NOISE_MUESTRAS; i++) {
+    suma += analogRead(OTTO_NOISE_PIN);
+  }
+  return (int)(suma / (long)OTTO_NOISE_MUESTRAS);
+}
+
+//-- Alias del nombre que emite el generador. Ver el enredo de nombres arriba.
+float Otto::getSensor() {
+  return (float)getNoise();
 }

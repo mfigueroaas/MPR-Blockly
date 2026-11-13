@@ -573,6 +573,87 @@
 #ifndef OTTO_SHAKE_CROSS_DEG
   #define OTTO_SHAKE_CROSS_DEG 30
 #endif
+
+// ===== Sensores: ultrasonido y ruido =====
+// Este fork NUNCA tuvo soporte de sensores: su propio README documenta un fichero
+// "US contains the functions of the ultrasonic sensor" que no existe, y tampoco
+// existia en el estado inicial del proyecto (b2c182f). El generador de Blockly,
+// en cambio, SI emite Otto.getSensor(), asi que ese bloque fallaba al compilar:
+//
+//     error: 'class Otto' has no member named 'getSensor'
+//
+// Esto lo arregla por el lado de la libreria y de forma ADITIVA: metodos nuevos,
+// ninguna firma tocada, ningun programa existente afectado.
+//
+// PINES: los del README de la libreria, que son los que anuncia el propio bloque
+// en espanol ("Pin Trigger 8 Pin Echo 9"). Macros, por si el montaje es otro.
+#ifndef OTTO_US_TRIGGER_PIN
+  #define OTTO_US_TRIGGER_PIN 8
+#endif
+#ifndef OTTO_US_ECHO_PIN
+  #define OTTO_US_ECHO_PIN 9
+#endif
+
+// Alcance maximo que declara el bloque: 400 cm. El eco tarda en ir y volver
+// 800 / 0.0343 = 23324 us, asi que 25000 cubre el rango entero.
+//
+// ESTO IMPORTA MAS DE LO QUE PARECE: pulseIn() es BLOQUEANTE hasta su timeout, y
+// el de Arduino son 1000000 us por defecto. Un getDistance() ingenuo dentro de un
+// bucle congelaria el robot UN SEGUNDO cada vez que no hubiera nada delante, y
+// arruinaria el temporizado de las marchas, que es justo lo que costo todo el
+// trabajo de las fases 1 a 8. Con 25 ms el peor caso es ~1.2 tramas de la
+// libreria Servo: molesto, pero acotado, y solo cuando no hay eco.
+#ifndef OTTO_US_TIMEOUT_US
+  #define OTTO_US_TIMEOUT_US 25000UL
+#endif
+
+// ANCHO DEL PULSO DE DISPARO. El datasheet de ElecFreaks pide "at least 10us" y
+// la tabla repite "10uS TTL pulse", SIN TECHO. Durante mucho tiempo use 10
+// exactos por ser lo que dice el documento... y el modulo de esta placa NO
+// RESPONDE a 10 us. Medido el 2026-11-13 con un barrido de anchos:
+//
+//     ancho   lecturas validas
+//      10 us        0 / 4      <- el valor del datasheet: NO FUNCIONA
+//      15 us        1 / 4
+//      20 us        4 / 4
+//      30 us        4 / 4
+//      50 us        4 / 4
+//
+// Es un clon que pide mas de lo que promete su propia hoja. Se usan 25 us: por
+// encima del 20 que ya funciona al 100%, con margen, y dentro de "at least 10us"
+// porque la especificacion no pone limite superior. Los 15 us extra no cuestan
+// nada: son 15 microsegundos por medida.
+//
+// LECCION: "al menos X" en una hoja de datos no significa "exactamente X", y con
+// clones conviene probar el rango en vez de fiarse del minimo.
+#ifndef OTTO_US_DISPARO_US
+  #define OTTO_US_DISPARO_US 25
+#endif
+
+// Que se devuelve cuando no vuelve eco. GRANDE a proposito: asi un bloque del
+// tipo "si distancia < 15 entonces esquiva" se comporta como "no hay nada
+// delante" en vez de dispararse con un 0.
+#ifndef OTTO_US_SIN_ECO_CM
+  #define OTTO_US_SIN_ECO_CM 400
+#endif
+
+// El HC-SR04 necesita ~60 ms entre disparos para que no le llegue el eco del
+// anterior. No es una optimizacion, es requisito del sensor. Entre medias se
+// devuelve la ultima lectura, lo que ademas evita que un bucle de Blockly lo
+// machaque a mil disparos por segundo.
+#ifndef OTTO_US_INTERVALO_MS
+  #define OTTO_US_INTERVALO_MS 60
+#endif
+
+// Sensor de ruido. OJO: este pin NO esta verificado en esta placa. El A6 es el
+// habitual en los montajes de Otto DIY, pero aqui no hay sensor de sonido
+// montado, asi que si se instala uno hay que comprobar el pin antes de fiarse.
+#ifndef OTTO_NOISE_PIN
+  #define OTTO_NOISE_PIN A6
+#endif
+#ifndef OTTO_NOISE_MUESTRAS
+  #define OTTO_NOISE_MUESTRAS 4
+#endif
 #ifndef OTTO_OSC_RATE
   #define OTTO_OSC_RATE 47
 #endif
@@ -668,7 +749,24 @@ class Otto
     void enableServoLimit(int speed_limit_degree_per_sec = SERVO_LIMIT_DEFAULT);
     void disableServoLimit();
 
+    //-- SENSORES (aditivos; los pines y los porques, en el bloque de macros).
+    //-- getDistance(): distancia en cm del HC-SR04, o OTTO_US_SIN_ECO_CM si no
+    //--   vuelve eco. Bloquea como mucho OTTO_US_TIMEOUT_US.
+    //-- getNoise():    lectura del sensor de sonido, 0..1023.
+    //-- getSensor():   el nombre que emite el generador de Blockly. Su bloque se
+    //--   etiqueta "Ruido medido" y su icono es sensor_noise.png, asi que es
+    //--   alias de getNoise() y NO de la distancia, por mucho que el nombre no lo
+    //--   diga. Para la distancia desde Blockly, ver la nota del .cpp.
+    float getDistance();
+    int   getNoise();
+    float getSensor();
+
   private:
+
+    //-- Sensores. INCONDICIONALES a proposito: no dependen del freno ni del
+    //-- instrumentado, asi que no pueden vivir dentro de sus #if.
+    unsigned long _usLastMs;   // cuando se disparo el ultrasonido por ultima vez
+    float         _usLastCm;   // y que devolvio, para respetar el intervalo minimo
 
     Oscillator servo[4];
     Otto_Matrix ledmatrix;

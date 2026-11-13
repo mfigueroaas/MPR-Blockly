@@ -14,8 +14,9 @@ OttoDIY/blockly. Ver `LEEME_MPR.md` para el contexto completo.
   velocidades, librería Otto). El movimiento del robot depende de
   `OTTO_DIFF_LIMIT_DEFAULT` en `compilation/arduino/userlibs/libraries/Otto/Otto.h`
   (hoy 3, desde la librería nueva de nov‑2026); no cambiarlo sin que lo pidan.
-- `Otto.cpp` y `Otto.h` deben quedar **idénticos byte a byte** a los de `LIB_OTTO_NUEVA.zip` (versión depurada
-  y probada en servos por otra persona; decisión del usuario: ese archivo manda). Lo que falte se resuelve fuera de
+- `Otto.cpp` y `Otto.h` deben quedar **idénticos byte a byte** a los del último paquete de librería:
+  hoy `LIB_OTTO_SENSORES.zip` (= `LIB_OTTO_NUEVA.zip`, depurada y probada en servos por otra persona, más
+  `getDistance`/`getNoise`/`getSensor`; SHA‑256 en su `SHA256SUMS.txt`). Decisión del usuario: ese archivo manda. Lo que falte se resuelve fuera de
   la librería (generadores, calibración, simulador), no editando esos dos archivos.
 - Respetar el fin de línea de cada archivo (hay archivos CRLF y LF). No reescribir
   archivos completos solo por formato.
