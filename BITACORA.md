@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — A7: el sensor de distancia sin eco ya no dice "cerca"
+- **Pedido:** plan de pulido, punto A7.
+- **Causa:** `pulseIn(eco, HIGH)` sin límite: si no llega el eco (sensor flojo, o sin corriente cuando Otto va solo con el USB) cada lectura esperaba 1 s y devolvía 0 cm, así que "si distancia < 20" se cumplía y Otto retrocedía solo.
+- **Qué se hizo:** `pulseIn(eco, HIGH, 30000)` (30 ms alcanza para más de 4 m ida y vuelta) y, sin eco, la función devuelve 400 cm ("nada adelante"), el mismo valor que usa el simulador (`MPRSimulador.SIN_ECO_CM`).
+- **Archivos:** `www/blocs&generateurs/sensors.js` (las dos variantes de `ultrasound_distance_simple`), `PLAN_PULIDO.md`.
+- **Probado:** en la app (copia `C:\mprbp`) generando por DevTools y compilando con arduino-cli: los 6 ejemplos `mpr_*.xml` y los casos con sensor compilan; Cerro y Canto solo cambian esas dos líneas. Falta probar con el robot (con y sin el sensor conectado).
+
 ### 2026-11-12 — A6: "esperar" en segundos y "cada X" sin desbordes ni nombres inválidos
 - **Pedido:** plan de pulido, punto A6.
 - **Causa:** "esperar X segundos" generaba `delay(X*1000)`, que en el Nano es un `int` de 16 bits: desde 33 s el número se desbordaba y el robot quedaba detenido unos 49 días. "cada X" armaba el nombre de su temporizador con el valor (`long temps0.5` no compila; dos bloques con el mismo valor compartían temporizador) y lo guardaba con signo.

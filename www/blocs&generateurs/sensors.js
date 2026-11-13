@@ -184,6 +184,9 @@ Blockly.Arduino['ultrasonic_sensor'] = function(block) {
 
     Blockly.Arduino.setups_['setup_output_'+PIN_TRIG] = 'pinMode('+PIN_TRIG+', OUTPUT);';
     Blockly.Arduino.setups_['setup_input_'+PIN_ECHO] = 'pinMode('+PIN_ECHO+', INPUT);';
+	// MPR: sin eco (sensor flojo o sin corriente con solo USB) pulseIn esperaba 1 s y daba 0 cm ("cerca"): Otto
+	// retrocedía solo. Ahora espera como máximo 30 ms (más de 4 m ida y vuelta) y sin eco da 400 cm, "nada adelante",
+	// igual que el simulador (MPRSimulador.SIN_ECO_CM).
 
 
 if ((PIN_TRIG=="4") && (PIN_ECHO=="5"))
@@ -195,7 +198,8 @@ if ((PIN_TRIG=="4") && (PIN_ECHO=="5"))
         '   digitalWrite('+PIN_TRIG+', HIGH);\n'+
         '   delayMicroseconds(100);\n'+
         '   digitalWrite('+PIN_TRIG+', LOW);\n'+
-        '   duration = pulseIn('+ PIN_ECHO +', HIGH);\n'+
+        '   duration = pulseIn('+ PIN_ECHO +', HIGH, 30000);\n'+
+        '   if (duration == 0) return 400;\n'+
         '   distance = duration/55;\n'+
         '   return distance;\n'+
         '}\n';
@@ -209,7 +213,8 @@ if ((PIN_TRIG=="4") && (PIN_ECHO=="5"))
         '   digitalWrite('+PIN_TRIG+', HIGH);\n'+
         '   delayMicroseconds(10);\n'+
         '   digitalWrite('+PIN_TRIG+', LOW);\n'+
-        '   duration = pulseIn('+ PIN_ECHO +', HIGH);\n'+
+        '   duration = pulseIn('+ PIN_ECHO +', HIGH, 30000);\n'+
+        '   if (duration == 0) return 400;\n'+
         '   distance = duration/58;\n'+
         '   return distance;\n'+
         '}\n';
