@@ -12,6 +12,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Versión 1.5.2 e instalador
+- **Pedido:** instalador nuevo con los arreglos de la validación de la 1.5.1.
+- **Qué lleva:** reparación y prevención del core de Arduino dañado, ultrasonido igual a la 1.5.0, "Ring Tone sounds" oculto, y todo lo de la 1.5.1.
+- **Qué se hizo:** `package.json` 1.5.1 → 1.5.2; se borró `C:\mprb\stage` y `py tools/build_installer.py --official …` generó `dist\MPR_Blockly_Setup_1.5.2.exe` (139.048.658 bytes, SHA‑256 `8a6a4fe00efcb2edd8ee0231b77539160259918bb195a9aa27ae626c69aed91d`, sin firma).
+- **Comprobado:** en la carpeta armada, `mpr_subida.js` (con la reparación y la fila), `mpr_consejos.js`, `sensors.js` (sin el límite de 30 ms), `examples.json`, `Otto.cpp`/`Otto.h` (iguales al paquete), `blocklino.js` y `mpr_simulador.js` son idénticos a los del repositorio.
+- **Archivos:** `package.json`, `DOCUMENTACION_TECNICA.md` (7.4).
+- **Probado:** el instalador todavía no se ha ejecutado; lo valida otra persona.
+
 ### 2026-11-13 — Ultrasonido: se revierte A7 (lectura igual a la 1.5.0)
 - **Pedido:** "revisa el ultrasónico: en la 1.5 funcionaba y en la 1.5.1 no".
 - **Revisión:** entre la 1.5.0 y la 1.5.1 lo único que cambió en el código del sensor fue A7 (`pulseIn(eco, HIGH, 30000)` y 400 cm sin eco); A10 dejó idéntico el sensor #1, y la librería Otto nueva no toca los pines 8/9, temporizadores ni interrupciones que usa el sensor (su freno solo lee la tensión con el ADC). El bloque `otto_getsensor` (`Otto.getSensor()`, que no existe en la librería) no está en el menú ni en ejemplos: no es el ultrasonido.
