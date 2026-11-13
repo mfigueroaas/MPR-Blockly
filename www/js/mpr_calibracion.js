@@ -38,7 +38,9 @@ var MPRCalibracion = {
 		'  Serial.setTimeout(200);',
 		'  for (int i = 0; i < 4; i++) { int t = EEPROM.read(i); if (t > 128) t -= 256; trims[i] = t; }',
 		'  Otto.init(2, 3, 4, 5, true, 13);',
-		'  Otto._moveServos(500, centro);   // con los servos conectados y firmes (home() los suelta)',
+		// MPR: con la librería nueva (LIB_OTTO_NUEVA), _moveServos sin recorrido no escribe nada y un trim recién
+		// cargado no se veía; _moveSingle siempre manda la posición (con trim) y deja los servos conectados y firmes
+		'  for (int i = 0; i < 4; i++) Otto._moveSingle(centro[i], i);   // centro con su trim, servos firmes',
 		'  informar("G");',
 		'}',
 		'',
@@ -53,7 +55,7 @@ var MPRCalibracion = {
 		'  if (c == \'T\' && sscanf(l.c_str() + 1, "%d %d %d %d", &t[0], &t[1], &t[2], &t[3]) == 4) {',
 		'    for (int i = 0; i < 4; i++) trims[i] = constrain(t[i], -90, 90);',
 		'    Otto.setTrims(trims[0], trims[1], trims[2], trims[3]);',
-		'    Otto._moveServos(300, centro);',
+		'    for (int i = 0; i < 4; i++) Otto._moveSingle(centro[i], i);   // aplica el trim al instante',
 		'    informar("T");',
 		'  } else if (c == \'S\') {',
 		'    Otto.saveTrimsOnEEPROM();',

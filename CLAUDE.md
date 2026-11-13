@@ -12,8 +12,11 @@ OttoDIY/blockly. Ver `LEEME_MPR.md` para el contexto completo.
   incluir también su core en `tools/build_installer.py`.
 - Mantener los cambios del programa MPR (logos, ejemplos `mpr_*.xml`, toolbox, menú de
   velocidades, librería Otto). El movimiento del robot depende de
-  `OTTO_DIFF_LIMIT_DEFAULT` en `compilation/arduino/userlibs/libraries/Otto/Otto.h`;
-  no cambiarlo sin que lo pidan.
+  `OTTO_DIFF_LIMIT_DEFAULT` en `compilation/arduino/userlibs/libraries/Otto/Otto.h`
+  (hoy 3, desde la librería nueva de nov‑2026); no cambiarlo sin que lo pidan.
+- `Otto.cpp` y `Otto.h` deben quedar **idénticos byte a byte** a los de `LIB_OTTO_NUEVA.zip` (versión depurada
+  y probada en servos por otra persona; decisión del usuario: ese archivo manda). Lo que falte se resuelve fuera de
+  la librería (generadores, calibración, simulador), no editando esos dos archivos.
 - Respetar el fin de línea de cada archivo (hay archivos CRLF y LF). No reescribir
   archivos completos solo por formato.
 

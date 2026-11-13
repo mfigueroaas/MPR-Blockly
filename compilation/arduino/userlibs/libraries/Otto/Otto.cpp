@@ -583,18 +583,6 @@ void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int Buzze
   servo_pins[2] = RL;
   servo_pins[3] = RR;
 
-  // MPR: los trims se leen ANTES de conectar los servos (como en la version MPR anterior):
-  // el Oscillator.cpp de MPR envia en attach() la ultima posicion CON trim, asi que el
-  // primer pulso ya va calibrado. Antes se leian despues y la pose de reposo del
-  // arranque (home() sin recorrido) quedaba en 90 sin trim.
-  if (load_calibration) {
-    for (int i = 0; i < 4; i++) {
-      int servo_trim = EEPROM.read(i);
-      if (servo_trim > 128) servo_trim -= 256;
-      servo[i].SetTrim(servo_trim);
-    }
-  }
-
   //-- Engranche ESCALONADO, solo aqui (Fase 3b). Al arrancar -y sobre todo al
   //-- arrancar tras un reinicio a mitad de un gesto- las patas pueden estar lejos de
   //-- 90, pero Oscillator::attach() fija _pos=90 sin mirar y Servo::attach() emite
@@ -629,7 +617,13 @@ void Otto::init(int YL, int YR, int RL, int RR, bool load_calibration, int Buzze
 
   isOttoResting=false;
 
-  // MPR: la lectura de los trims se movio arriba, antes de conectar los servos.
+  if (load_calibration) {
+    for (int i = 0; i < 4; i++) {
+      int servo_trim = EEPROM.read(i);
+      if (servo_trim > 128) servo_trim -= 256;
+      servo[i].SetTrim(servo_trim);
+    }
+  }
 
   //Buzzer pin:
   pinBuzzer = Buzzer;
@@ -739,11 +733,6 @@ void Otto::_moveServos(int time, int  servo_target[]) {
     //-- tiene que abrir tramo aqui: si no, la etiqueta se filtra al gesto siguiente y
     //-- el registro repite el g=/gm= del anterior. Ver _brakeIdle().
     OTTO_BRAKE_IDLE();
-    // MPR: se reenvia la posicion actual a cada servo, como hacia el _moveServos anterior.
-    // Sin recorrido no se escribia nada, y un trim recien cambiado con setTrims() no se
-    // aplicaba hasta el siguiente movimiento: la calibracion (mpr_calibracion.js, orden T:
-    // setTrims + _moveServos al centro) no mostraba el ajuste, ni home() al encender.
-    for (int i = 0; i < 4; i++) servo[i].SetPosition(servo[i].getPosition());
     const unsigned long t_end = millis() + t_req;
     while ((long)(millis() - t_end) < 0) { OTTO_INSTR_SAMPLE(); }
     OTTO_INSTR_END();

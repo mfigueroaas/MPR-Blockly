@@ -220,10 +220,7 @@
   // llamada". Es decir: hoy el limitador NO limita por tiempo, limita por numero de
   // llamadas. _moveServos (Fase 2b) se apoya en eso de forma explicita; corregirlo
   // de verdad es la Fase 4, y no se puede hacer antes de tener el freno puesto.
-  // MPR (nov-2026): la libreria MPR anterior usaba 240 (commit ce27643); se vuelve a 3
-  // al adoptar esta libreria, cuyo freno, acotado de T (OTTO_OSC_RATE 47) y _moveServos
-  // se midieron con 3. Con el Oscillator.cpp de MPR, 3 sigue siendo 1 grado por orden.
-  #define OTTO_DIFF_LIMIT_DEFAULT 3  // se aplica como grados/segundo (ver nota)
+  #define OTTO_DIFF_LIMIT_DEFAULT 3   // se aplica como grados/segundo (ver nota)
 #endif
 
 // ===== Presupuesto de velocidad agregada de _moveServos (Fase 2b) =====

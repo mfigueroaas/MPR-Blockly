@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — F1 (corrección): Otto.cpp y Otto.h idénticos al paquete
+- **Pedido:** "el archivo que manda es el que ya está editado (el cpp de `LIB_OTTO_NUEVA.zip`): es el más probado en los servos, lo hizo otra persona, es el depurado".
+- **Qué se hizo:** `Otto.cpp` y `Otto.h` quedan **idénticos byte a byte** al paquete (SHA‑256 `ad9c15d7…` y `39bc5ee5…`, los de `SHA256SUMS.txt`): se quitaron los 3 ajustes MPR que el subagente había puesto encima (trims leídos antes de conectar, `_moveServos` sin recorrido reenviando la posición, comentario de DIFF_LIMIT). `OTTO_DIFF_LIMIT_DEFAULT` sigue en 3, como en el paquete. Regla nueva en `CLAUDE.md`.
+- **Lo que esos ajustes resolvían, ahora fuera de la librería:** la calibración (`mpr_calibracion.js`) aplicaba el trim con `_moveServos(…, centro)`, que en el paquete no escribe si no hay recorrido; ahora usa `_moveSingle(centro[i], i)` en cada servo (siempre escribe; el trim se suma en `Oscillator::write` después del limitador, así que se aplica completo y al instante). Efecto que queda, propio del paquete: al encender, la pose de reposo sale en 90 sin trim hasta el primer movimiento.
+- **Archivos:** `compilation/arduino/userlibs/libraries/Otto/Otto.cpp`, `Otto.h`, `www/js/mpr_calibracion.js`, `CLAUDE.md`.
+- **Probado:** `sha256sum` igual al paquete; programa de calibración y los 5 ejemplos MPR que usan Otto compilan contra la librería del repo (calibración 13.648 B; cerro 9.278 B).
+
 ### 2026-11-13 — C1, C2, C3 y C8: Otto 3D más liviano con la imagen idéntica
 - **Pedido:** plan de pulido, rendimiento sin perder calidad ni detalle del 3D.
 - **Qué se hizo:**
