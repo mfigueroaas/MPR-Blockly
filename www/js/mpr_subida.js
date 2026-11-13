@@ -31,7 +31,9 @@ var MPRSubida = {
 	precompilando: null,
 	ultimaCompilacion: null,   // { codigo, fqbn, dir, hex, fecha, tam } de la última compilación correcta (C6)
 	hijos: [],          // procesos en curso (arduino-cli, avrdude): se detienen si el envío se traba
-	cancelada: null     // 'cable' (Otto se desenchufó durante la espera) o 'boton' (el niño apretó Detener)
+	cancelada: null,    // 'cable' (Otto se desenchufó durante la espera) o 'boton' (el niño apretó Detener)
+	alCancelar: [],     // quienes esperan a que se cancele (esperarCancelar)
+	compilacionEnCurso: null   // última compilación lanzada: la siguiente espera a que termine (ver compilar)
 };
 
 MPRSubida.msg = function(clave, defecto) {
@@ -139,7 +141,10 @@ MPRSubida.ejecutar = function(exe, args, op) {
 				if (err && stderr && texto.indexOf(String(stderr).trim()) < 0) texto += '\n' + stderr;
 				listo({ ok: !err, texto: texto, ms: Date.now() - t0, matado: !!(err && err.killed) });
 			});
-		if (hijo) self.hijos.push(hijo);
+		if (hijo) {
+			hijo.mprCompila = !!op.compila;   // MPR: las compilaciones no se cortan (ver compilar)
+			self.hijos.push(hijo);
+		}
 		if (op.baja && hijo && hijo.pid && self.os.setPriority) {
 			try { self.os.setPriority(hijo.pid, self.os.constants.priority.PRIORITY_BELOW_NORMAL); } catch (e) {}
 		}
@@ -148,19 +153,41 @@ MPRSubida.ejecutar = function(exe, args, op) {
 
 // codigo: el texto que se escribió en sketch.ino antes de compilar; si compila bien, queda anotado (ultimaCompilacion)
 // para no volver a compilarlo si se manda igual (ver compiladoVigente)
-MPRSubida.compilar = function(fqbn, baja, codigo, reintento) {
-	var self = MPRSubida;
+// MPR: para no dañar el core de Arduino (ver CORE_DANADO) una compilación NUNCA se corta: "Detener" o desenchufar
+// solo cortan la subida (avrdude); la compilación sigue en segundo plano y su resultado se ignora. Las compilaciones
+// van en fila (la siguiente espera a la anterior) y cada una escribe sketch.ino recién cuando le toca.
+MPRSubida.compilar = function(fqbn, baja, codigo) {
+	var self = MPRSubida, sketch = self.path.join(self.o.basepath, 'sketch', 'sketch.ino');
 	self.ultimaCompilacion = null;   // MPR: mientras compila (o si falla) lo anterior ya no vale (PLAN_PULIDO C6)
-	return self.ejecutar(self.cli, ['compile', '--fqbn', fqbn, 'sketch/sketch.ino'], { baja: baja }).then(function(r) {
-		// MPR: core de Arduino dañado (ver CORE_DANADO): se borra su caché y se compila una vez más
-		if (!r.ok && !r.matado && !reintento && self.CORE_DANADO.test(r.texto)) {
+	var args = ['compile', '--fqbn', fqbn, 'sketch/sketch.ino'], op = { baja: baja, compila: true };
+	var fin = (self.compilacionEnCurso || Promise.resolve()).then(function() {
+		if (typeof codigo == 'string') self.fs.writeFileSync(sketch, codigo);
+		return self.ejecutar(self.cli, args, op);
+	}).then(function(r) {
+		// core de Arduino dañado: se borra su caché y se compila una vez más
+		if (!r.ok && !r.matado && self.CORE_DANADO.test(r.texto)) {
 			console.log('[MPR] core de Arduino dañado para ' + fqbn + ': borro su caché y vuelvo a compilar');
 			self.limpiarCore(fqbn);
-			return self.compilar(fqbn, baja, codigo, true);
+			return self.ejecutar(self.cli, args, op);
 		}
+		return r;
+	}).then(function(r) {
 		if (r.ok && typeof codigo == 'string') self.ultimaCompilacion = self.huellaCompilado(fqbn, codigo);
 		return r;
+	}).catch(function(e) {
+		return { ok: false, texto: String(e && e.message || e), ms: 0 };
 	});
+	self.compilacionEnCurso = fin;
+	fin.then(function() { if (self.compilacionEnCurso === fin) self.compilacionEnCurso = null; });
+	if (!self.ocupada) return fin;   // precompilación: nadie la detiene
+	return Promise.race([fin, self.esperarCancelar().then(function() { return { ok: false, texto: 'detenido', ms: 0, matado: true }; })]);
+};
+
+// Promesa que se cumple cuando se aprieta Detener o se desenchufa a Otto (ver cancelar)
+MPRSubida.esperarCancelar = function() {
+	var self = MPRSubida;
+	if (self.cancelada) return Promise.resolve();
+	return new Promise(function(listo) { self.alCancelar.push(listo); });
 };
 
 // MPR: arduino-cli 0.14 arma el "core" de Arduino agregando sus archivos de a uno a core.a y lo guarda en
@@ -354,9 +381,16 @@ MPRSubida.cancelar = function(motivo) {
 	if (!self.ocupada || self.cancelada) return;
 	self.cancelada = motivo;
 	self.dejarDeVigilar();
+	// la subida en curso deja de esperar (la compilación sigue sola en segundo plano: ver compilar)
+	var esperas = self.alCancelar;
+	self.alCancelar = [];
+	esperas.forEach(function(listo) { listo(); });
 	// MPR: h.kill() solo si taskkill falló. Si se mataba al padre enseguida, cuando taskkill buscaba el árbol el padre ya
-	// no existía y sus hijos (avrdude) quedaban vivos con el puerto tomado (PLAN_PULIDO B2)
+	// no existía y sus hijos (avrdude) quedaban vivos con el puerto tomado (PLAN_PULIDO B2). Las compilaciones NO se
+	// cortan: cortar arduino-cli mientras arma el core deja core.a a medias en la caché (error "undefined reference to
+	// main" con esa placa para siempre; ver CORE_DANADO)
 	self.hijos.forEach(function(h) {
+		if (h.mprCompila) return;
 		var matar = function() { try { h.kill(); } catch (e) {} };
 		try {
 			self.cp.execFile('taskkill', ['/pid', String(h.pid), '/T', '/F'], { windowsHide: true }, function(err) { if (err) matar(); });
@@ -422,10 +456,9 @@ MPRSubida.verificar = function(codigo) {
 	self.cancelada = null;
 	var esperando = self.precompilando;
 	self.paso(Blockly.Msg.check, self.msg('sub_verifica', 'Reviso tu programa y lo preparo para Otto.'), self.estimado('compila') + (esperando ? 10000 : 0), 'compila');
-	(esperando || Promise.resolve()).then(function() {
+	Promise.race([esperando || Promise.resolve(), self.esperarCancelar()]).then(function() {
 		if (self.cancelada) return { ok: false, texto: 'detenido' };
-		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
-		return self.compilar(window.profile[carte].upload_arg, false, codigo);
+		return self.compilar(window.profile[carte].upload_arg, false, codigo);   // escribe sketch.ino cuando le toca
 	}).then(function(c) {
 		if (!c.ok) { self.mostrarError('compila', c.texto); return; }
 		self.recordar('compila', c.ms);
@@ -444,6 +477,7 @@ MPRSubida.terminar = function() {
 	MPRSubida.dejarDeVigilar();
 	MPRSubida.ocupada = false;
 	MPRSubida.cancelada = null;
+	MPRSubida.alCancelar = [];
 };
 
 // ---------------------------------------------------------------- subir (flecha naranja)
@@ -462,16 +496,13 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	localStorage.setItem('verif', false);
 	var esperando = self.precompilando;
 	self.paso(Blockly.Msg.check, esperando ? self.msg('sub_paso1_espera') : self.msg('sub_paso1'), self.estimado('compila') + (esperando ? 10000 : 0), 'compila');
-	(esperando || Promise.resolve()).then(function() {
+	Promise.race([esperando || Promise.resolve(), self.esperarCancelar()]).then(function() {
 		if (self.cancelada) return [{ ok: false, texto: 'detenido' }, {}];
 		var compilacion, fqbn = window.profile[carte].upload_arg;
 		// MPR: si este mismo programa ya se compiló bien para esta placa (con Verificar o con la flecha) y lo compilado
 		// sigue ahí, no se vuelve a compilar (PLAN_PULIDO C6; antes solo justo después de Verificar)
 		if (self.compiladoVigente(fqbn, codigo)) compilacion = Promise.resolve({ ok: true, saltada: true });
-		else {
-			self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), codigo);
-			compilacion = self.compilar(fqbn, false, codigo);
-		}
+		else compilacion = self.compilar(fqbn, false, codigo);   // escribe sketch.ino cuando le toca
 		return Promise.all([compilacion, self.averiguarPlaca(com)]);
 	}).then(function(r) {
 		var comp = r[0], prueba = r[1];
@@ -515,9 +546,6 @@ MPRSubida.precompilarCuandoListo = function() {
 MPRSubida.precompilar = function() {
 	var self = MPRSubida, carte = localStorage.getItem('card'), perfil = window.profile && window.profile[carte];
 	if (!perfil || perfil.prog != 'arduino' || self.compiladoListo(perfil.upload_arg)) return;
-	try {
-		self.fs.writeFileSync(self.path.join(self.o.basepath, 'sketch', 'sketch.ino'), self.PROGRAMA_PRECOMPILA);
-	} catch (e) { return; }
 	self.precompilando = self.compilar(perfil.upload_arg, true, self.PROGRAMA_PRECOMPILA).then(function(r) {
 		console.log('[MPR] precompilación ' + (r.ok ? 'lista' : 'con error') + ' en ' + r.ms + ' ms');
 		self.precompilando = null;

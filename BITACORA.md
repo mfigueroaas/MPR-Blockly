@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Prevenir el core dañado: las compilaciones ya no se cortan y van en fila
+- **Pedido:** "¿consideraste que no se repitan los errores de caché corrompida?".
+- **Causa de fondo:** el core de Arduino se daña cuando se corta arduino-cli mientras arma `core.a`. Con el arreglo B2 (`taskkill /T` funcionando), "Detener" y desenchufar el cable cortaban todo el árbol, compilador incluido: antes ese corte fallaba y la compilación terminaba sola. Es decir, B2 aumentó el riesgo.
+- **Qué se hizo** (`www/js/mpr_subida.js`): "Detener" y desenchufar solo cortan la subida (avrdude / arduino-cli upload); una compilación sigue en segundo plano y su resultado se ignora (el alumno ve "Detuve el envío" al instante, por `Promise.race` con `esperarCancelar`). Las compilaciones van en fila (`compilacionEnCurso`): la siguiente espera a que termine la anterior y escribe `sketch.ino` recién cuando le toca, así dos compilaciones nunca usan la misma carpeta a la vez. La reparación automática (`CORE_DANADO`/`limpiarCore`) sigue como red de seguridad.
+- **Probado** (código real de `mpr_subida.js` en Node con el arduino-cli instalado): dos compilaciones lanzadas a la vez van en fila y cada una compila su programa; "Detener" a mitad de compilación responde en ~2 s y arduino-cli sigue vivo hasta terminar bien; core sin `main.cpp.o` → se repara en la misma compilación.
+
 ### 2026-11-13 — Error "undefined reference to `main'" con Nano: la app repara el core dañado
 - **Pedido / problema:** al validar la 1.5.1 en otro PC, con la placa "Nano" toda compilación fallaba con `crtatmega328p.o:(.init9+0x0): undefined reference to 'main'` (A9), en dos placas distintas; con "Nano Old" funcionaba. "Nano" debe seguir siendo la placa por defecto y "Nano Old" quedar como respaldo (hay repuestos con ese bootloader).
 - **Causa (reproducida en este PC):** "Nano" y "Nano Old" compilan igual (mismo chip y opciones); solo cambia el archivo de caché del core de Arduino (`%TEMP%\arduino-core-cache\core_arduino_avr_nano_<hash>.a` y `..._nano_cpu_atmega328old_<hash>.a`). arduino-cli 0.14 arma `core.a` agregando los objetos de a uno; si una compilación se corta en ese paso (Detener, desenchufar, cerrar la app mientras precompila), queda sin sus últimos objetos (`main.cpp.o` entre ellos), lo da por bueno y lo copia a la caché: desde ahí esa placa falla siempre. Quitando `main.cpp.o` de la caché de Nano se obtuvo exactamente el mismo error.
