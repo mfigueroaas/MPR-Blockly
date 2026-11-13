@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Se oculta el ejemplo "🎼 Ring Tone sounds"
+- **Pedido:** "ese ejemplo de ring tone, si tiene bloques que no se pueden usar, sácalo".
+- **Causa:** `RTTL.xml` es para ESP8266 (pin D5) y usa `buzzer_music`, que no está en el menú; además mostraba "Gadget".
+- **Archivos:** `www/examples/examples.json` (`visible: false`).
+- **Revisión de los demás ejemplos visibles:** Canto, Cute sounds, Simple melody y Theremin usan el bloque oculto "Configuración Buzzer" (`buzzer_init`; Cute sounds además `cute_play`). Los demás usan solo bloques del menú. Queda para decisión del usuario.
+
 ### 2026-11-13 — F2 y F3: "Probar en pantalla" imita la librería nueva; documentación
 - **Pedido:** plan de pulido F2/F3 (alinear el simulador y la documentación con la librería Otto nueva).
 - **Qué se hizo:**
