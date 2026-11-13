@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — G2: hoja de códigos de error para los monitores (Word)
+- **Pedido:** un documento Word con los códigos de error detallados, para que los monitores los identifiquen.
+- **Qué se hizo:** `Codigos_de_error_MPR_Blockly.docx` (4 páginas, versión 1.5.3): tabla de códigos con el mensaje, la causa y el arreglo, los avisos de la revisión, y la sección "Modo monitor: depurar un programa" (Ctrl + Mayús + M, bloques de la categoría 🛠️ Monitor, pasos para ver un valor en el Monitor Serie, distancia = 400 = sin eco). Generado con la librería `docx` de npm (script fuera del repositorio).
+- **Archivos:** `Codigos_de_error_MPR_Blockly.docx`.
+- **Probado:** revisado como PDF exportado desde Word (4 páginas, tablas y viñetas bien).
+
 ### 2026-11-13 — Versión 1.5.3 e instalador
 - **Pedido:** Víctor necesita una versión instalable con el modo monitor y la mejora del ultrasonido.
 - **Qué lleva:** G1 (modo monitor, Ctrl + Mayús + M) y F5 (ultrasonido de 25 µs, librería `LIB_OTTO_SENSORES.zip`), más todo lo de la 1.5.2.
