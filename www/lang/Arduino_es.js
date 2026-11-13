@@ -1,16 +1,17 @@
 'use strict';
 goog.provide ('Blockly.Msg.es');
 goog.require ('Blockly.Msg');
+// MPR: los textos heredados pasan de "usted" a "tú" (verif, new_update, tooltips), como el resto de la app (PLAN_PULIDO D1).
 // Electron window
 Blockly.Msg.com1 = "⚠️ Seleccionar puerto USB";
 Blockly.Msg.com2 = "⚠️ No encuentro a Otto. Conéctalo con el cable USB: su puerto (COM y un número) aparecerá solo en la lista de arriba.";
 Blockly.Msg.check = "Verificando ...";
 Blockly.Msg.upload = "Cargando ...";
 Blockly.Msg.error = "🛑 ERROR: bloques no estan conectados";
-Blockly.Msg.verif = "⛔ Verifique primero"
+Blockly.Msg.verif = "⛔ Verifica primero"
 Blockly.Msg.save = "Guardar como formato";
 Blockly.Msg.update = "Actualizar";
-Blockly.Msg.new_update = "Hay una nueva versión disponible, ¿desea descargarla e instalarla ahora mismo?" ;
+Blockly.Msg.new_update = "Hay una nueva versión disponible, ¿quieres descargarla e instalarla ahora mismo?" ;
 Blockly.Msg.yes = "Si";
 Blockly.Msg.no = "No";
 Blockly.Msg.uptodate = "✅ ¡La versión está actualizada!" ;
@@ -350,7 +351,7 @@ Blockly.Msg.def = "#️⃣ Declaración";
 Blockly.Msg.def_tooltip = "todos los bloques colocados aquí solo se ejecutarán una vez, aquí es donde se configuran los diferentes sensores o actuadores";
 Blockly.Msg.END = "🏁 END";
 Blockly.Msg.END_tooltip = "Detener el programa, los bloques colocados después serán ignorados";
-Blockly.Msg.code_tooltip = "Escriba una instrucción aquí que no esté en bloques";
+Blockly.Msg.code_tooltip = "Escribe una instrucción aquí que no esté en bloques";
 //matriz
 Blockly.Msg.matriceLC = "poner el LED, línea";
 Blockly.Msg.matrice_create_aff = "Crear bloque 'mostrar símbolo% 1'";
@@ -383,7 +384,7 @@ Blockly.Msg.millis_tooltip = "";
 Blockly.Msg.millis_start_tooltip = "";
 Blockly.Msg.ARDUINO_INOUT_Pulsein = "devuelve la duración en microsegundos de un pulso UP o DOWN aplicado a un pin. Si el valor del parámetro es HIGH, el bloque espera a que el pin llegue a HIGH, comienza el tiempo, espera que el pin regrese al nivel BAJO y luego detenga el tiempo ";
 Blockly.Msg.ARDUINO_BASE_DELAY = "esperar";
-Blockly.Msg.ARDUINO_BASE_DELAY_TOOLTIP = "Especifique el tiempo de espera en segundos, milisegundos o microsegundos. \n El programa no hace nada más durante este tiempo";
+Blockly.Msg.ARDUINO_BASE_DELAY_TOOLTIP = "Especifica el tiempo de espera en segundos, milisegundos o microsegundos. \n El programa no hace nada más durante este tiempo";
 Blockly.Msg.millis1 = "duración en";
 Blockly.Msg.millis2 = "desde el principio";
 Blockly.Msg.ARDUINO_SINCE_PROGRAM_STARTED_TOOLTIP = "devuelve la duración en milisegundos, segundos o microsegundos desde que se inició el programa";
@@ -418,13 +419,13 @@ Blockly.Msg.lp2i_u8g_4draw_print_Text_line4 = "line 4 =";
 Blockly.Msg.lp2i_u8g_4draw_print_N4 = "Number 4 (at end) ="
 // LED
 Blockly.Msg.ARDUINO_INOUT_BUILDIN_LED_INPUT = "el LED en el tablero";
-Blockly.Msg.ARDUINO_INOUT_BUILDIN_LED_TOOLTIP = "Apague o encienda el LED en la placa Arduino";
+Blockly.Msg.ARDUINO_INOUT_BUILDIN_LED_TOOLTIP = "Apaga o enciende el LED en la placa Arduino";
 Blockly.Msg.blink = "parpadea el LED de la placa";
 Blockly.Msg.blink_tooltip = "El LED de la placa parpadea 1 o 10 veces por segundo";
 Blockly.Msg.del = "el LED en el pin";
 Blockly.Msg.del_tooltip = "enciende (apaga) el LED conectado al pin indicado";
 Blockly.Msg.bargraphe = "gráfico de barras";
-Blockly.Msg.bargraphe_allume = "encienda los LED a";
+Blockly.Msg.bargraphe_allume = "enciende los LED a";
 Blockly.Msg.bargraphe_allume_tooltip = "0 no enciende LED \n2,5 enciende los primeros 2 LED y la tercera mitad se enciende \n10 enciende todos los LED";
 Blockly.Msg.bargraphe_tooltip = "módulo de gráfico de barras compuesto por 10 LED (8 verdes, 1 amarillo y 1 rojo), es necesario indicar los pines del arduino en el que se conectarán DCKI y DI";
 Blockly.Msg.rvb_init = "LED RGB";
@@ -499,7 +500,7 @@ Blockly.Msg.ARDUINO_SERVO_ROT_CONTINUE_TOOLTIP = "Girar el servo conectado al pi
 //motor
 Blockly.Msg.mot_tooltip = "Blindaje del controlador de motor L293D: \n activa ambos motores (M1 y M2) para avanzar o girar, la velocidad se puede establecer entre 0 y 90";
 Blockly.Msg.mot_stop = "Parar";
-Blockly.Msg.mot_stop_tooltip = "Escudo del controlador de motor L293D: \ndetenga los dos motores (M1 y M2)";
+Blockly.Msg.mot_stop_tooltip = "Escudo del controlador de motor L293D: \ndetén los dos motores (M1 y M2)";
 Blockly.Msg.moteur = "Activar el motor";
 Blockly.Msg.moteurstop = "Parar el motor";
 Blockly.Msg.moteur_tooltip = "arranca el motor de CC conectado al pin especificado, a la velocidad indicada \nspeed = 0 -> parada del motor";
@@ -524,7 +525,7 @@ Blockly.Msg.ADAFRUIT_MOTORSHIELD_MOTORDC2 = "Motor DC 2";
 Blockly.Msg.m_pap = "Motor paso a paso";
 Blockly.Msg.m_pap_step = "Paso";
 Blockly.Msg.m_pap_step1 = "Avanzar";
-Blockly.Msg.m_pap_tooltip = "Inicialización de un motor paso a paso. Indique el número de pasos, la velocidad en rpm y los pines para conectar";
+Blockly.Msg.m_pap_tooltip = "Inicialización de un motor paso a paso. Indica el número de pasos, la velocidad en rpm y los pines para conectar";
 Blockly.Msg.MATH_MAP_TITLE = "convertir";
 Blockly.Msg.MATH_MAP_FROM = "del rango";
 Blockly.Msg.MATH_MAP_TO = "al rango";
@@ -596,7 +597,7 @@ Blockly.Msg.OTTO9_GETDISTANCE_TOOLTIP = "Distancia de rango entre 2 cm y 400 cm"
 Blockly.Msg.OTTO9_GETOBSTACLE_TEXT = "Obstáculo";
 Blockly.Msg.OTTO9_OBSTACLE_CHOICE = [["cerca", "10"],["muy cerca", "3"],["lejos", "30"]];
 Blockly.Msg.OTTO9_GETNOISE_TEXT = "Ruido medido";
-Blockly.Msg.OTTO9_GETNOISE_TOOLTIP = "100 es silencioso, 500 ruido y más de 1000 es ruidoso, recuerde ajustar físicamente la sensibilidad del sensor";
+Blockly.Msg.OTTO9_GETNOISE_TOOLTIP = "100 es silencioso, 500 ruido y más de 1000 es ruidoso, recuerda ajustar físicamente la sensibilidad del sensor";
 Blockly.Msg.OTTO9_GETTOUCH_TEXT = "Tacto";
 Blockly.Msg.OTTO9_GETTOUCH_TOOLTIP = "usar si es condicional";
 Blockly.Msg.OTTO9_GETG_TEXT = "I2C.Leer las aceleraciones y velocidades angulares";

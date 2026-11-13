@@ -269,10 +269,11 @@ var MSG = {
   xmlLoad: "'Aceptar' para cargar el nuevo programa\n\n'Cancelar'  para fusionar los dos programas.",
   timeout: "Se ha excedido el número máximo de iteraciones de ejecución.",
   badCode: "Error de programa: \n %1",
-  discard: "Está seguro de que desea eliminar todos los bloques?",
-  badXml: "Error de análisis XML: \n %1 \n\nSeleccione 'Aceptar' para cancelar sus cambios o 'Cancelar' para continuar editando el XML.",
+  // MPR: discard, badXml y nanoWarning pasan de "usted" a "tú", como el resto de la app (PLAN_PULIDO D1).
+  discard: "¿Seguro que quieres borrar todos los bloques?",
+  badXml: "Error de análisis XML: \n %1 \n\nSelecciona 'Aceptar' para cancelar tus cambios o 'Cancelar' para continuar editando el XML.",
   arduino_card: "Carga la configuración de la placa ",
   aboutModalLabel: "Acerca de",
   aboutBody: "Este es un lenguaje de programación visual gratuito y de código abierto basado en Blockly, los códigos Arduino se crean simplemente combinando bloques, luego se compilan (comprueban) y finalmente se cargan en el robot Otto.",
-  nanoWarning: "¿Tiene problemas para cargar en su placa Arduino Nano (el tiempo de espera de la operación de carga)? Intente seleccionar una variante diferente de la placa (Normal / Antiguo bootloader / Todos), de acuerdo con lo que tiene. Algunas son visualmente idénticas (antiguo y nuevo bootloader)!"
+  nanoWarning: "¿Tienes problemas para cargar en tu placa Arduino Nano (el tiempo de espera de la operación de carga)? Intenta seleccionar una variante diferente de la placa (Normal / Antiguo bootloader / Todos), de acuerdo con lo que tienes. ¡Algunas son visualmente idénticas (antiguo y nuevo bootloader)!"
 };

@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — D1: la app tutea siempre al alumno
+- **Pedido:** tutear en todos los textos (decisión del usuario del 2026-11-12); lo que sigue en inglés se deja así por ahora.
+- **Qué se hizo:** 28 textos pasan de usted a tú, sin cambiar el sentido: confirmación de borrar todo ("¿Seguro que quieres borrar todos los bloques?"), "Verifica primero", tooltips de si, según, repetir mientras/hasta, contar, para cada, continuar, operador ternario, esperar, código libre, sensor de sonido y otros. Se dejaron los "su" que se refieren a Otto o al LED y los "debe/puede" impersonales.
+- **Archivos:** `www/lang/msg_es.js` (sangría con espacios no separables, conservada), `www/lang/Arduino_es.js` (editado en latin1 por su byte no UTF-8), `www/lang/Blockly_es.js`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Probado:** en la app (copia `C:\mprbp`, DevTools): `MSG.discard`, `verif`, tooltips de esperar, si y código muestran el texto nuevo con tildes y saltos de línea correctos. `node --check` OK; los tres archivos siguen LF.
+
 ### 2026-11-13 — A8: Otto avisa si faltan la Configuración Otto para los sonidos
 - **Pedido:** plan de pulido, punto A8.
 - **Causa:** "reproducir nota", "tono" y "silencio" (`play`, `tone`, `notone`) usan la variable `buzzer` de Configuración Otto, pero la revisión previa solo vigilaba los bloques `otto_*`: sin Configuración Otto el programa fallaba al compilar con el error genérico B6.

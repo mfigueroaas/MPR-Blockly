@@ -60,7 +60,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [ ] C8 (menores): `webglcontextlost` sin manejo; `getBoundingClientRect` en cada `mousemove`; JS que no se usa.
 
 ## D. Textos (parcial, según la decisión del usuario)
-- [ ] D1. Tutear siempre (tooltips y mensajes que dicen "Escriba", "Especifique", "Verifique", "Está seguro"…).
+- [x] D1. Tutear siempre (tooltips y mensajes que dicen "Escriba", "Especifique", "Verifique", "Está seguro"…).
 - [ ] D2. Ejemplo "⛰️ Cerro" (`mpr_cerro.xml`): quitar `serial_init`/`serial_println` (no están en el menú).
 - [ ] D3. Canciones con nombre de marca (Simpsons, Pink Panther, Pitufos, Zelda…): mostrar como acertijo, sin
       el nombre; la melodía no se toca.
