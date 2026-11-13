@@ -12,6 +12,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — Ultrasonido: se revierte A7 (lectura igual a la 1.5.0)
+- **Pedido:** "revisa el ultrasónico: en la 1.5 funcionaba y en la 1.5.1 no".
+- **Revisión:** entre la 1.5.0 y la 1.5.1 lo único que cambió en el código del sensor fue A7 (`pulseIn(eco, HIGH, 30000)` y 400 cm sin eco); A10 dejó idéntico el sensor #1, y la librería Otto nueva no toca los pines 8/9, temporizadores ni interrupciones que usa el sensor (su freno solo lee la tensión con el ADC). El bloque `otto_getsensor` (`Otto.getSensor()`, que no existe en la librería) no está en el menú ni en ejemplos: no es el ultrasonido.
+- **Causas probables de lo observado:** (1) en ese PC, con "Nano" no compilaba nada (core dañado), así que el programa con sensor no llegaba al robot; (2) con solo USB el sensor no alcanza a medir con los 4 servos: en la 1.5.0 eso daba 0 cm ("cerca", el robot reaccionaba) y con A7 400 cm ("nada adelante").
+- **Qué se hizo:** sin el robot para comprobarlo, el sensor vuelve exactamente a la lectura de la 1.5.0 (`pulseIn(eco, HIGH)` sin límite). Queda el defecto conocido: sin eco, cada lectura detiene al robot 1 s y da 0 cm.
+- **Archivos:** `www/blocs&generateurs/sensors.js`, `PLAN_PULIDO.md` (A7 revertido).
+- **Probado:** `node --check`; el código generado es el de la 1.5.0 (ya compilado antes en el banco de pruebas). Pendiente: probar con el robot a pilas si conviene retomar A7 (también lo recomienda el autor de la librería: límite de pocos ms).
+
 ### 2026-11-13 — Prevenir el core dañado: las compilaciones ya no se cortan y van en fila
 - **Pedido:** "¿consideraste que no se repitan los errores de caché corrompida?".
 - **Causa de fondo:** el core de Arduino se daña cuando se corta arduino-cli mientras arma `core.a`. Con el arreglo B2 (`taskkill /T` funcionando), "Detener" y desenchufar el cable cortaban todo el árbol, compilador incluido: antes ese corte fallaba y la compilación terminaba sola. Es decir, B2 aumentó el riesgo.
