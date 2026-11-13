@@ -14,9 +14,41 @@ BlocklyDuino.init = function() {
 	BlocklyDuino.workspace = Blockly.inject('content_blocks',{grid:{snap:true},sounds:true,media:'media/',toolbox:BlocklyDuino.buildToolbox(),zoom:{controls:true,wheel:true}});
 	BlocklyDuino.bindFunctions();
 	BlocklyDuino.workspace.render();
-	BlocklyDuino.workspace.addChangeListener(BlocklyDuino.renderArduinoCodePreview);
+	// MPR: la vista de código solo se regenera cuando cambia el programa; los eventos de interfaz (seleccionar, clic,
+	// abrir una categoría) no cambian el código y la regeneraban igual en cada clic (PLAN_PULIDO C7).
+	BlocklyDuino.workspace.addChangeListener(function(e) {
+		if (e && e.type == Blockly.Events.UI) return;
+		BlocklyDuino.renderArduinoCodePreview();
+	});
 	BlocklyDuino.loadFile();
 	window.addEventListener('unload', BlocklyDuino.backupBlocks, false);
+	BlocklyDuino.vigilarArchivosSoltados();
+};
+// MPR: soltar un archivo sobre la ventana hacía que la app navegara a ese archivo (una foto, un .bloc como texto...)
+// y se perdía la mesa. Ahora no se navega nunca; si se suelta un .bloc o .xml se abre como con "Abrir" (PLAN_PULIDO B5).
+// Solo se actúa cuando se arrastran archivos: arrastrar texto dentro de la app sigue igual.
+BlocklyDuino.vigilarArchivosSoltados = function() {
+	var traeArchivos = function(e) {
+		var tipos = e.dataTransfer && e.dataTransfer.types;
+		if (!tipos) return false;
+		for (var i = 0; i < tipos.length; i++) if (tipos[i] == 'Files') return true;
+		return false;
+	};
+	document.addEventListener('dragover', function(e) {
+		if (!traeArchivos(e)) return;
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'copy';
+	}, false);
+	document.addEventListener('drop', function(e) {
+		if (!traeArchivos(e)) return;
+		e.preventDefault();
+		var archivos = e.dataTransfer.files;
+		if (archivos && archivos.length == 1 && /\.(bloc|xml)$/i.test(archivos[0].name)) {
+			BlocklyDuino.abrirArchivoLocal(archivos[0]);
+		} else {
+			alert(MSG['xmlError'] + '\nSuelta un solo archivo .bloc');
+		}
+	}, false);
 };
 BlocklyDuino.loadFile = function() {
 	var urlFile = BlocklyDuino.getStringParamFromUrl('url', '');
@@ -56,12 +88,44 @@ BlocklyDuino.loadFile = function() {
 			editor.setValue(data,1)
 		}, 'text')
 	}
-	var loadOnce = null;
-	try {loadOnce = window.localStorage.loadOnceBlocks} catch (e) {}
-	if (urlFile) {
-		$.get( urlFile, function(data){BlocklyDuino.loadBlocks(data)}, 'text')
-	} else {
+	// MPR: después de cargar el archivo (ejemplo o .bloc abierto con doble clic) se quita ?url= de la dirección.
+	// Antes F5 volvía a cargar el archivo original y se perdía lo hecho después; ahora F5 recupera el respaldo
+	// (loadOnceBlocks) como siempre. Si el archivo no se puede abrir, se recupera el trabajo anterior (PLAN_PULIDO B1).
+	if (urlFile && !/\.(ino|py)$/i.test(urlFile)) {
+		BlocklyDuino.leerArchivo(urlFile, function(texto, error) {
+			BlocklyDuino.quitarUrlDeLaDireccion();
+			if (texto == null) {
+				alert(MSG['xmlError'] + '\n' + urlFile + (error ? '\n' + error : ''));
+				BlocklyDuino.loadBlocks();
+			} else if (!BlocklyDuino.cargarXmlEnMesa(texto)) {
+				BlocklyDuino.loadBlocks();
+			}
+		});
+	} else if (!urlFile) {
 		BlocklyDuino.loadBlocks()
+	}
+};
+// MPR: quita ?url= de la dirección sin recargar, conservando los demás parámetros (PLAN_PULIDO B1).
+BlocklyDuino.quitarUrlDeLaDireccion = function() {
+	try {
+		var resto = location.search.replace(/^\?/, '').split('&').filter(function(p) {
+			return p && p.indexOf('url=') !== 0;
+		}).join('&');
+		history.replaceState(history.state, '', location.pathname + (resto ? '?' + resto : '') + location.hash);
+	} catch (e) { console.log(e); }
+};
+// MPR: lee el archivo de ?url=. En la app (con Node) y con una ruta absoluta se lee con fs: $.get cortaba las rutas
+// con # (un .bloc llamado "robot #2.bloc" no abría). En la versión web (sin require) o con rutas relativas
+// (los ejemplos, ./examples/...) se sigue usando $.get (PLAN_PULIDO B7). listo(texto, error): texto null si falló.
+BlocklyDuino.leerArchivo = function(ruta, listo) {
+	var fs = null;
+	try {
+		if (typeof require == 'function' && require('path').isAbsolute(ruta)) fs = require('fs');
+	} catch (e) { fs = null; }
+	if (fs) {
+		fs.readFile(ruta, 'utf8', function(err, texto) { listo(err ? null : texto, err); });
+	} else {
+		$.get(ruta, function(texto) { listo(texto); }, 'text').fail(function(x, estado, err) { listo(null, err || estado); });
 	}
 };
 BlocklyDuino.save_com = function() {
@@ -119,10 +183,61 @@ BlocklyDuino.cargarPlantilla = function() {
 		Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(BlocklyDuino.PLANTILLA), BlocklyDuino.workspace);
 	} catch (e) { console.log(e); }
 };
+// MPR: carga un proyecto (.bloc/.xml) en la mesa sin perder lo que había si el archivo está dañado, no es de bloques
+// o trae bloques que esta versión no conoce. Antes se vaciaba la mesa y quedaba en blanco o a medias, sin aviso
+// (este Blockly no avisa de XML roto ni de bloques desconocidos). Devuelve true si cargó; si no, muestra
+// MSG.xmlError y deja la mesa como estaba (PLAN_PULIDO B4).
+BlocklyDuino.cargarXmlEnMesa = function(texto) {
+	var ws = BlocklyDuino.workspace, xml = null, detalle = '';
+	try {
+		var doc = new DOMParser().parseFromString(String(texto == null ? '' : texto).replace(/^\uFEFF/, ''), 'text/xml');
+		xml = doc.documentElement;
+		if (!xml || xml.nodeName.toLowerCase() != 'xml' || doc.getElementsByTagName('parsererror').length) {
+			xml = null;
+			detalle = 'El archivo no es un proyecto de bloques o está dañado.';
+		}
+	} catch (e) { xml = null; detalle = String(e); }
+	if (xml) {
+		var desconocidos = [];
+		['block', 'shadow'].forEach(function(etiqueta) {
+			var nodos = xml.getElementsByTagName(etiqueta);
+			for (var i = 0; i < nodos.length; i++) {
+				var tipo = nodos[i].getAttribute('type');
+				if ((!tipo || !Blockly.Blocks[tipo]) && desconocidos.indexOf(tipo) < 0) desconocidos.push(tipo);
+			}
+		});
+		if (desconocidos.length) {
+			xml = null;
+			detalle = 'Trae bloques que esta versión no conoce: ' + desconocidos.join(', ');
+		}
+	}
+	if (xml) {
+		var antes = Blockly.Xml.workspaceToDom(ws);
+		var grupo = Blockly.Events.getGroup();
+		if (!grupo) Blockly.Events.setGroup(true);   // abrir (y deshacer) es un solo paso
+		try {
+			ws.clear();
+			Blockly.Xml.domToWorkspace(xml, ws);
+		} catch (e) {
+			// falló a medias: se vuelve a poner lo que había
+			detalle = String(e && e.message || e);
+			xml = null;
+			if (Blockly.Field.stopCache) Blockly.Field.stopCache();
+			try { ws.clear(); Blockly.Xml.domToWorkspace(antes, ws); } catch (e2) { console.log(e2); }
+			if (ws.setResizesEnabled) ws.setResizesEnabled(true);
+		}
+		if (!grupo) Blockly.Events.setGroup(false);
+	}
+	if (!xml) {
+		alert(MSG['xmlError'] + (detalle ? '\n' + detalle : ''));
+		return false;
+	}
+	ws.render();
+	return true;
+};
 BlocklyDuino.loadBlocks = function(defaultXml) {
 	if (defaultXml) {
-		var xml = Blockly.Xml.textToDom(defaultXml);
-		Blockly.Xml.domToWorkspace(xml,BlocklyDuino.workspace);
+		BlocklyDuino.cargarXmlEnMesa(defaultXml);   // MPR: sin borrar la mesa si el archivo está dañado (PLAN_PULIDO B4)
 	} else {
 		var loadOnce = null;
 		try {
@@ -130,8 +245,11 @@ BlocklyDuino.loadBlocks = function(defaultXml) {
 		} catch (e) {}
 		if (loadOnce != null) {
 			delete window.localStorage.loadOnceBlocks;
-			var xml = Blockly.Xml.textToDom(loadOnce);
-			Blockly.Xml.domToWorkspace(xml,BlocklyDuino.workspace);
+			// MPR: si el respaldo viene dañado, que la app abra igual (con lo que se alcanzó a cargar o la plantilla)
+			try {
+				var xml = Blockly.Xml.textToDom(loadOnce);
+				Blockly.Xml.domToWorkspace(xml,BlocklyDuino.workspace);
+			} catch (e) { console.log(e); }
 		}
 		// MPR: sin trabajo guardado (primera vez) o con la mesa vacía, se parte con la plantilla
 		if (BlocklyDuino.workspace.getAllBlocks().length == 0) BlocklyDuino.cargarPlantilla();
@@ -142,56 +260,22 @@ BlocklyDuino.load = function(event) {
 	if (files.length != 1) {
 		return;
 	}
+	var archivo = files[0];
+	// MPR: vaciar el selector para que elegir otra vez el mismo archivo vuelva a abrirlo (PLAN_PULIDO B6)
+	event.target.value = '';
+	BlocklyDuino.abrirArchivoLocal(archivo);
+};
+// MPR: abre un .bloc/.xml elegido con "Abrir" o soltado sobre la ventana. Ya no hay modo código: los .ino/.py
+// (que el selector no ofrece) se rechazan con el aviso en vez de vaciar la mesa (PLAN_PULIDO B4/B5).
+BlocklyDuino.abrirArchivoLocal = function(archivo) {
 	var reader = new FileReader();
 	reader.onloadend = function(event) {
-		var target = event.target;
-		document.getElementById('title-project-name').value = files[0].name.substring(0, files[0].name.indexOf('.'));
-		if (target.readyState == 2) {
-			if (files[0].name.endsWith("ino")) {
-				$('#codeORblock').bootstrapToggle("off");
-				$('a[href="#content_code"]').tab('show');
-				$('#btn_print').addClass("hidden");
-				$('#btn_preview').addClass("hidden");
-				$('#btn_verify').removeClass("hidden");
-				$('#btn_search').removeClass("hidden");
-				window.localStorage.content="off";
-				editor.session.setMode("ace/mode/c_cpp");
-				editor.setOptions({
-					enableBasicAutocompletion: true,
-					enableSnippets: true,
-					enableLiveAutocompletion: true
-				});
-				editor.setValue(target.result,1)
-			}
-			if (files[0].name.endsWith("py")) {
-				$('#codeORblock').bootstrapToggle("off");
-				$('a[href="#content_code"]').tab('show');
-				$('#btn_print').addClass("hidden");
-				$('#btn_preview').addClass("hidden");
-				$('#btn_verify').removeClass("hidden");
-				$('#btn_search').removeClass("hidden");
-				window.localStorage.content="off";
-				editor.session.setMode("ace/mode/python");
-				editor.setOptions({
-					enableBasicAutocompletion: true,
-					enableSnippets: true,
-					enableLiveAutocompletion: true
-				});
-				editor.setValue(target.result,1)
-			}
-			try {
-				var xml = Blockly.Xml.textToDom(target.result);
-
-			} catch (e) {
-				alert(MSG['xmlError']+'\n' + e);
-				return
-			}
-			BlocklyDuino.workspace.clear();
-			Blockly.Xml.domToWorkspace(xml,BlocklyDuino.workspace);
-			BlocklyDuino.workspace.render();
+		if (event.target.readyState != 2) return;
+		if (BlocklyDuino.cargarXmlEnMesa(event.target.result)) {
+			document.getElementById('title-project-name').value = archivo.name.substring(0, archivo.name.indexOf('.'));
 		}
 	};
-	reader.readAsText(files[0])
+	reader.readAsText(archivo);
 };
 BlocklyDuino.backupBlocks = function() {
   if (typeof Blockly != 'undefined' && window.localStorage) {

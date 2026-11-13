@@ -4,6 +4,7 @@
 var {electron, ipcMain, app, BrowserWindow, globalShortcut, dialog, shell} = require('electron')
 var path = require('path')
 var fs = require('fs')
+var URL = require('url').URL
 
 // MPR: usar también las gráficas integradas o antiguas que Chromium descarta por defecto (lista negra de GPU),
 // para que la mascota 3D (WebGL) se vea en todos los equipos. Sin GPU, Chromium dibuja por software (SwiftShader).
@@ -43,24 +44,42 @@ function protectNavigation(win) {
 		if (input.key === 'F5') { event.preventDefault(); refresh(win) }
 		if (input.key === 'F8') { event.preventDefault(); open_console(win) }
 	})
+	// MPR: solo se deja navegar a la misma página de la ventana con otros parámetros (los ejemplos usan
+	// index.html?url=...). Antes se aceptaba cualquier file:// y soltar una foto o un .bloc sobre la ventana
+	// la llevaba a ese archivo y se perdía la mesa (PLAN_PULIDO B5).
 	win.webContents.on('will-navigate', function (event, url) {
-		if (url.indexOf('file://') !== 0) {
-			event.preventDefault()
-			shell.openExternal(url)
-		}
+		var destino = rutaDeUrlArchivo(url)
+		if (destino !== null && destino === rutaDeUrlArchivo(win.webContents.getURL())) return
+		event.preventDefault()
+		if (esUrlWeb(url)) shell.openExternal(url)
 	})
 	win.webContents.on('new-window', function (event, url) {
 		event.preventDefault()
-		if (url.indexOf('file://') !== 0) shell.openExternal(url)
+		if (esUrlWeb(url)) shell.openExternal(url)
 	})
+}
+// MPR: el navegador del sistema solo recibe direcciones web; nunca archivos ni otros protocolos (PLAN_PULIDO B7)
+function esUrlWeb(url) {
+	return /^https?:\/\//i.test(String(url))
+}
+// MPR: ruta (sin parámetros) de una dirección file://, para comparar páginas; null si no es file://
+function rutaDeUrlArchivo(url) {
+	try {
+		var u = new URL(url)
+		if (u.protocol !== 'file:') return null
+		return decodeURIComponent(u.pathname).toLowerCase()
+	} catch (e) {
+		return null
+	}
 }
 var INDEX_URL = "file://" + path.join(APP_ROOT, 'www/index.html')
 // MPR: al abrir un .bloc con doble clic, Windows pasa la ruta como argumento.
 // Se busca entre los argumentos (antes se tomaba argv[1] aunque fuera una opción)
 // y se codifica para que rutas con #, & o % no se corten.
+// MPR: solo .bloc y .xml: la app ya no tiene modo código para abrir .ino o .py (PLAN_PULIDO B7).
 function fileFromArgv(argv) {
 	for (var i = argv.length - 1; i >= 1; i--) {
-		if (/\.(bloc|xml|ino|py)$/i.test(argv[i]) && fs.existsSync(argv[i])) return argv[i]
+		if (/\.(bloc|xml)$/i.test(argv[i]) && fs.existsSync(argv[i])) return argv[i]
 	}
 	return ''
 }

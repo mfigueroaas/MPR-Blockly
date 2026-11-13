@@ -12,6 +12,18 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — B1, B4, B5, B6, B7 y C7: abrir archivos y la vista de código
+- **Pedido:** plan de pulido, puntos B1, B4, B5, B6, B7 (en parte) y C7.
+- **Qué se hizo:**
+  - B1: después de abrir un ejemplo o un `.bloc` (doble clic) se quita `?url=` de la dirección: F5 ya no recarga el archivo original y conserva lo que el alumno hizo.
+  - B4: `BlocklyDuino.cargarXmlEnMesa` revisa el archivo antes de tocar la mesa (que se lea, que sea `<xml>`, que todos sus bloques existan); si no, avisa (`MSG.xmlError` con el detalle) y deja la mesa como estaba. Abrir es un solo paso de Deshacer. Este Blockly no lanza errores con XML roto ni con bloques desconocidos, por eso antes la mesa quedaba vacía o a medias. Se usa en Abrir, soltar, `?url=` y `loadBlocks`.
+  - B5: soltar un archivo sobre la ventana ya no hace navegar a la app: un `.bloc`/`.xml` se abre como con "Abrir"; otra cosa muestra el aviso. `electronApp.js` solo acepta navegar a la propia página.
+  - B6: el selector de archivo se vacía: abrir dos veces el mismo archivo funciona.
+  - B7: por argumento solo se aceptan `.bloc`/`.xml`; `shell.openExternal` solo abre `http(s)`; un `.bloc` con `#` en el nombre se lee con `fs`. Abrir un `.ino`/`.py` ahora muestra el aviso.
+  - C7: la vista de código ignora los eventos de interfaz (seleccionar, clic, abrir categoría).
+- **Archivos:** `www/js/blocklino.js` (sigue CRLF), `electronApp.js`, `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Probado:** en la app (copia `C:\mprbp`, con su `electronApp.js` reemplazado por el del repo, DevTools): texto basura, bloque inventado y raíz HTML → rechazados con la mesa igual; un archivo bueno carga y un Deshacer vuelve; ejemplo Salto abierto por `?url=` → la dirección queda limpia y un bloque agregado sobrevive a F5; navegar a `file:///C:/Windows/win.ini` → la app se queda en su página; soltar una foto → evento cancelado; seleccionar bloques no regenera el código y cambiar un campo lo regenera una vez. No probado a mano: el selector de archivos (B6) y el doble clic en un `.bloc` con `#`.
+
 ### 2026-11-13 — F1: librería Otto nueva integrada (LIB_OTTO_NUEVA.zip)
 - **Pedido:** "implementar todo lo que sale en esta librería en la versión actual" (archivo `LIB_OTTO_NUEVA.zip`, editado por otra persona, con documentación).
 - **Paquete:** SHA‑256 de `Otto.cpp`/`Otto.h` coinciden con `SHA256SUMS.txt`; `CAMBIOS.diff` parte de nuestro commit `9951584` (parche MPR nov-2025) y no incluye `8a7f619` ni `ce27643`. Solo se reemplazan `Otto.cpp` y `Otto.h`; el resto de la librería (Oscillator de MPR incluido) se conserva.

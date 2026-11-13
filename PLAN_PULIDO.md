@@ -38,12 +38,12 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
       personalizado arma un nombre inválido; dos sensores (#1/#2) redefinen la función; `otto_movelegs`.
 
 ## B. Fallos de la app
-- [ ] B1. F5 recarga el ejemplo o `.bloc` original (la URL conserva `?url=`) y se pierden los cambios.
+- [x] B1. F5 recarga el ejemplo o `.bloc` original (la URL conserva `?url=`) y se pierden los cambios.
 - [ ] B2. "Detener" durante la subida puede dejar avrdude vivo con el puerto tomado (`mpr_subida.js`).
 - [ ] B3. Cerrar la calibración durante su subida deja el puerto abierto (`mpr_calibracion.js`).
-- [ ] B4. Abrir un `.bloc` dañado puede borrar la mesa sin aviso (`blocklino.js`).
-- [ ] B5. Soltar un archivo sobre la ventana navega fuera de la app (`electronApp.js`).
-- [ ] B6. Volver a abrir el mismo archivo no hace nada (el `<input>` no se vacía).
+- [x] B4. Abrir un `.bloc` dañado puede borrar la mesa sin aviso (`blocklino.js`).
+- [x] B5. Soltar un archivo sobre la ventana navega fuera de la app (`electronApp.js`).
+- [x] B6. Volver a abrir el mismo archivo no hace nada (el `<input>` no se vacía).
 - [ ] B7 (menores): `#` en el nombre del `.bloc`; `.ino`/`.py` por argumento; `openExternal` solo http(s);
       doble apertura rápida del escenario; error rojo de `typing.js:95` (no afecta el código generado).
 
@@ -56,7 +56,7 @@ Estados: `[ ]` pendiente · `[x]` hecho · `[-]` descartado o en espera de decis
 - [ ] C5. Primera compilación en un PC nuevo: 33 s; con la caché del core en el instalador, ~19 s y no se pierde
       al limpiar `%TEMP%`.
 - [ ] C6. No recompilar si el programa y la placa no cambiaron (~10 s por reenvío).
-- [ ] C7. La vista de código se regenera con eventos de interfaz: ignorarlos.
+- [x] C7. La vista de código se regenera con eventos de interfaz: ignorarlos.
 - [ ] C8 (menores): `webglcontextlost` sin manejo; `getBoundingClientRect` en cada `mousemove`; JS que no se usa.
 
 ## D. Textos (parcial, según la decisión del usuario)
