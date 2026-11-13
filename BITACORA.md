@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-13 — D2: el ejemplo "⛰️ Cerro" usa solo bloques del menú
+- **Pedido:** arreglar el ejemplo del Cerro para los bloques que realmente se pueden utilizar (decisión del usuario del 2026-11-12).
+- **Causa:** usaba "Iniciar serie" (`serial_init`) e "Imprimir" (`serial_println` con un "text"), que no están en el menú; es justo el ejemplo que la misión final pide modificar.
+- **Qué se hizo:** se quitaron esos dos bloques; el resto del programa no cambia (lee la distancia, retrocede si ≤ 5, sube y baja entre 5 y 18, avanza si no). La misión "f_igual" calcula la huella del ejemplo al momento, así que sigue funcionando.
+- **Archivos:** `www/examples/mpr_cerro.xml` (sigue CRLF), `PLAN_PULIDO.md`. Hecho por un subagente; revisado por el coordinador.
+- **Probado:** en la app (copia `C:\mprbp`) generando por DevTools y compilando: compila (6.832 B, antes 7.916 B); el código solo pierde `Serial.begin(9600)` y `Serial.println(lectura_sensor)`. Todos los tipos de bloque del XML están en el menú.
+
 ### 2026-11-13 — D1: la app tutea siempre al alumno
 - **Pedido:** tutear en todos los textos (decisión del usuario del 2026-11-12); lo que sigue en inglés se deja así por ahora.
 - **Qué se hizo:** 28 textos pasan de usted a tú, sin cambiar el sentido: confirmación de borrar todo ("¿Seguro que quieres borrar todos los bloques?"), "Verifica primero", tooltips de si, según, repetir mientras/hasta, contar, para cada, continuar, operador ternario, esperar, código libre, sensor de sonido y otros. Se dejaron los "su" que se refieren a Otto o al LED y los "debe/puede" impersonales.
