@@ -12,6 +12,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-14 — G3: documento de novedades de la versión 1.5.3 (Word, con capturas antes/después)
+- **Pedido:** un documento Word, editable, que explique todas las funciones nuevas, cambios y arreglos desde la versión inicial, con el porqué de cada uno (experiencia de los niños), una captura de pantalla por función y una comparación antes/después.
+- **Qué se hizo:** `Novedades_MPR_Blockly_1.5.3.docx` (19 páginas, carta): resumen antes/ahora, secciones de orientación (pantalla, recorrido, mascota, mesa lista), bloques (menú Otto, velocidades, canciones, sensores, búsqueda, ejemplos), envío al robot (puerto/placa, errores con código, revisión previa, demora, precompilación), aprender jugando (Probar en pantalla, misiones), herramientas de monitores (calibración, modo monitor, Ctrl + Mayús + P), librería Otto y tabla de errores corregidos. Capturas por DevTools en la app real: el "ahora" en la copia `C:\mprbp` (1.5.3) y el "antes" en la 1.1.1 extraída de `versiones/MPR_Blockly_Setup_1.1.1.exe` (sin instalar). El estado de la app (localStorage y mesa) se respaldó antes y se restauró al final, verificado. Generado con la librería `docx` de npm (script fuera del repositorio).
+- **Archivos:** `Novedades_MPR_Blockly_1.5.3.docx`.
+- **Probado:** revisado como PDF exportado desde Word (índice actualizado, comparaciones e imágenes bien).
+
 ### 2026-11-13 — G2: hoja de códigos de error para los monitores (Word)
 - **Pedido:** un documento Word con los códigos de error detallados, para que los monitores los identifiquen.
 - **Qué se hizo:** `Codigos_de_error_MPR_Blockly.docx` (4 páginas, versión 1.5.3): tabla de códigos con el mensaje, la causa y el arreglo, los avisos de la revisión, y la sección "Modo monitor: depurar un programa" (Ctrl + Mayús + M, bloques de la categoría 🛠️ Monitor, pasos para ver un valor en el Monitor Serie, distancia = 400 = sin eco). Generado con la librería `docx` de npm (script fuera del repositorio).
