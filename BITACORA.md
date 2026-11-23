@@ -1157,6 +1157,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** el historial de git conserva los archivos borrados. Nada del instalador ni de `probar.py` los usaba.
 - **Commit:** (ver git log)  **Probado en la app:** no aplica
 
+### 2026-11-23 — Releases en GitHub y historial más liviano
+- **Pedido:** que todas las versiones sean accesibles y que la 1.6.0 se pueda descargar directamente.
+- **Archivos:** `README.md` (sección Descargar).
+- **Qué se hizo:** historial reescrito sin `Fotos otto armado/`, `Manuales/` ni las 73 librerías Arduino de terceros (`.git` de 99 MB a 34 MB), etiquetas `v1.1.0` a `v1.6.0` y un release por versión con sus notas de la sección 7.4. La 1.6.0 es la última (con `MPR_Blockly_Setup_1.6.0.exe`, 64 MB); la 1.1.0 y la 1.1.1 llevan su instalador; de la 1.2.0 a la 1.5.3 no se conservan los instaladores.
+- **Commit:** (ver git log)  **Probado en la app:** no aplica
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
