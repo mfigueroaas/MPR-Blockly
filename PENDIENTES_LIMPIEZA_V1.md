@@ -10,7 +10,7 @@ Rama `limpieza-v1` (sin unir a `main`). Detalle de lo hecho en `BITACORA.md`, en
 - Probado en la copia `C:\mprbp` (DevTools): mismo menú, mismo C++ en los 14 ejemplos, los 14 compilan, consola sin errores, Otto 3D bien.
 
 ## Falta
-1. **Revisar `build/installer.nsi`** (el usuario lo autorizó, pero la configuración de permisos de Claude Code bloquea la carpeta `build/`: quitar esa regla con `/permissions`). Confirmar que al instalar encima de una versión anterior se borran los archivos que ya no existen (77 librerías, idiomas, `VkLayer_*`, `repl.js`, drivers…). Si no, agregar limpieza previa en el `.nsi`.
+1. ~~Revisar `build/installer.nsi`~~ Hecho: ya borraba `resources`, `www`, `packages` y `userlibs` antes de copiar (cubre librerías, idiomas, `repl.js`, drivers); faltaban `compilation\python`, `locales` y `VkLayer_*`/`VkICD_*`, agregados. Falta probar una instalación real encima de una versión anterior (al generar el instalador).
 2. **Probar con el robot** (en la app con los cambios, vía `py tools/probar.py` o la copia `C:\mprbp`):
    - enviar un programa a Otto;
    - F5 y cerrar la ventana durante un envío (debe avisar / preguntar "Cerrar cuando termine / Cerrar ya / Seguir aquí");

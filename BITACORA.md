@@ -1120,6 +1120,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** estructura de carpetas (sin Python, `factory.js`, `repl.js`, solo `CH341.zip`, solo español, 4 librerías, 12 archivos de bloques, sin `#pinout` ni `defaultCategories2/3`); recortes y compilación de prueba del instalador; lista de cosas ya no reactivables; aviso de estado al inicio de la sección 13. Secciones 10 y 13 se actualizarán al cerrar la v1.
 - **Commit:** (ver git log)  **Probado en la app:** no aplica (solo documentación)
 
+### 2026-11-23 — Instalador: limpieza de restos al actualizar encima
+- **Pedido:** punto 1 de `PENDIENTES_LIMPIEZA_V1.md` (revisar `installer.nsi`).
+- **Archivos:** `build/installer.nsi`.
+- **Qué se hizo:** el `.nsi` ya borraba `resources`, `www`, `compilation\arduino\packages` y `userlibs` antes de copiar. Se agregó el borrado de `compilation\python`, `locales`, `VkLayer_*.dll` y `VkICD_mock_icd.dll`, que la limpieza v1 ya no lleva y quedaban en instalaciones previas.
+- **Commit:** (ver git log)  **Probado en la app:** no; falta generar el instalador e instalarlo sobre una versión anterior.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

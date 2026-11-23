@@ -130,6 +130,11 @@ Section "MPR Blockly" SecMain
   RMDir /r "$INSTDIR\www"
   RMDir /r "$INSTDIR\compilation\arduino\packages"
   RMDir /r "$INSTDIR\compilation\arduino\userlibs"
+  ; Restos de versiones anteriores que la limpieza v1 ya no incluye
+  RMDir /r "$INSTDIR\compilation\python"
+  RMDir /r "$INSTDIR\locales"
+  Delete "$INSTDIR\VkLayer_*.dll"
+  Delete "$INSTDIR\VkICD_mock_icd.dll"
 
   File /r "${STAGE}\*.*"
 
