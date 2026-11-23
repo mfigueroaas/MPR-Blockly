@@ -1139,6 +1139,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Notas:** antes y después, las 82 salidas son idénticas. Consola sin errores tras recargar. Un `.bloc` guardado con uno de esos bloques ya no abriría (el menú nunca los ofrecía).
 - **Commit:** (ver git log)  **Probado en la app:** sí, en `C:\mprbp` (DevTools).
 
+### 2026-11-23 — Unión a main y documentación (secciones 10 y 13)
+- **Pedido:** unir `limpieza-v1` a `main`, borrar la rama y poner al día las secciones 10 y 13.
+- **Archivos:** `DOCUMENTACION_TECNICA.md` (10, 13 y 13.1), `PENDIENTES_LIMPIEZA_V1.md`.
+- **Qué se hizo:** merge `32f4f33`; rama `limpieza-v1` borrada. Sección 10: instalador 1.6.0 por validar, SHA-256 del instalador oficial, decisión del repositorio de la v2. Sección 13: estado al 2026-11-23 y `tools/codigo_generado.mjs`. El logo de Crecer en Renca se queda; el huevo de Pascua sigue pendiente.
+- **Commit:** (ver git log)  **Probado en la app:** no aplica (documentación)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

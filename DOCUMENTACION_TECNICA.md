@@ -564,14 +564,14 @@ Después de cualquiera: `py tools/probar.py` y F5.
 
 ## 10. Pendientes, riesgos y puntos a vigilar
 
-1. **Instalador sin validar en otros PCs:** el último, la 1.5.0, aún no se ha ejecutado en ningún PC (la 1.4.1 se probó solo en el notebook). Falta probarlo en un PC del colegio, idealmente sin internet (instalar, abrir, compilar y subir a un Nano). Los bundles de git no incluyen los cambios desde octubre.
+1. **Instalador sin validar en otros PCs:** el último, la 1.6.0 (64 MB, 2026-11-23), no se ha ejecutado en ningún PC (la 1.4.1 se probó solo en el notebook). Falta instalarlo encima de una 1.5.x (el `.nsi` borra `resources`, `www`, `packages`, `userlibs`, `compilation\python`, `locales` y `VkLayer_*`) y probar con el robot: envío, F5/cerrar durante un envío, Monitor Serie (velocidad, tildes y ñ), F8, guardar/cancelar y variables. Falta probarlo en un PC del colegio, idealmente sin internet (instalar, abrir, compilar y subir a un Nano). Los bundles de git no incluyen los cambios desde octubre.
 2. **Verificaciones pendientes** de los cambios marcados "sin confirmar" en la sección 8, en especial las listas desplegables (`mpr_fixes.js`).
 3. **`overflow: hidden` en `html, body`:** se agregó para que la ventana no se desplace; comprobar que ninguna pantalla (modales, ayudas, `factory.html`, `term.html`) necesite desplazarse.
 4. **Estados guardados en `localStorage`** (`card`, `toolbox`, `prog`, `toolboxids`, `content`): los cambios en listas de placas o categorías pueden requerir borrarlos en PCs que ya usaron la app. La placa predeterminada solo se nota en instalaciones sin placa guardada.
 5. **Buzzer sin sonido:** si no suena con el código correcto, revisar pin real, buzzer activo/pasivo, polaridad, y probar `Otto._tone(261,125,1);`.
 6. **Textos en español incompletos o mezclados:** el bloque `map` ("map / from / to") y algunos ejemplos "Explora otros ejemplos" siguen en inglés. Hay un intento de traducción del bloque `map` en el historial (`git show 36243d3 3fbdfd4`) revertido a petición del usuario.
-7. **Dependencia de binarios externos:** el instalador solo puede generarse con el instalador oficial 1.5.0 (SHA‑256 fijo). Si desaparece de GitHub, conservar una copia.
-8. **Respaldo del repositorio:** actualmente solo existe localmente; se recomendó subirlo a `Admin-Proteinlab/blockly_mpr`.
+7. **Dependencia de binarios externos:** el instalador solo puede generarse con el instalador oficial 1.5.0 (SHA‑256 `3c495447694e5e6a68b0de7408d533825d2c661fba35a7ec74415a83e8b28b99`; copia en la raíz del repo, ignorada por git). Si desaparece de GitHub, conservar una copia.
+8. **Respaldo del repositorio:** actualmente solo existe localmente; se recomendó subirlo a `Admin-Proteinlab/blockly_mpr`. Está por decidir si la v2 sigue en este repositorio (historial de ~90 MB) o parte de uno nuevo desde el estado limpio.
 9. **Fin de línea mixto:** editar con cuidado (ver 6.3).
 10. **Límite de plataforma:** Windows 64 bits; Electron 4.1.1 es muy antiguo (sin soporte de seguridad); por eso se restringen navegación externa y permisos.
 
@@ -605,13 +605,14 @@ Después de cualquiera: `py tools/probar.py` y F5.
 
 ---
 
-## 13. Traspaso: estado al 2026-11-13 y cómo continuar (por ejemplo, desde el notebook)
+## 13. Traspaso: estado al 2026-11-23 y cómo continuar (por ejemplo, desde el notebook)
 
-> **Estado al 2026-11-23:** el trabajo vigente es la limpieza v1, en la rama `limpieza-v1` (sin unir a `main`). Qué falta (revisar `installer.nsi` al actualizar encima, pruebas con el robot, versión 1.6.0 e instalador, unir a `main`, huevo de Pascua, repositorio de la v2): `PENDIENTES_LIMPIEZA_V1.md`. Copia de prueba `C:\mprbp` (con `--remote-debugging-port=9222`).
+> **Estado al 2026-11-23:** la limpieza v1 está unida a `main` (merge `32f4f33`; la rama `limpieza-v1` se borró) y `package.json` está en **1.6.0**. Lo que falta está en `PENDIENTES_LIMPIEZA_V1.md`: pruebas con el robot e instalación de la 1.6.0 sobre una 1.5.x, huevo de Pascua para cerrar la v1 y decidir el repositorio de la v2. Copia de prueba `C:\mprbp` (con `--remote-debugging-port=9222`). Para comparar el C++ de los 14 ejemplos y de cada bloque antes y después de tocar generadores: `node tools/codigo_generado.mjs salida.json` (y `--comparar a.json b.json`). Lo de 13.1 en adelante describe estados anteriores.
 
 Esta sección resume el estado del proyecto para retomar el trabajo sin el contexto de la conversación. Nació con la sesión del 8 de noviembre de 2026 (13.2 a 13.7 conservan lo de ese día) y se completó con lo hecho hasta el 2026-11-12 (13.8 a 13.11). Detalle cambio a cambio en `BITACORA.md` y `git log`; mecanismos en la sección 4. **El trabajo en curso está en `PLAN_PULIDO.md`** (lista de pulido desde la 1.5.0, con su estado).
 
 ### 13.1 Estado actual
+- **Al 2026-11-23:** `main` con la limpieza v1, `package.json` en **1.6.0**. Instalador `dist\MPR_Blockly_Setup_1.6.0.exe`: 64 MB, SHA‑256 `111e7b8ecccc8aab036a0c1933e72786a7ba7c79a4585587aeaaf9245da68614`, sin firma (7.4). Quedó solo en español, con 4 librerías Arduino y sin 156 bloques/generadores sin uso (el C++ de los 82 casos de prueba es idéntico). Sin validar en ningún PC ni con el robot.
 - **Al 2026-11-13 (tarde):** `package.json` en **1.5.1** e instalador `distMPR_Blockly_Setup_1.5.1.exe` generado (7.4), con el plan de pulido y la librería Otto nueva; se comprobó que lleva los archivos del repositorio. Falta que lo valide otra persona en otro PC y con el robot.
 - **Antes, 2026-11-13:** rama `main`, `package.json` en **1.5.0**. El último instalador era el 1.5.0, generado el 2026-11-10 (`dist\MPR_Blockly_Setup_1.5.0.exe`, 139 MB, sin firma, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`; 7.4). Lleva las etapas 1 y 2 (13.8, 13.9), Otto ataja los errores (13.10) y lo del 2026-11-10 (13.11). Se comprobó que lleva los archivos nuevos (`mpr_misiones.js`, `mpr_revision.js`, `blocklino.js`, `index.html`, iguales a los del repositorio). **Falta ejecutarlo** en el notebook y en un PC del colegio.
 - **Después del instalador 1.5.0** (en git, todavía en ningún instalador): los cambios del 2026-11-11 (Otto parte escondido, colores al azar, Otto ya no se corta en el escenario, ayuda del clic derecho a miprimerrobot.utem.cl, una canción nueva) y del 2026-11-12 (textos sin marcas comerciales y el comienzo de `PLAN_PULIDO.md`). Se prueban con `probar.py` en la app instalada o en la copia de prueba `C:\mprbp`. El próximo instalador se generará cuando termine el desarrollo.
