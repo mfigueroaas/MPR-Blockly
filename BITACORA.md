@@ -1114,6 +1114,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** `py tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe` generó `dist\MPR_Blockly_Setup_1.5.0.exe` (139.047.350 bytes, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`, versión 1.5.0.0 en el .exe, sin firma). Se extrajeron del instalador `mpr_misiones.js`, `mpr_revision.js`, `blocklino.js` e `index.html`: iguales a los del repositorio. Hubo que borrar a mano `C:\mprb\stage`, que quedó de un armado interrumpido (13.11).
 - **Commit:** (ver git log)  **Probado:** el instalador todavía no se ha ejecutado en un PC. Los cambios se probaron en la copia de prueba y en la app instalada con `probar.py`.
 
+### 2026-11-23 — Documentación técnica al día con la limpieza v1
+- **Pedido:** seguir con `PENDIENTES_LIMPIEZA_V1.md`, punto 3.
+- **Archivos:** `DOCUMENTACION_TECNICA.md` (3.2, 7.1, 9, 13), `PENDIENTES_LIMPIEZA_V1.md`.
+- **Qué se hizo:** estructura de carpetas (sin Python, `factory.js`, `repl.js`, solo `CH341.zip`, solo español, 4 librerías, 12 archivos de bloques, sin `#pinout` ni `defaultCategories2/3`); recortes y compilación de prueba del instalador; lista de cosas ya no reactivables; aviso de estado al inicio de la sección 13. Secciones 10 y 13 se actualizarán al cerrar la v1.
+- **Commit:** (ver git log)  **Probado en la app:** no aplica (solo documentación)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

@@ -19,7 +19,7 @@ Rama `limpieza-v1` (sin unir a `main`). Detalle de lo hecho en `BITACORA.md`, en
    - F8 con y sin Ctrl + Mayús + M;
    - guardar `.bloc`/`.ino` y cancelar el diálogo;
    - crear y renombrar una variable.
-3. **Actualizar `DOCUMENTACION_TECNICA.md`**: secciones 3.2 (estructura: sin python, drivers, lang, libs), 7.1 (recortes del instalador, `--forzar`, compilación de prueba), 9 (cosas ocultas ya no reactivables: sensores extra, niveles, otras placas, idiomas), 10 y 13 (traspaso). Mencionar `#pinout`/`defaultCategories2/3` borrados.
+3. ~~Actualizar `DOCUMENTACION_TECNICA.md`~~ Hecho (3.2, 7.1, 9 y aviso en 13). Queda poner al día 10 y 13 al cerrar la v1.
 4. **Opcional de limpieza menor** (inocuo, no hecho): textos sin uso en `www/lang/Arduino_es.js` y `msg_es.js` (bloques borrados, `btn_factory`, `configModal`, `cardLabel`); ramas muertas `prog != "python"` y `MRTnode`/ESP en `arduino_blocs.js`, `sensors.js`, `arduino_generateurs_cpp.js`; `blockly_blocs.js` tiene 71 definiciones y se usan 31; `js/mode-python.js` y `js/snippets/python.js`.
 5. **Versión 1.6.0** en `package.json` y **generar el instalador**: falta `ottoblockly.Setup.1.5.0.exe` (no está en este PC; descargar de https://github.com/OttoDIY/blockly/releases/download/v1.5.0/ottoblockly.Setup.1.5.0.exe, pedir autorización). Anotar tamaño y SHA-256 en la doc (7.4) y comparar con 1.5.3 (139 MB).
 6. **Unir `limpieza-v1` a `main`.**
