@@ -21,6 +21,16 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - Menús de bloques de otras placas (ESP8266, ESP32, MRTX, MRTnode, micro:bit, megaAVR, SAMD): solo queda `toolbox_arduino_all.xml`. `blocklino.js` usa siempre ese menú aunque un PC tenga guardado otro (si no, daba un 404 al abrir).
   - Drivers: solo `CH341.zip` (el único que instala el instalador). Fuera FTDI, CP210x, libusb, micro:bit, dpinst y los `.inf` de Arduino.
   - Otros: `html_old.js` y `ext-searchbox.js` (no se cargaban), íconos sin uso de `build/` y `ottoblockly.nsh`, `.circleci/` y `.github/` (del proyecto original).
+- **Etapa 2 (librerías y paquete del instalador):**
+  - `userlibs`: de 77 librerías (110 MB) quedan 4 (0,9 MB): `Otto`, `Servo` (la de userlibs es la que se usa hoy, por sobre la del core), `PlayRtttl-master` (canciones) y `CuteBuzzerSounds` (sonidos). Son las únicas que piden los bloques visibles, la calibración y la precompilación. Comprobado compilando con un arduino-cli aparte (`C:\mprt`) que solo tenía esas 4.
+  - `tools/build_installer.py`:
+    - avr-gcc solo con las bibliotecas del atmega328p (multilib `avr5`), sin `firmwares` del core ni `arduinoOTA` 1.2.1: el paquete de Arduino baja de 251 a 131 MB. El `.hex` sale **idéntico byte a byte** al del compilador completo.
+    - `library_index.json` vacío (`{"libraries":[]}`) en vez del de 16 MB. Ojo: si ese archivo falta, arduino-cli lo descarga de internet al compilar; vacío, no.
+    - Runtime de Electron sin las capas de depuración de Vulkan (`VkLayer_*`, ~11 MB) y con solo los idiomas `en-US`, `es` y `es-419` en `locales`.
+    - Drivers: solo se descomprime el CH341 (antes iba toda la carpeta y el `.zip`).
+    - Si el SHA-256 del instalador oficial no coincide, ahora se detiene (antes solo avisaba); `--forzar` para seguir.
+    - Antes de generar el instalador compila un programa de prueba (Otto, canciones, sonidos) con el arduino-cli armado, para Nano y Nano Old; si falla, no genera nada.
+  - Fuera `compilation/arduino/README.md` (de Arduino Builder) y `sketch/README.md` (decía "INO").
 - **Commit:** (ver git log)  **Probado en la app:** pendiente (al final de la limpieza)
 
 ### 2026-11-23 — Grafo de código: `.cbmignore` y notas en CLAUDE.md
