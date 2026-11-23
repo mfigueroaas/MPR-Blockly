@@ -21,9 +21,9 @@ Rama `limpieza-v1` (sin unir a `main`). Detalle de lo hecho en `BITACORA.md`, en
    - crear y renombrar una variable.
 3. ~~Actualizar `DOCUMENTACION_TECNICA.md`~~ Hecho (3.2, 7.1, 9 y aviso en 13). Queda poner al día 10 y 13 al cerrar la v1.
 4. ~~Limpieza menor~~ Hecha (textos sin uso de `msg_es.js`, modo Python de Ace y 156 definiciones de bloques/generadores sin uso, 4.192 líneas, comprobado con `tools/codigo_generado.mjs`: 82 salidas idénticas). Quedan solo textos sin uso de `Arduino_es.js` y ramas `prog != "python"` dentro de bloques que sí se usan (inocuas).
-5. **Versión 1.6.0** en `package.json` y **generar el instalador**: falta `ottoblockly.Setup.1.5.0.exe` (no está en este PC; descargar de https://github.com/OttoDIY/blockly/releases/download/v1.5.0/ottoblockly.Setup.1.5.0.exe, pedir autorización). Anotar tamaño y SHA-256 en la doc (7.4) y comparar con 1.5.3 (139 MB).
-6. **Unir `limpieza-v1` a `main`.**
-7. **Decidir** qué hacer con `Logo Crecer en Renca.svg` (raíz, sin git; idéntico a `www/media/crecer-en-rencaLOGO.svg`, que tampoco se usa).
+5. ~~Versión 1.6.0 e instalador~~ Hecho (64 MB, SHA-256 en 7.4 de la documentación). Falta instalarlo encima de una 1.5.x y probarlo.
+6. ~~Unir `limpieza-v1` a `main`~~ Hecho (2026-11-23, merge `32f4f33`).
+7. ~~Logo~~ Decidido: `Logo Crecer en Renca.svg` y `www/media/crecer-en-rencaLOGO.svg` se quedan (el logo se usa en el software). El de la raíz sigue sin versionar.
 8. **Huevo de Pascua** para cerrar la v1 (por definir con el usuario).
 9. **Decidir el repositorio de la v2**: seguir en este (historial de ~90 MB) o empezar uno nuevo desde el estado limpio.
 
