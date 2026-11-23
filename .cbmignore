@@ -1,0 +1,7 @@
+# Grafo de codigo (codebase-memory-mcp): excluir lo que no es codigo propio
+compilation/arduino/userlibs/libraries/*
+!compilation/arduino/userlibs/libraries/Otto/
+Fotos otto armado/
+Manuales/
+versiones/
+driversUSB/

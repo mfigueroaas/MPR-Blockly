@@ -12,6 +12,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-23 — Grafo de código: `.cbmignore` y notas en CLAUDE.md
+- **Pedido:** indexar el repo con el grafo (codebase-memory-mcp) y dejar el proyecto limpio para trabajar.
+- **Archivos:** `.cbmignore` (nuevo), `CLAUDE.md`, `BITACORA.md`.
+- **Qué se hizo:** `.cbmignore` excluye las librerías Arduino de terceros (salvo `Otto`), `Fotos otto armado/`, `Manuales/`, `versiones/` y `driversUSB/`, que eran ~60 % del grafo. CLAUDE.md aclara que los idiomas de `www/lang` distintos de español son heredados y añade la sección "Grafo de código". No se tocó código de la app.
+- **Notas:** pendiente decidir los 2 `.png` de Firebase borrados sin commitear; el logo `Logo Crecer en Renca.svg` no se tocó.
+- **Commit:** (sin commit aún)  **Probado en la app:** no aplica
+
 ### 2026-11-14 — G3: documento de novedades de la versión 1.5.3 (Word, con capturas antes/después)
 - **Pedido:** un documento Word, editable, que explique todas las funciones nuevas, cambios y arreglos desde la versión inicial, con el porqué de cada uno (experiencia de los niños), una captura de pantalla por función y una comparación antes/después.
 - **Qué se hizo:** `Novedades_MPR_Blockly_1.5.3.docx` (19 páginas, carta): resumen antes/ahora, secciones de orientación (pantalla, recorrido, mascota, mesa lista), bloques (menú Otto, velocidades, canciones, sensores, búsqueda, ejemplos), envío al robot (puerto/placa, errores con código, revisión previa, demora, precompilación), aprender jugando (Probar en pantalla, misiones), herramientas de monitores (calibración, modo monitor, Ctrl + Mayús + P), librería Otto y tabla de errores corregidos. Capturas por DevTools en la app real: el "ahora" en la copia `C:\mprbp` (1.5.3) y el "antes" en la 1.1.1 extraída de `versiones/MPR_Blockly_Setup_1.1.1.exe` (sin instalar). El estado de la app (localStorage y mesa) se respaldó antes y se restauró al final, verificado. Generado con la librería `docx` de npm (script fuera del repositorio).

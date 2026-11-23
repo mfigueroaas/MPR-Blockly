@@ -5,6 +5,7 @@ OttoDIY/blockly. Ver `LEEME_MPR.md` para el contexto completo.
 
 ## Reglas
 - La app es **solo en español**. Los textos van en `www/lang/Arduino_es.js` y `msg_es.js`.
+  Los demás archivos de `www/lang` (ar, bg, cn, de, en…) son heredados de OttoDIY: no se mantienen ni se editan.
 - **No migrar Electron ni serialport**: el código usa la API de Electron 4 (diálogos con
   callback, `remote`, nodeIntegration por defecto) y `serialport` 7 (`sp.list(callback)`,
   `port.comName`). El instalador reutiliza esos binarios del instalador oficial 1.5.0.
@@ -56,3 +57,8 @@ Cada cambio se registra en `BITACORA.md` (pedido, archivos, qué se hizo, commit
 ## Documentación
 Visión completa del proyecto en `DOCUMENTACION_TECNICA.md` (arquitectura, versiones, mecanismos, instalador). Si un cambio altera algo de ahí, actualizarla junto con `BITACORA.md`.
 **Para retomar el trabajo (otro PC, sesión nueva): leer la sección 13 "Traspaso" de `DOCUMENTACION_TECNICA.md`** (estado, qué falta probar, trampas conocidas, cómo ver la mascota 3D sin instalar con `tools/servidor_local.js`).
+
+## Grafo de código (codebase-memory-mcp)
+- Proyecto indexado: `C-Users-marce-OneDrive-Advisor2grow-SPA-Proyectos-mpr-blockly`. `.cbmignore` excluye las librerías Arduino de terceros (salvo `Otto`), fotos, manuales, `versiones/` y `driversUSB/`; si cambia, reindexar.
+- Código propio: `www/js/mpr_*.js` (simulador, mascota 3D, calibración, monitor, subida, misiones, revisión…), `www/js/blocklino.js`, `boards.js`, `generate_cpp.js`, `electronApp.js` (proceso principal) y `tools/`. Los módulos MPR se conectan por el DOM y scripts globales, así que el grafo ve pocas llamadas entre ellos: complementar con Grep.
+- `ace.js`, `jquery`, `blockly.min.js` y similares son minificados de terceros: no abrirlos.
