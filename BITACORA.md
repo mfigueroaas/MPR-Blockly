@@ -12,12 +12,57 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-23 — Limpieza final de la versión 1 (rama `limpieza-v1`)
+- **Pedido:** revisión profunda del proyecto y limpieza para cerrar la v1 sin funciones nuevas: quitar archivos, imágenes, idiomas, librerías y código que no se usan, y corregir fallos, como base limpia para la v2. Decisiones del usuario: borrar también los bloques y ejemplos ocultos y sus librerías; dejar solo el driver CH340; F8 (DevTools) solo en modo monitor; el historial de git se decide al final.
+- **Etapa 1 (archivos sin uso):**
+  - Idiomas: quedan solo `Arduino_es.js`, `Blockly_es.js`, `msg_es.js` y `code.js` (51 archivos menos).
+  - Ejemplos: fuera los 69 ocultos (`"visible": false`) y 4 que no estaban en `examples.json`; quedan los 14 visibles y `mpr_salto.xml` (MPR, aún sin entrada en el menú).
+  - Imágenes sin ninguna referencia: 13 de `www/media` y 11 de `www/examples/media`. `crecer-en-rencaLOGO.svg` se conserva (sin uso aún).
+  - Menús de bloques de otras placas (ESP8266, ESP32, MRTX, MRTnode, micro:bit, megaAVR, SAMD): solo queda `toolbox_arduino_all.xml`. `blocklino.js` usa siempre ese menú aunque un PC tenga guardado otro (si no, daba un 404 al abrir).
+  - Drivers: solo `CH341.zip` (el único que instala el instalador). Fuera FTDI, CP210x, libusb, micro:bit, dpinst y los `.inf` de Arduino.
+  - Otros: `html_old.js` y `ext-searchbox.js` (no se cargaban), íconos sin uso de `build/` y `ottoblockly.nsh`, `.circleci/` y `.github/` (del proyecto original).
+- **Etapa 2 (librerías y paquete del instalador):**
+  - `userlibs`: de 77 librerías (110 MB) quedan 4 (0,9 MB): `Otto`, `Servo` (la de userlibs es la que se usa hoy, por sobre la del core), `PlayRtttl-master` (canciones) y `CuteBuzzerSounds` (sonidos). Son las únicas que piden los bloques visibles, la calibración y la precompilación. Comprobado compilando con un arduino-cli aparte (`C:\mprt`) que solo tenía esas 4.
+  - `tools/build_installer.py`:
+    - avr-gcc solo con las bibliotecas del atmega328p (multilib `avr5`), sin `firmwares` del core ni `arduinoOTA` 1.2.1: el paquete de Arduino baja de 251 a 131 MB. El `.hex` sale **idéntico byte a byte** al del compilador completo.
+    - `library_index.json` vacío (`{"libraries":[]}`) en vez del de 16 MB. Ojo: si ese archivo falta, arduino-cli lo descarga de internet al compilar; vacío, no.
+    - Runtime de Electron sin las capas de depuración de Vulkan (`VkLayer_*`, ~11 MB) y con solo los idiomas `en-US`, `es` y `es-419` en `locales`.
+    - Drivers: solo se descomprime el CH341 (antes iba toda la carpeta y el `.zip`).
+    - Si el SHA-256 del instalador oficial no coincide, ahora se detiene (antes solo avisaba); `--forzar` para seguir.
+    - Antes de generar el instalador compila un programa de prueba (Otto, canciones, sonidos) con el arduino-cli armado, para Nano y Nano Old; si falla, no genera nada.
+  - Fuera `compilation/arduino/README.md` (de Arduino Builder) y `sketch/README.md` (decía "INO").
+- **Etapa 3 (proceso principal y Monitor Serie):**
+  - Código muerto fuera: Python/MicroPython/micro:bit (`compilation/python/`, 1.074 archivos; ramas de `index.js`), consola REPL (`repl.js`, `repl.html`), ventana de fábrica de bloques (`factory.html`, `js/factory_*.js`; `factory.js` se queda: maneja los botones de la ventana), exportar `.hex`/`.py`, el actualizador automático (`electron-updater`, `app-update.yml`, `dev-app-update.yml`; `config.json` queda `{}` porque el instalador lo copia) y el camino de verificar/subir anterior a `MPRSubida`. `modalVar.html` se queda: Blockly lo usa para crear y renombrar variables.
+  - Guardar `.ino`, `.bloc` o `.csv` y cancelar el diálogo ya no puede dar error (`if (!path)` y el proceso principal no avisa si no hay archivo).
+  - Envíos y compilaciones a medias: `mpr_subida.js` avisa el estado al proceso principal (`subida-estado`: `libre`, `compilando` = solo la precompilación, `enviando` = el alumno verifica o envía). Con `enviando`, F5 y abrir otro `.bloc` avisan y no hacen nada, y cerrar pregunta "Cerrar cuando termine / Cerrar ya (corta el envío) / Seguir aquí". Con `compilando`, F5 y abrir otro archivo esperan en silencio a que termine, y cerrar oculta la ventana y sale al terminar. Tope de 90 s por si algo se cuelga. Nunca se corta una compilación (evita el core dañado).
+  - F8 (DevTools) solo con el modo monitor activo (`mpr_monitor.js`); antes cualquier alumno abría la consola, con acceso total a Node.
+  - Cuadro de variables: cerrarlo con Alt+F4 ya no reutiliza la respuesta anterior.
+  - Monitor Serie (`term.js`): tildes y ñ partidas entre paquetes ya no salen rotas (`StringDecoder`); cambiar la velocidad reconecta cuando el puerto terminó de cerrarse (antes podía dar "Access denied"); error al enviar texto avisado.
+  - `tools/probar.py` ya no copia `repl.js`.
+- **Etapa 4 (interfaz):**
+  - Bloques: de 56 archivos de `blocs&generateurs` quedan 12 (`blockly_blocs`, `arduino_blocs`, `arduino_generateurs_cpp`, `blockly_generateurs_cpp`, `audio`, `sensors`, `text`, `SerialUSB`, `RTTTL`, `ottoesp`, `mpr_canciones`, `mpr_monitor_bloques`). Fuera los de ESP/IoT, pantallas, sensores ocultos, `otto.js` (Otto Quad/Ninja, cuyas claves chocaban con `ottoesp.js`) y los generadores Python (también dentro de `audio.js` y `sensors.js`), más `generate_python.js`, `python.js`, `hexlify.js` e `intel-hex.browser.js`.
+  - Menú (`toolbox_arduino_all.xml`): solo las 9 categorías visibles y la del modo monitor, sin bloques comentados `OCULTO`, sin niveles 2/3 ni sensores extra. El menú se ve igual.
+  - `typing.js`: la línea 95 lanzaba `TypeError` al abrir (bloque `digital_read` inexistente), así que de ahí en adelante nunca corrió. Se quitó esa parte y lo demás va con guarda: la consola queda sin errores y el C++ no cambia.
+  - `boards.js`: solo Nano y Nano Old; fuera 88 imágenes sin uso (fotos de otras placas: 6,5 MB). Se restauraron los 3 cursores `hand*.cur`, que Blockly carga por su cuenta.
+  - `blocklino.js`: sin niveles, modal de configuración, idioma, `#btn_bin`/`#btn_factory`, cambio de menú por placa ni Python. Placa guardada inválida validada con `window.profile` (antes un selector sin escapar), respaldo de la mesa con `try/catch`, nombre de proyecto sin la última extensión (`lastIndexOf`).
+  - `index.html`: sin scripts borrados, selector de idioma, casilla de actualizaciones, `#card`, `#usb` y 5 modales de conexión que nada abría; fuera `www/examples/media` (solo la usaban esos modales).
+  - `mpr_mascota.js`: si Otto 3D falla al crearse, pasa a 2D en vez de quedar "cargando" para siempre (eso bloqueaba la precompilación y el recorrido).
+  - `generate_cpp.js`: `redPin`, `greenPin` y `bluePin` como palabras reservadas.
+  - `index.js`: si no se puede guardar el `.bloc` o el `.ino` (carpeta sin permiso, pendrive quitado), avisa en vez de fallar en silencio.
+  - Ejemplos "Cute sounds" y "Simple melody": usaban el pin `D5` (de ESP8266) y **no compilaban en el Nano** desde antes; ahora usan el 13, el del buzzer de Otto.
+- **Probado en la app:** sí, en la copia de prueba `C:\mprbp` (runtime sin `VkLayer_*` y con 3 idiomas, y compilador recortado con las 4 librerías), comparando con `main` antes de la limpieza por DevTools:
+  - Menú con las mismas 9 categorías y los mismos bloques; todos los bloques del menú se crean y generan código.
+  - Los 14 ejemplos visibles generan **el mismo C++** que antes (salvo los 2 corregidos) y **los 14 compilan** para Nano.
+  - Consola sin errores al abrir (antes: `typing.js:95`). Otto 3D funciona. Abrir un archivo con un bloque borrado avisa y deja la mesa como estaba.
+  - Falta probar con el robot: enviar un programa, F5 y cerrar durante un envío, Monitor Serie y F8.
+- **Commit:** (ver git log)  **Probado en la app:** pendiente (al final de la limpieza)
+
 ### 2026-11-23 — Grafo de código: `.cbmignore` y notas en CLAUDE.md
 - **Pedido:** indexar el repo con el grafo (codebase-memory-mcp) y dejar el proyecto limpio para trabajar.
 - **Archivos:** `.cbmignore` (nuevo), `CLAUDE.md`, `BITACORA.md`.
 - **Qué se hizo:** `.cbmignore` excluye las librerías Arduino de terceros (salvo `Otto`), `Fotos otto armado/`, `Manuales/`, `versiones/` y `driversUSB/`, que eran ~60 % del grafo. CLAUDE.md aclara que los idiomas de `www/lang` distintos de español son heredados y añade la sección "Grafo de código". No se tocó código de la app.
 - **Notas:** se confirmó el borrado de 2 `.png` de documentación de Firebase (sin uso en MPR); el logo `Logo Crecer en Renca.svg` no se tocó.
-- **Commit:** (sin commit aún)  **Probado en la app:** no aplica
+- **Commit:** `1141974`  **Probado en la app:** no aplica
 
 ### 2026-11-14 — G3: documento de novedades de la versión 1.5.3 (Word, con capturas antes/después)
 - **Pedido:** un documento Word, editable, que explique todas las funciones nuevas, cambios y arreglos desde la versión inicial, con el porqué de cada uno (experiencia de los niños), una captura de pantalla por función y una comparación antes/después.
@@ -1068,6 +1113,31 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Archivos:** `package.json` (1.4.1 → 1.5.0), `DOCUMENTACION_TECNICA.md` (13.1 y 13.11).
 - **Qué se hizo:** `py tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe` generó `dist\MPR_Blockly_Setup_1.5.0.exe` (139.047.350 bytes, SHA‑256 `326c40785ba3aff0ab17bdace3b58a5086c7838293a001052e2158580fb9b6f5`, versión 1.5.0.0 en el .exe, sin firma). Se extrajeron del instalador `mpr_misiones.js`, `mpr_revision.js`, `blocklino.js` e `index.html`: iguales a los del repositorio. Hubo que borrar a mano `C:\mprb\stage`, que quedó de un armado interrumpido (13.11).
 - **Commit:** (ver git log)  **Probado:** el instalador todavía no se ha ejecutado en un PC. Los cambios se probaron en la copia de prueba y en la app instalada con `probar.py`.
+
+### 2026-11-23 — Documentación técnica al día con la limpieza v1
+- **Pedido:** seguir con `PENDIENTES_LIMPIEZA_V1.md`, punto 3.
+- **Archivos:** `DOCUMENTACION_TECNICA.md` (3.2, 7.1, 9, 13), `PENDIENTES_LIMPIEZA_V1.md`.
+- **Qué se hizo:** estructura de carpetas (sin Python, `factory.js`, `repl.js`, solo `CH341.zip`, solo español, 4 librerías, 12 archivos de bloques, sin `#pinout` ni `defaultCategories2/3`); recortes y compilación de prueba del instalador; lista de cosas ya no reactivables; aviso de estado al inicio de la sección 13. Secciones 10 y 13 se actualizarán al cerrar la v1.
+- **Commit:** (ver git log)  **Probado en la app:** no aplica (solo documentación)
+
+### 2026-11-23 — Instalador: limpieza de restos al actualizar encima
+- **Pedido:** punto 1 de `PENDIENTES_LIMPIEZA_V1.md` (revisar `installer.nsi`).
+- **Archivos:** `build/installer.nsi`.
+- **Qué se hizo:** el `.nsi` ya borraba `resources`, `www`, `compilation\arduino\packages` y `userlibs` antes de copiar. Se agregó el borrado de `compilation\python`, `locales`, `VkLayer_*.dll` y `VkICD_mock_icd.dll`, que la limpieza v1 ya no lleva y quedaban en instalaciones previas.
+- **Commit:** (ver git log)  **Probado en la app:** no; falta generar el instalador e instalarlo sobre una versión anterior.
+
+### 2026-11-23 — Limpieza menor y versión 1.6.0
+- **Pedido:** punto 4 de `PENDIENTES_LIMPIEZA_V1.md` y preparar el instalador.
+- **Archivos:** `www/lang/msg_es.js`, `www/js/mode-python.js` y `www/js/snippets/python.js` (borrados), `package.json` (1.5.3 → 1.6.0).
+- **Qué se hizo:** fuera `btn_factory`, `configModalLabel`, `cardLabel` y `aboutcardLabel` (sin uso en HTML ni JS); fuera el modo Python de Ace (nada lo carga). Se descargó `ottoblockly.Setup.1.5.0.exe` con el SHA-256 esperado. No se tocaron generadores ni bloques.
+- **Commit:** (ver git log)  **Probado en la app:** no; `node --check` bien.
+
+### 2026-11-23 — Fuera 156 bloques y generadores sin uso
+- **Pedido:** limpieza de generadores con comparación del código generado.
+- **Archivos:** `www/blocs&generateurs/*.js` (10 archivos, -4.192 líneas), `tools/codigo_generado.mjs` (nuevo).
+- **Qué se hizo:** con un análisis por AST se quitaron las definiciones `Blockly.Blocks[...]` y `Blockly.Arduino[...]` de bloques que no aparecen en el toolbox (ni comentados), ni en ningún ejemplo, ni en otro código (ESP8266/ESP32, bluetooth, MP3, sensores "2", texto, arrays, etc.). `tools/codigo_generado.mjs` saca por DevTools el C++ de los ejemplos visibles y de cada bloque del toolbox.
+- **Notas:** antes y después, las 82 salidas son idénticas. Consola sin errores tras recargar. Un `.bloc` guardado con uno de esos bloques ya no abriría (el menú nunca los ofrecía).
+- **Commit:** (ver git log)  **Probado en la app:** sí, en `C:\mprbp` (DevTools).
 
 ## Plantilla para nuevas entradas
 ```

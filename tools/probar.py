@@ -33,7 +33,6 @@ MAPEO = [
     ("index.js", "resources/app/index.js"),
     ("factory.js", "resources/app/factory.js"),
     ("term.js", "resources/app/term.js"),
-    ("repl.js", "resources/app/repl.js"),
 ]
 
 

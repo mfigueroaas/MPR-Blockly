@@ -118,7 +118,7 @@ El instalador MPR **no recompila nada de esto**: reutiliza los binarios ya compi
 | Ruta | Contenido |
 |---|---|
 | `electronApp.js` | Proceso principal de Electron (cambios MPR marcados con `MPR:`) |
-| `index.js`, `factory.js`, `term.js`, `repl.js` | Lógica de la página en Electron; `index.js` compila/sube y lista puertos |
+| `index.js`, `term.js` | Lógica de la página en Electron; `index.js` compila/sube y lista puertos (`factory.js` y `repl.js` se borraron en la limpieza v1) |
 | `package.json` | Nombre `mpr-blockly`, versión, dependencias; la versión del instalador sale de aquí |
 | `config.json` | `{ "update": "false" }` |
 | `www/` | Toda la interfaz web |
@@ -132,14 +132,13 @@ El instalador MPR **no recompila nada de esto**: reutiliza los binarios ya compi
 | `www/js/mpr_monitor.js`, `www/blocs&generateurs/mpr_monitor_bloques.js` | Modo monitor (Ctrl + Mayús + M): categoría 🛠️ Monitor, botón Monitor Serie y sus bloques "mostrar" y "batería" (4.14) |
 | `www/blocs&generateurs/mpr_canciones.js` | Canciones agregadas al bloque "Tocar RTTTL" (31 Minutos) |
 | `www/blocs&generateurs/` | Definición de bloques y generadores de código, un archivo por familia |
-| `www/lang/` | Textos. Se usa `Arduino_es.js` y `msg_es.js`; `code.js` fija el idioma a `es` |
+| `www/lang/` | Textos, solo español: `Arduino_es.js`, `msg_es.js`, `Blockly_es.js`; `code.js` fija el idioma a `es`. Los demás idiomas se borraron en la limpieza v1 (2026-11-23) |
 | `www/toolbox/toolbox_arduino_all.xml` | Categorías y bloques del menú (el que usa Nano) |
 | `www/examples/` | Ejemplos `.xml` y `examples.json` (cuáles se muestran) |
 | `www/media/` | Imágenes, logos, íconos |
 | `compilation/arduino/` | arduino-cli, `arduino-cli.yaml`, `sketch/`, `userlibs/libraries/` |
 | `compilation/arduino/userlibs/libraries/Otto/` | Librería Otto (con las modificaciones MPR) |
-| `compilation/python/` | Intérprete Python embebido heredado (no se usa en MPR) |
-| `driversUSB/` | Drivers USB, incluido CH340/CH341 |
+| `driversUSB/` | Solo `CH341.zip` (driver CH340/CH341). Python embebido (`compilation/python/`) y los demás drivers se borraron en la limpieza v1 |
 | `build/` | `installer.nsi` (NSIS), íconos y licencia del instalador |
 | `tools/build_installer.py` | Genera el instalador |
 | `tools/probar.py` | Copia cambios a la app instalada para probarlos con F5 |
@@ -147,7 +146,7 @@ El instalador MPR **no recompila nada de esto**: reutiliza los binarios ya compi
 | `tools/rtttl/partitura_a_rtttl.py` | Convierte partituras (tablaturas de Songsterr o notas escritas a mano) en melodías RTTTL; guía en `tools/rtttl/LEEME.md` |
 | `.gitignore` | Excluye `dist/`, `build_tmp/`, `node_modules/`, el instalador oficial, binarios de arduino-cli |
 
-> Nota: `compilation/arduino/userlibs/libraries/` contiene decenas de librerías heredadas de Otto Blockly (ESP32, NeoPixel, pantallas…). MPR solo usa en la práctica Otto, Servo y las del core AVR; el resto no se tocó.
+> Nota: desde la limpieza v1 `compilation/arduino/userlibs/libraries/` tiene solo 4 librerías: Otto, Servo, PlayRtttl-master y CuteBuzzerSounds (antes eran 77 heredadas de Otto Blockly). La interfaz carga 12 archivos de bloques y el toolbox quedó sin `#pinout` ni `defaultCategories2/3`.
 
 ---
 
@@ -439,6 +438,8 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 4. `py tools/build_installer.py --official ottoblockly.Setup.1.5.0.exe`. Con certificado de firma, agregar `--firma "/sha1 <huella>"` (ver 7.5).
 5. Resultado: `dist\MPR_Blockly_Setup_<versión>.exe`. En el notebook tarda unos 14 minutos.
 
+**Recortes de la limpieza v1 (2026-11-23):** el script deja solo multilib `avr5` de avr-gcc, sin firmwares, `arduinoOTA` 1.2.1, `library_index.json` vacío (si no, arduino-cli lo descarga de internet al compilar), sin `VkLayer_*` y con solo los locales `en-US`, `es` y `es-419`. Antes de generar el instalador **compila un programa de prueba** con lo ya recortado; si falla, no genera. `--forzar` sigue aunque el SHA‑256 del instalador oficial no coincida (usar solo si se sabe que el archivo es correcto).
+
 `tools/build_installer.py` extrae el instalador oficial, conserva el runtime de Electron y los paquetes AVR mínimos (`arduino:avr` 1.8.3, avr-gcc, avrdude, arduinoOTA), pone encima el código del repo, cambia ícono y datos de versión del `.exe` (resedit‑cli), y compila `build/installer.nsi` con `makensis -INPUTCHARSET UTF8 -DSTAGE -DVERSION -DOUTFILE` (el `.nsi` es UTF-8 sin BOM). La carpeta de trabajo es `C:\mprb` (corta a propósito por el límite de 260 caracteres de Windows). No usa 7za (no abre instaladores NSIS).
 
 ### 7.2 Qué hace el instalador (`build/installer.nsi`)
@@ -475,6 +476,7 @@ Los problemas de rendimiento pueden no verse en un Chrome moderno (así pasó co
 | 1.5.1 | Plan de pulido (`PLAN_PULIDO.md`: bloques que fallaban en el robot, abrir archivos sin perder la mesa, Otto 3D más liviano con imagen idéntica, tuteo, canciones como acertijo) y **librería Otto nueva** idéntica a `LIB_OTTO_NUEVA.zip` (5.5). Generado el 2026-11-13: `distMPR_Blockly_Setup_1.5.1.exe`, 139 MB (139.040.370 bytes), SHA‑256 `7abff63219f7adf7a4fb6b8923fdd057b76d88599818364e34fa4b0de807e004`, **sin firma**. En la validación, con "Nano" no compilaba en un PC (core dañado; arreglado en la 1.5.2) |
 | 1.5.2 | La app repara sola el core de Arduino dañado (A2 en 4.13) y ya no lo daña: "Detener" no corta compilaciones y estas van en fila; ultrasonido igual a la 1.5.0 (se revirtió A7); ejemplo "Ring Tone sounds" oculto. Generado el 2026-11-13: `distMPR_Blockly_Setup_1.5.2.exe`, 139 MB (139.048.658 bytes), SHA‑256 `8a6a4fe00efcb2edd8ee0231b77539160259918bb195a9aa27ae626c69aed91d`, **sin firma**. Pendiente: validarlo en otro PC y con el robot |
 | 1.5.3 | Modo monitor (Ctrl + Mayús + M: bloques de depuración, "mostrar", batería y Monitor Serie; 4.14) y ultrasonido con disparo de 25 µs, límite de 25 ms y 400 cm sin eco, con la librería `LIB_OTTO_SENSORES.zip` (5.5). Generado el 2026-11-13: `distMPR_Blockly_Setup_1.5.3.exe`, 139 MB (139.061.748 bytes), SHA‑256 `16138c509fe9918e7abcfed2379979374e594bdb2608d5ee320d4598cd2405eb`, **sin firma**. Pendiente: validarlo con el robot (sensor recién encendido y a pilas, Monitor Serie) |
+| 1.6.0 | Limpieza v1 (rama `limpieza-v1`, commit `2d70a57`): solo español, 4 librerías Arduino, avr-gcc y runtime recortados, 156 bloques/generadores sin uso fuera, proceso principal sin código muerto, envíos protegidos, Monitor Serie más robusto. Generado el 2026-11-23: `dist\MPR_Blockly_Setup_1.6.0.exe`, **64 MB** (antes 139 MB), SHA‑256 `111e7b8ecccc8aab036a0c1933e72786a7ba7c79a4585587aeaaf9245da68614`, **sin firma**. Pendiente: instalarlo encima de una 1.5.x y probarlo con el robot |
 
 La versión de `package.json` se pasa al `.nsi` (`-DVERSION`) al generar el instalador.
 
@@ -553,6 +555,8 @@ Historial git de esos cambios: `git log --oneline 32ad6ed..HEAD`.
 | Interruptor bloques / código (editor de texto) | En `www/index.html` quitar el comentario `OCULTO` de `codeORblock`. Ojo: `blocklino.js` igual parte siempre en modo bloques (el texto del editor no se guarda) |
 | Limitador de servos como en oct‑2026 (pasos completos en las marchas) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h`: 240 (ahora 3, el valor con que se midió la librería nueva); habría que medir de nuevo el periodo mínimo y el freno; **probar en el robot** |
 
+**Ya no se pueden reactivar** (se borraron en la limpieza v1, 2026-11-23; solo en el historial de git, rama `main` o commits anteriores a `2dcee96`): los sensores extra (fila 1), otras placas (solo queda Nano en las listas y las librerías de sus cores no están), niveles, idiomas distintos del español, el editor de Python, el modo fábrica (`factory`) y las otras librerías Arduino. Las filas de arriba que mencionan esos temas valen solo si se recupera el archivo desde git.
+
 Después de cualquiera: `py tools/probar.py` y F5.
 
 
@@ -602,6 +606,8 @@ Después de cualquiera: `py tools/probar.py` y F5.
 ---
 
 ## 13. Traspaso: estado al 2026-11-13 y cómo continuar (por ejemplo, desde el notebook)
+
+> **Estado al 2026-11-23:** el trabajo vigente es la limpieza v1, en la rama `limpieza-v1` (sin unir a `main`). Qué falta (revisar `installer.nsi` al actualizar encima, pruebas con el robot, versión 1.6.0 e instalador, unir a `main`, huevo de Pascua, repositorio de la v2): `PENDIENTES_LIMPIEZA_V1.md`. Copia de prueba `C:\mprbp` (con `--remote-debugging-port=9222`).
 
 Esta sección resume el estado del proyecto para retomar el trabajo sin el contexto de la conversación. Nació con la sesión del 8 de noviembre de 2026 (13.2 a 13.7 conservan lo de ese día) y se completó con lo hecho hasta el 2026-11-12 (13.8 a 13.11). Detalle cambio a cambio en `BITACORA.md` y `git log`; mecanismos en la sección 4. **El trabajo en curso está en `PLAN_PULIDO.md`** (lista de pulido desde la 1.5.0, con su estado).
 

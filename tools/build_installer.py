@@ -49,12 +49,34 @@ AVR_PACKAGES = [
     "packages/arduino/hardware/avr/1.8.3",
     "packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7",
     "packages/arduino/tools/avrdude/6.3.0-arduino17",
-    "packages/arduino/tools/arduinoOTA",
+    "packages/arduino/tools/arduinoOTA/1.3.0",     # la que pide arduino:avr 1.8.3 (la 1.2.1 sobra)
     "packages/builtin",
 ]
-OFFICIAL_ARDUINO_FILES = ["arduino-cli.exe", "package_index.json", "package_index.json.sig",
-                          "library_index.json"]
-REPO_JS = ["electronApp.js", "index.js", "factory.js", "term.js", "repl.js"]
+# Lo que sobra del paquete oficial para un Nano (atmega328p). Probado el 2026-11-23: el .hex sale idéntico
+# byte a byte con el compilador completo, para "Nano" y "Nano Old".
+AVR_GCC = "packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7"
+MULTILIB_NANO = "avr5"            # bibliotecas de avr-gcc para atmega328p; las de los demás chips AVR sobran (~120 MB)
+QUITAR_AVR = ["packages/arduino/hardware/avr/1.8.3/firmwares"]   # firmwares de shields WiFi (13,7 MB)
+OFFICIAL_ARDUINO_FILES = ["arduino-cli.exe", "package_index.json", "package_index.json.sig"]
+# library_index.json (16 MB) solo sirve para descargar librerías. Si falta, arduino-cli lo baja de internet al
+# compilar; con una lista vacía no lo baja y compila igual (las librerías están en userlibs).
+LIBRARY_INDEX_VACIO = '{"libraries":[]}\n'
+# Runtime de Electron: idiomas de Chromium que se conservan (el resto de locales/*.pak sobra) y capas de
+# depuración de Vulkan que Electron 4 trae pero no usa.
+LOCALES = {"en-US.pak", "es.pak", "es-419.pak"}
+QUITAR_RUNTIME = ["VkICD_mock_icd.dll", "VkLayer_core_validation.dll", "VkLayer_object_tracker.dll",
+                  "VkLayer_parameter_validation.dll", "VkLayer_threading.dll", "VkLayer_unique_objects.dll"]
+# Programa de prueba que se compila con el arduino-cli armado, antes de generar el instalador
+SKETCH_PRUEBA = """#include <Otto.h>
+#include <PlayRtttl.hpp>
+#include <CuteBuzzerSounds.h>
+Otto Otto;
+static const char mel[] PROGMEM = "t:d=4,o=5,b=160:c6,e6";
+void setup() { Otto.init(2, 3, 4, 5, true, 13); Otto.home(); cute.init(13); Serial.begin(9600); }
+void loop() { Otto.walk(2, 1000, 1); Otto.sing(S_happy); cute.play(S_connection);
+  playRtttlBlockingPGM(13, (char*)mel); Serial.println(Otto.getDistance()); }
+"""
+REPO_JS = ["electronApp.js", "index.js", "factory.js", "term.js"]
 TSA_DEFECTO = "http://timestamp.digicert.com"   # sello de tiempo RFC 3161: sirve con certificados de cualquier emisor
 
 
@@ -146,6 +168,34 @@ def preparar_firma(firma, tsa, work):
     return ruta_sin_espacios(cmd), signtool
 
 
+def probar_compilacion(ard_dst, work):
+    """Compila un programa con Otto, canciones y sonidos usando el arduino-cli ya armado (Nano y Nano Old).
+    Si falla, el instalador no se genera: así un recorte de más no llega a los PCs."""
+    if os.name != "nt":
+        print("  (prueba de compilación omitida: arduino-cli.exe solo corre en Windows)")
+        return
+    print("  Probando la compilación con el arduino-cli armado (Nano y Nano Old)")
+    antes = set(os.listdir(ard_dst))
+    carpeta = os.path.join(work, "prueba")
+    shutil.rmtree(carpeta, ignore_errors=True)
+    os.makedirs(carpeta)
+    with open(os.path.join(carpeta, "prueba.ino"), "w", encoding="ascii") as f:
+        f.write(SKETCH_PRUEBA)
+    try:
+        for fqbn in ("arduino:avr:nano", "arduino:avr:nano:cpu=atmega328old"):
+            r = subprocess.run([os.path.join(ard_dst, "arduino-cli.exe"), "compile", "--config-file", "arduino-cli.yaml",
+                                "--fqbn", fqbn, "--build-path", os.path.join(work, "prueba_build"), carpeta],
+                               cwd=ard_dst, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            salida = r.stdout + r.stderr
+            if r.returncode != 0 or "library_index" in salida:
+                sys.exit("ERROR: la compilación de prueba falló con %s:\n%s" % (fqbn, salida[-3000:]))
+    finally:
+        for nuevo in set(os.listdir(ard_dst)) - antes:   # inventory.yaml y otras cosas que crea arduino-cli
+            p = os.path.join(ard_dst, nuevo)
+            shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+    print("  Compila bien")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--official", required=True, help="ottoblockly.Setup.1.5.0.exe")
@@ -158,6 +208,7 @@ def main():
     ap.add_argument("--firma", default=os.environ.get("MPR_FIRMA"),
                     help='argumentos de signtool que eligen el certificado, por ejemplo "/sha1 <huella>" (o variable MPR_FIRMA)')
     ap.add_argument("--tsa", default=os.environ.get("MPR_FIRMA_TSA", TSA_DEFECTO), help="servidor de sello de tiempo")
+    ap.add_argument("--forzar", action="store_true", help="seguir aunque el SHA-256 del instalador oficial no coincida")
     args = ap.parse_args()
 
     pkg = json.load(open(os.path.join(REPO, "package.json"), encoding="utf-8"))
@@ -172,7 +223,10 @@ def main():
     print("[1/6] Verificando instalador oficial")
     digest = sha256(args.official)
     if digest != OFFICIAL_SHA256:
-        print("  AVISO: el SHA-256 no coincide con ottoblockly.Setup.1.5.0.exe conocido:\n  ", digest)
+        msg = "el SHA-256 no coincide con ottoblockly.Setup.1.5.0.exe conocido:\n   %s" % digest
+        if not args.forzar:
+            sys.exit("ERROR: " + msg + "\n  (usa --forzar solo si sabes que el archivo es correcto)")
+        print("  AVISO: " + msg)
 
     work = os.path.abspath(args.work)
     official = os.path.join(work, "official")
@@ -197,12 +251,18 @@ def main():
         s, d = os.path.join(official, name), os.path.join(stage, name)
         copytree(s, d) if os.path.isdir(s) else shutil.copy2(s, d)
     shutil.copy2(os.path.join(official, "ottoblockly.exe"), os.path.join(stage, APP_EXE))
+    for f in QUITAR_RUNTIME:
+        if os.path.exists(os.path.join(stage, f)):
+            os.remove(os.path.join(stage, f))
+    for f in os.listdir(os.path.join(stage, "locales")):
+        if f not in LOCALES:
+            os.remove(os.path.join(stage, "locales", f))
     os.makedirs(os.path.join(stage, "resources"))
     shutil.copy2(os.path.join(official, "resources", "electron.asar"), os.path.join(stage, "resources", "electron.asar"))
 
     app_dir = os.path.join(stage, "resources", "app")
     copytree(os.path.join(official, "resources", "app", "node_modules"), os.path.join(app_dir, "node_modules"))
-    copytree(os.path.join(REPO, "driversUSB"), os.path.join(app_dir, "driversUSB"))
+    # Solo el driver CH340/CH341 de los Nano (el .nsi lo instala con pnputil); el .zip no se instala
     with zipfile.ZipFile(os.path.join(REPO, "driversUSB", "CH341.zip")) as z:
         z.extractall(os.path.join(app_dir, "driversUSB", "CH341"))
     for f in REPO_JS:
@@ -217,11 +277,23 @@ def main():
     os.makedirs(ard_dst)
     for f in OFFICIAL_ARDUINO_FILES:
         shutil.copy2(os.path.join(ard_off, f), os.path.join(ard_dst, f))
+    with open(os.path.join(ard_dst, "library_index.json"), "w", encoding="ascii") as f:
+        f.write(LIBRARY_INDEX_VACIO)
     for rel in AVR_PACKAGES:
         copytree(os.path.join(ard_off, rel), os.path.join(ard_dst, rel))
-    for rel in ("arduino-cli.yaml", "LICENSE.txt", "README.md", "sketch", "userlibs"):
+    for rel in QUITAR_AVR:
+        shutil.rmtree(os.path.join(ard_dst, rel))
+    for base in ("lib/gcc/avr/7.3.0", "avr/lib"):
+        carpeta = os.path.join(ard_dst, AVR_GCC, base)
+        for d in os.listdir(carpeta):
+            # multilibs: avr2..avr6, avrxmega*, avrtiny, tiny-stack (device-specs, include, plugin… se quedan)
+            es_multilib = d.startswith(("avr", "tiny-stack")) and os.path.isdir(os.path.join(carpeta, d))
+            if es_multilib and d != MULTILIB_NANO:
+                shutil.rmtree(os.path.join(carpeta, d))
+    for rel in ("arduino-cli.yaml", "LICENSE.txt", "sketch", "userlibs"):
         s = os.path.join(REPO, "compilation", "arduino", rel)
         copytree(s, os.path.join(ard_dst, rel)) if os.path.isdir(s) else shutil.copy2(s, os.path.join(ard_dst, rel))
+    probar_compilacion(ard_dst, work)
 
     for f in ("config.json", "LICENSE.md"):
         shutil.copy2(os.path.join(REPO, f), os.path.join(stage, f))

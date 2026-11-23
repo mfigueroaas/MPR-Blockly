@@ -75,5 +75,12 @@ document.addEventListener('keydown', function(e) {
 	}
 }, true);
 
+// F8 (consola de desarrollo) solo con el modo monitor activo. Antes lo atendía el proceso principal siempre.
+document.addEventListener('keydown', function(e) {
+	if (e.key != 'F8' || !MPRMonitor.activo()) return;
+	e.preventDefault();
+	try { require('electron').remote.getCurrentWebContents().toggleDevTools(); } catch (err) { console.log(err); }
+}, true);
+
 // Tras F5 con el modo activo, el menú ya trae la categoría (buildToolbox lee sessionStorage): solo falta el botón
 document.addEventListener('DOMContentLoaded', function() { MPRMonitor.aplicar(false); });

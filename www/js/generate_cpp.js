@@ -23,7 +23,9 @@ Blockly.Arduino.addReservedWords(
   'S_sleeping,S_happy,S_superHappy,S_happy_short,S_sad,S_confused,S_fart1,S_fart2,S_fart3,' +
   // Otto.h, Oscillator.h y lo que define el bloque Configuración Otto (ottoesp.js)
   'FORWARD,BACKWARD,LEFT,RIGHT,SMALL,MEDIUM,BIG,SERVO_LIMIT_DEFAULT,DEG2RAD,Otto,Oscillator,Servo,EEPROM,Otto_Matrix,' +
-  'LeftLeg,RightLeg,LeftFoot,RightFoot,Buzzer,buzzer,Otto_moveLegs');
+  'LeftLeg,RightLeg,LeftFoot,RightFoot,Buzzer,buzzer,Otto_moveLegs,' +
+  // audio.js (bloque RGB): #define redPin, greenPin, bluePin
+  'redPin,greenPin,bluePin');
 (function() {
   var notas = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'], lista = [];
   for (var i = 0; i < notas.length; i++) for (var o = 0; o <= 8; o++) lista.push('note_' + notas[i] + o);

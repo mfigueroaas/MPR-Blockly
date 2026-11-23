@@ -186,7 +186,6 @@ MPRCalibracion.preparar = function() {
 	self.iniciales = null;
 	document.getElementById('mpr_cal_ajustes').style.display = 'none';
 	self.estado(self.msg('cal_subiendo', 'Subiendo el programa de calibración...'));
-	localStorage.setItem('verif', false);
 	var sesion = self.sesion;
 	MPRSubida.cargar(self.PROGRAMA, function(ok, com) {
 		// MPR: si cerraron la calibración mientras subía (~15 s), no se abre el puerto: quedaba tomado y la flecha

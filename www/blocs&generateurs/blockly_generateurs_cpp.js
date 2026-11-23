@@ -564,36 +564,6 @@ Blockly.Arduino['procedures_ifreturn']=function(block){
     return code;
 };
 // tableau
-Blockly.Arduino['creer_tableau']=function(block){
-	var varName = Blockly.Arduino.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
-	var typeBlock = Blockly.Arduino.getArduinoType_(Blockly.Types[block.getFieldValue('type')]);
-	var menu = block.getFieldValue("choix");
-	var dimension = block.getFieldValue("dim");
-	var l = "" ;
-	var k = "" ;
-	switch (menu) {
-        case "c1":
-            for (var i = 0; i < dimension; i++) {
-				var j = Blockly.Arduino.valueToCode(block, "D" + i, Blockly.Arduino.ORDER_ASSIGNMENT);
-				k += "[" + j + "]"
-			}
-			Blockly.Arduino.variables_[varName] = typeBlock + ' ' + varName + k + ';';
-			break;
-        case "c2":
-			k += "{" ;
-			for (var i = 0; i < dimension; i++) {
-				var j = Blockly.Arduino.valueToCode(block, "D" + i, Blockly.Arduino.ORDER_ASSIGNMENT);
-				var nb = j.split(',');
-				k += j + ",";
-				l += "[" + nb.length + "]";
-			}
-			k=k.substr(0,k.length-1);
-			k+="}";
-			Blockly.Arduino.variables_[varName] = typeBlock + ' ' + varName + l + '=' + k + ';';
-			break;
-		}
-	return '';
-};
 Blockly.Arduino['fixer_tableau']=function(block){
     var value_value = Blockly.Arduino.valueToCode(block, 'value', Blockly.Arduino.ORDER_ATOMIC);
 	var code = Blockly.Arduino.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
@@ -614,51 +584,8 @@ Blockly.Arduino["array_getIndex"]=function(block){
 	}
 	return [code, Blockly.Arduino.ORDER_ATOMIC] ;
 };
-Blockly.Arduino["array_getsize"]=function(block){
-    var list = Blockly.Arduino.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
-    var code = 'sizeof('+list+')/sizeof('+list+'[0])';
-	return [code, Blockly.Arduino.ORDER_ATOMIC] ;
-};
-Blockly.Arduino["array_create_with"]=function(block){
-    var code = new Array(block.itemCount_);
-    for (var n = 0; n < block.itemCount_; n++) {
-        code[n] = Blockly.Arduino.valueToCode(block, 'ADD' + n, Blockly.Arduino.ORDER_COMMA) || 'null';
-    }
-    code = '{' + code.join(',') + '}';
-    return [code, Blockly.Arduino.ORDER_ATOMIC];
-};
 
-Blockly.Arduino['mrtduino_pin'] = function(block) {
 
-  var code = block.getFieldValue('MRTPIN');  
-   
-  return [code, Blockly.Arduino.ORDER_ATOMIC];
-};
 
-Blockly.Arduino['conversion_tobyte'] = function(block) {
-var value_name = Blockly.Arduino.valueToCode(block, 'NAME', Blockly.Arduino.ORDER_ATOMIC);
-  // TODO: Assemble JavaScript into code variable.
-  var code = 'byte('+value_name+')';
- return [code, Blockly.Arduino.ORDER_ATOMIC];
-}
 
-Blockly.Arduino['conversion_toint'] = function(block) {
-var value_name = Blockly.Arduino.valueToCode(block, 'NAME', Blockly.Arduino.ORDER_ATOMIC);
-  // TODO: Assemble JavaScript into code variable.
-  var code = 'int('+value_name+')';
- return [code, Blockly.Arduino.ORDER_ATOMIC]; 
-}
 
-Blockly.Arduino['conversion_tounsignedint'] = function(block) {
-var value_name = Blockly.Arduino.valueToCode(block, 'NAME', Blockly.Arduino.ORDER_ATOMIC);
-  // TODO: Assemble JavaScript into code variable.
-  var code = 'unsigned int('+value_name+')';
- return [code, Blockly.Arduino.ORDER_ATOMIC]; 
-}
-
-Blockly.Arduino['conversion_tofloat'] = function(block) {
-var value_name = Blockly.Arduino.valueToCode(block, 'NAME', Blockly.Arduino.ORDER_ATOMIC);
-  // TODO: Assemble JavaScript into code variable.
-  var code = 'float('+value_name+')';
-  return [code, Blockly.Arduino.ORDER_ATOMIC];
-}

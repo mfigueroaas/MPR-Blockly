@@ -1,7 +1,7 @@
 {
   "name": "mpr-blockly",
   "productName": "MPR Blockly",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "description": "MPR Blockly (Mi Primer Robot): programación por bloques para robots Otto DIY, basado en Otto Blockly",
   "author": "Programa Mi Primer Robot / Otto DIY and Builder community",
   "license": "GPL-2.0",
@@ -21,7 +21,6 @@
     "electron-rebuild": "1.11.0"
   },
   "dependencies": {
-    "electron-updater": "4.0.6",
     "serialport": "7.1.4"
   }
 }
