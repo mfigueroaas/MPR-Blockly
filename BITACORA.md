@@ -16,7 +16,7 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Pedido:** indexar el repo con el grafo (codebase-memory-mcp) y dejar el proyecto limpio para trabajar.
 - **Archivos:** `.cbmignore` (nuevo), `CLAUDE.md`, `BITACORA.md`.
 - **Qué se hizo:** `.cbmignore` excluye las librerías Arduino de terceros (salvo `Otto`), `Fotos otto armado/`, `Manuales/`, `versiones/` y `driversUSB/`, que eran ~60 % del grafo. CLAUDE.md aclara que los idiomas de `www/lang` distintos de español son heredados y añade la sección "Grafo de código". No se tocó código de la app.
-- **Notas:** pendiente decidir los 2 `.png` de Firebase borrados sin commitear; el logo `Logo Crecer en Renca.svg` no se tocó.
+- **Notas:** se confirmó el borrado de 2 `.png` de documentación de Firebase (sin uso en MPR); el logo `Logo Crecer en Renca.svg` no se tocó.
 - **Commit:** (sin commit aún)  **Probado en la app:** no aplica
 
 ### 2026-11-14 — G3: documento de novedades de la versión 1.5.3 (Word, con capturas antes/después)
