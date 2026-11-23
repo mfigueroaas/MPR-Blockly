@@ -1145,6 +1145,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** merge `32f4f33`; rama `limpieza-v1` borrada. Sección 10: instalador 1.6.0 por validar, SHA-256 del instalador oficial, decisión del repositorio de la v2. Sección 13: estado al 2026-11-23 y `tools/codigo_generado.mjs`. El logo de Crecer en Renca se queda; el huevo de Pascua sigue pendiente.
 - **Commit:** (ver git log)  **Probado en la app:** no aplica (documentación)
 
+### 2026-11-23 — Guía del proyecto e historial limpio para publicar
+- **Pedido:** hacer público el repositorio y un documento de cómo trabajar con el proyecto, qué se agregó y cómo funciona.
+- **Archivos:** `GUIA_DEL_PROYECTO.md` (nuevo).
+- **Qué se hizo:** guía técnica legible (arquitectura, carpetas, flujo de trabajo, módulos MPR, comparación de C++, atajos, recetas). Antes de publicar se reescribió el historial para quitar las líneas `Co-Authored-By` y `Claude-Session` de los commits (árbol idéntico; respaldo en un bundle local fuera del repositorio) y se hizo push forzado a `main`. Repositorio pasado a público.
+- **Commit:** (ver git log)  **Probado en la app:** no aplica (documentación)
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
