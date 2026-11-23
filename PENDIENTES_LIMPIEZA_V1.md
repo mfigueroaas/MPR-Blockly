@@ -20,7 +20,7 @@ Rama `limpieza-v1` (sin unir a `main`). Detalle de lo hecho en `BITACORA.md`, en
    - guardar `.bloc`/`.ino` y cancelar el diálogo;
    - crear y renombrar una variable.
 3. ~~Actualizar `DOCUMENTACION_TECNICA.md`~~ Hecho (3.2, 7.1, 9 y aviso en 13). Queda poner al día 10 y 13 al cerrar la v1.
-4. **Limpieza menor** (parcial): hechos 4 textos sin uso de `msg_es.js` y los archivos `js/mode-python.js` y `js/snippets/python.js`. No hecho, por riesgo de cambiar el C++ generado: textos sin uso de `Arduino_es.js`, ramas muertas `prog != "python"`/`MRTnode`/ESP en `arduino_blocs.js`, `sensors.js` y `arduino_generateurs_cpp.js`, y 40 definiciones sin uso en `blockly_blocs.js` (hacerlo con la comparación de los 14 ejemplos).
+4. ~~Limpieza menor~~ Hecha (textos sin uso de `msg_es.js`, modo Python de Ace y 156 definiciones de bloques/generadores sin uso, 4.192 líneas, comprobado con `tools/codigo_generado.mjs`: 82 salidas idénticas). Quedan solo textos sin uso de `Arduino_es.js` y ramas `prog != "python"` dentro de bloques que sí se usan (inocuas).
 5. **Versión 1.6.0** en `package.json` y **generar el instalador**: falta `ottoblockly.Setup.1.5.0.exe` (no está en este PC; descargar de https://github.com/OttoDIY/blockly/releases/download/v1.5.0/ottoblockly.Setup.1.5.0.exe, pedir autorización). Anotar tamaño y SHA-256 en la doc (7.4) y comparar con 1.5.3 (139 MB).
 6. **Unir `limpieza-v1` a `main`.**
 7. **Decidir** qué hacer con `Logo Crecer en Renca.svg` (raíz, sin git; idéntico a `www/media/crecer-en-rencaLOGO.svg`, que tampoco se usa).

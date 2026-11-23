@@ -1132,6 +1132,13 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** fuera `btn_factory`, `configModalLabel`, `cardLabel` y `aboutcardLabel` (sin uso en HTML ni JS); fuera el modo Python de Ace (nada lo carga). Se descargó `ottoblockly.Setup.1.5.0.exe` con el SHA-256 esperado. No se tocaron generadores ni bloques.
 - **Commit:** (ver git log)  **Probado en la app:** no; `node --check` bien.
 
+### 2026-11-23 — Fuera 156 bloques y generadores sin uso
+- **Pedido:** limpieza de generadores con comparación del código generado.
+- **Archivos:** `www/blocs&generateurs/*.js` (10 archivos, -4.192 líneas), `tools/codigo_generado.mjs` (nuevo).
+- **Qué se hizo:** con un análisis por AST se quitaron las definiciones `Blockly.Blocks[...]` y `Blockly.Arduino[...]` de bloques que no aparecen en el toolbox (ni comentados), ni en ningún ejemplo, ni en otro código (ESP8266/ESP32, bluetooth, MP3, sensores "2", texto, arrays, etc.). `tools/codigo_generado.mjs` saca por DevTools el C++ de los ejemplos visibles y de cada bloque del toolbox.
+- **Notas:** antes y después, las 82 salidas son idénticas. Consola sin errores tras recargar. Un `.bloc` guardado con uno de esos bloques ya no abriría (el menú nunca los ofrecía).
+- **Commit:** (ver git log)  **Probado en la app:** sí, en `C:\mprbp` (DevTools).
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto

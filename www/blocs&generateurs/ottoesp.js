@@ -98,20 +98,7 @@ var valuerf= Blockly.Arduino.valueToCode(block, 'RF', Blockly.Arduino.ORDER_ATOM
   return code;
 };
 
-Blockly.Blocks['otto_eeprom'] = {init: function() {
-    this.appendDummyInput("")  .appendField("💾 " +Blockly.Msg.OTTO9_EEPROM_TEXT);
-    this.setInputsInline(false);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour("#ff6600");
-    this.setTooltip(Blockly.Msg.OTTO9_EEPROM_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.OTTO9_DIY_URL);}
-};
 
-Blockly.Arduino['otto_eeprom'] = function(block) {
-  var code = 'Otto.saveTrimsOnEEPROM();\n';
-  return code;
-};
 
 Blockly.Blocks['otto_movelegs'] = {init: function() {
 this.appendDummyInput("") .appendField("🦿 "+ Blockly.Msg.OTTO9_MOVE_TEXT);
@@ -436,19 +423,4 @@ Blockly.Arduino['otto_bendtone'] = function(block) {
   return code;
 };
 
-Blockly.Blocks['otto_getsensor'] = {init: function() {
-    this.appendDummyInput().appendField(new Blockly.FieldImage('media/sensor_noise.png', 22, 22, "*")).appendField(Blockly.Msg.OTTO9_GETNOISE_TEXT);
-    this.setInputsInline(true);
-    this.setOutput(true, "Number");
-    this.setColour("#2a93e8");
-    this.setTooltip(Blockly.Msg.OTTO9_GETNOISE_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.OTTO9_DIY_URL);
-  }
-};
 
-Blockly.Arduino['otto_getsensor'] = function(block) {
-  Blockly.Arduino.variables_['otto_sensor'] = 'bool estado = false;';
-
-  var code = 'Otto.getSensor()';
-  return [code, Blockly.Arduino.ORDER_ATOMIC];
-};
