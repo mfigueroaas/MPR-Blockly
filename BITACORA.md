@@ -31,6 +31,14 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
     - Si el SHA-256 del instalador oficial no coincide, ahora se detiene (antes solo avisaba); `--forzar` para seguir.
     - Antes de generar el instalador compila un programa de prueba (Otto, canciones, sonidos) con el arduino-cli armado, para Nano y Nano Old; si falla, no genera nada.
   - Fuera `compilation/arduino/README.md` (de Arduino Builder) y `sketch/README.md` (decía "INO").
+- **Etapa 3 (proceso principal y Monitor Serie):**
+  - Código muerto fuera: Python/MicroPython/micro:bit (`compilation/python/`, 1.074 archivos; ramas de `index.js`), consola REPL (`repl.js`, `repl.html`), ventana de fábrica de bloques (`factory.html`, `js/factory_*.js`; `factory.js` se queda: maneja los botones de la ventana), exportar `.hex`/`.py`, el actualizador automático (`electron-updater`, `app-update.yml`, `dev-app-update.yml`; `config.json` queda `{}` porque el instalador lo copia) y el camino de verificar/subir anterior a `MPRSubida`. `modalVar.html` se queda: Blockly lo usa para crear y renombrar variables.
+  - Guardar `.ino`, `.bloc` o `.csv` y cancelar el diálogo ya no puede dar error (`if (!path)` y el proceso principal no avisa si no hay archivo).
+  - Envíos y compilaciones a medias: `mpr_subida.js` avisa el estado al proceso principal (`subida-estado`: `libre`, `compilando` = solo la precompilación, `enviando` = el alumno verifica o envía). Con `enviando`, F5 y abrir otro `.bloc` avisan y no hacen nada, y cerrar pregunta "Cerrar cuando termine / Cerrar ya (corta el envío) / Seguir aquí". Con `compilando`, F5 y abrir otro archivo esperan en silencio a que termine, y cerrar oculta la ventana y sale al terminar. Tope de 90 s por si algo se cuelga. Nunca se corta una compilación (evita el core dañado).
+  - F8 (DevTools) solo con el modo monitor activo (`mpr_monitor.js`); antes cualquier alumno abría la consola, con acceso total a Node.
+  - Cuadro de variables: cerrarlo con Alt+F4 ya no reutiliza la respuesta anterior.
+  - Monitor Serie (`term.js`): tildes y ñ partidas entre paquetes ya no salen rotas (`StringDecoder`); cambiar la velocidad reconecta cuando el puerto terminó de cerrarse (antes podía dar "Access denied"); error al enviar texto avisado.
+  - `tools/probar.py` ya no copia `repl.js`.
 - **Commit:** (ver git log)  **Probado en la app:** pendiente (al final de la limpieza)
 
 ### 2026-11-23 — Grafo de código: `.cbmignore` y notas en CLAUDE.md

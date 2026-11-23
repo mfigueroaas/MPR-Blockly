@@ -40,6 +40,16 @@ MPRSubida.msg = function(clave, defecto) {
 	return (typeof MSG != 'undefined' && MSG[clave]) || defecto || clave;
 };
 
+// MPR: avisa a electronApp.js si hay un envío o una compilación en curso ('subida-estado'): mientras tanto no se
+// recarga la página, no se abre otro archivo y la ventana no se cierra a medias (arduino-cli y avrdude quedarían vivos)
+MPRSubida.avisarEstado = function() {
+	// 'enviando': el alumno verifica o envía; 'compilando': solo la precompilación en segundo plano
+	var self = MPRSubida, estado = self.ocupada ? 'enviando' : (self.compilacionEnCurso ? 'compilando' : 'libre');
+	if (estado === self.estadoAvisado) return;
+	self.estadoAvisado = estado;
+	try { require('electron').ipcRenderer.send('subida-estado', estado); } catch (e) {}
+};
+
 MPRSubida.escapar = function(t) {
 	return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
@@ -61,6 +71,8 @@ MPRSubida.iniciar = function(o) {
 	setInterval(function() { if (!document.hidden) self.actualizarPuertos(false); }, self.CADA_MS_PUERTOS);
 	document.addEventListener('visibilitychange', function() { if (!document.hidden) self.actualizarPuertos(false); });
 	$(o.portserie).on('mouseover focus', function() { self.actualizarPuertos(false); });
+	// MPR: al cerrar la ventana durante un envío, electronApp.js pide cortar solo el envío (avrdude); la compilación sigue
+	try { require('electron').ipcRenderer.on('subida-cortar', function() { self.cancelar('boton'); }); } catch (e) {}
 	setTimeout(self.precompilarCuandoListo, 8000);
 };
 
@@ -178,7 +190,8 @@ MPRSubida.compilar = function(fqbn, baja, codigo) {
 		return { ok: false, texto: String(e && e.message || e), ms: 0 };
 	});
 	self.compilacionEnCurso = fin;
-	fin.then(function() { if (self.compilacionEnCurso === fin) self.compilacionEnCurso = null; });
+	self.avisarEstado();
+	fin.then(function() { if (self.compilacionEnCurso === fin) { self.compilacionEnCurso = null; self.avisarEstado(); } });
 	if (!self.ocupada) return fin;   // precompilación: nadie la detiene
 	return Promise.race([fin, self.esperarCancelar().then(function() { return { ok: false, texto: 'detenido', ms: 0, matado: true }; })]);
 };
@@ -324,6 +337,7 @@ MPRSubida.tardeMs = function(etapa, estimadoMs) {
 // etapa: 'compila' o 'sube' (para saber cuándo se está demorando más de lo normal)
 MPRSubida.paso = function(titulo, sub, estimadoMs, etapa) {
 	var self = MPRSubida, div = self.o.messageDiv;
+	self.avisarEstado();   // ocupada ya está en true (verificar y cargar lo marcan antes de llamar)
 	self.vigilarDemora(etapa, estimadoMs);
 	div.style.color = '#000000';
 	div.innerHTML = '<div class="mpr-paso-titulo">' + titulo + ' <i class="fa fa-spinner fa-pulse fa-fw"></i></div>' +
@@ -478,6 +492,7 @@ MPRSubida.terminar = function() {
 	MPRSubida.ocupada = false;
 	MPRSubida.cancelada = null;
 	MPRSubida.alCancelar = [];
+	MPRSubida.avisarEstado();
 };
 
 // ---------------------------------------------------------------- subir (flecha naranja)
@@ -493,7 +508,6 @@ MPRSubida.cargar = function(codigo, alTerminar) {
 	}
 	self.ocupada = true;
 	self.cancelada = null;
-	localStorage.setItem('verif', false);
 	var esperando = self.precompilando;
 	// MPR: el Monitor Serie (modo monitor) tiene tomado el puerto: se cierra ya, mientras se compila, y la placa se
 	// averigua cuando lo soltó. Si estaba abierto, se vuelve a abrir después de una subida buena.

@@ -11,6 +11,7 @@
 var { ipcRenderer } = require("electron")
 var remote = require('electron').remote
 var fs = require('fs')
+var StringDecoder = require('string_decoder').StringDecoder
 
 var MAX_TEXTO = 60000      // caracteres que se guardan en pantalla (se descartan los más antiguos)
 var puerto = null          // SerialPort abierto (o abriéndose)
@@ -76,8 +77,9 @@ function conectar() {
 	puerto = sp
 	conectado = true
 	actualizarBotones()
+	var dec = new StringDecoder('utf8')   // un carácter UTF-8 partido entre dos paquetes no se rompe
 	sp.on('data', function (datos) {
-		if (puerto === sp) agregar(datos.toString().replace(/\r\n?/g, '\n'))
+		if (puerto === sp) agregar(dec.write(datos).replace(/\r\n?/g, '\n'))
 	})
 	sp.on('close', function (err) {
 		if (puerto !== sp) return
@@ -90,7 +92,7 @@ function conectar() {
 		console.log('[Monitor Serie]', err)
 	})
 	sp.open(function (err) {
-		if (puerto !== sp) return
+		if (puerto !== sp) { if (!err) sp.close(function () {}); return }   // se pidió desconectar mientras abría
 		if (err) {
 			puerto = null
 			conectado = false
@@ -103,11 +105,12 @@ function conectar() {
 	})
 }
 
-function desconectar() {
+function desconectar(alTerminar) {
 	var sp = puerto
 	puerto = null
 	conectado = false
-	if (sp && sp.isOpen) sp.close(function () {})
+	if (sp && sp.isOpen) sp.close(function () { if (alTerminar) alTerminar() })
+	else if (alTerminar) alTerminar()
 	aviso('Desconectado')
 	actualizarBotones()
 }
@@ -115,7 +118,7 @@ function desconectar() {
 function enviar() {
 	var caja = $id('schbox')
 	if (!puerto || !puerto.isOpen) return
-	puerto.write(caja.value + '\n')
+	puerto.write(caja.value + '\n', function (err) { if (err) aviso('No pude enviar: ' + err.message) })
 	agregar('→ ' + caja.value + '\n')
 	caja.value = ''
 	caja.focus()
@@ -127,7 +130,7 @@ window.addEventListener('load', function load(event) {
 	if (!$id('vitesse').value) { $id('vitesse').value = '9600'; localStorage.setItem('baudrate', 9600) }
 	$id('vitesse').onchange = function () {
 		localStorage.setItem('baudrate', $id('vitesse').value)
-		if (conectado) { desconectar(); conectar() } else actualizarBotones()
+		if (conectado) desconectar(conectar); else actualizarBotones()
 	}
 	$id('btn_efface').onclick = function () {
 		texto = ''

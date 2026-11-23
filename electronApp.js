@@ -1,7 +1,7 @@
 // MPR Blockly - proceso principal de Electron
 // Basado en electronApp.js de OttoDIY/blockly (escrito para Electron 4.1.1, la
 // versión que trae el instalador oficial 1.5.0). Cambios MPR marcados con "MPR:".
-var {electron, ipcMain, app, BrowserWindow, globalShortcut, dialog, shell} = require('electron')
+var {ipcMain, app, BrowserWindow, dialog, shell} = require('electron')
 var path = require('path')
 var fs = require('fs')
 var URL = require('url').URL
@@ -10,16 +10,6 @@ var URL = require('url').URL
 // para que la mascota 3D (WebGL) se vea en todos los equipos. Sin GPU, Chromium dibuja por software (SwiftShader).
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
 
-// MPR: el actualizador automático apuntaba a OttoDIY/blockly y habría reemplazado
-// MPR Blockly por Otto Blockly oficial. Queda desactivado.
-var UPDATES_ENABLED = false
-var autoUpdater = null
-if (UPDATES_ENABLED) {
-	autoUpdater = require("electron-updater").autoUpdater
-	autoUpdater.autoDownload = false
-	autoUpdater.logger = null
-}
-
 // MPR: raíz de la aplicación. Instalada: <instalación>/resources/app -> <instalación>.
 // En desarrollo (npm start desde el repositorio): la carpeta del repositorio.
 var APP_ROOT = fs.existsSync(path.join(__dirname, '../../www/index.html')) ? path.join(__dirname, '../..') : __dirname
@@ -27,7 +17,6 @@ var APP_ICON = path.join(APP_ROOT, 'www/media/mpr_app.ico')
 
 var mainWindow
 var termWindow
-var factoryWindow
 var promptWindow
 var promptOptions
 var promptAnswer
@@ -36,14 +25,13 @@ var promptAnswer
 // sistema. Antes navegaban la propia ventana de la app a un sitio web con acceso
 // a Node.js y sin forma de volver.
 function protectNavigation(win) {
-	// MPR: F5 (recargar) y F8 (consola) solo cuando la ventana de la app tiene el foco.
-	// Antes se registraban con globalShortcut y F5 dejaba de funcionar en otros
-	// programas (por ejemplo, PowerPoint) mientras la app estaba abierta.
-	win.webContents.on('before-input-event', function (event, input) {
-		if (input.type !== 'keyDown') return
-		if (input.key === 'F5') { event.preventDefault(); refresh(win) }
-		if (input.key === 'F8') { event.preventDefault(); open_console(win) }
-	})
+		// MPR: F5 (recargar) solo cuando la ventana de la app tiene el foco. Antes se registraba con globalShortcut y
+		// F5 dejaba de funcionar en otros programas (por ejemplo, PowerPoint) mientras la app estaba abierta.
+		// F8 (consola) lo atiende www/js/mpr_monitor.js, solo con el modo monitor activo.
+		win.webContents.on('before-input-event', function (event, input) {
+			if (input.type !== 'keyDown') return
+			if (input.key === 'F5') { event.preventDefault(); refresh(win) }
+		})
 	// MPR: solo se deja navegar a la misma página de la ventana con otros parámetros (los ejemplos usan
 	// index.html?url=...). Antes se aceptaba cualquier file:// y soltar una foto o un .bloc sobre la ventana
 	// la llevaba a ese archivo y se perdía la mesa (PLAN_PULIDO B5).
@@ -102,6 +90,8 @@ function createWindow () {
 	mainWindow.loadURL(indexUrlFor(fileFromArgv(process.argv)))
 	mainWindow.setMenu(null)
 	protectNavigation(mainWindow)
+	mainWindow.on('close', preguntarAntesDeCerrar)
+	mainWindow.webContents.on('crashed', function () { estadoSubida = 'libre' })
 	mainWindow.on('closed', function () {
 		mainWindow = null
 	})
@@ -119,26 +109,9 @@ function createTerm() {
 		if (termWindow === esta) termWindow = null
 	})
 }
-function createRepl() {
-	termWindow = new BrowserWindow({width: 640, height: 515, 'parent': mainWindow, resizable: false, movable: true, frame: false, modal: true, icon: APP_ICON})
-	termWindow.loadURL("file://" + path.join(APP_ROOT, "www/repl.html"))
-	termWindow.setMenu(null)
-	protectNavigation(termWindow)
-	termWindow.on('closed', function () {
-		termWindow = null
-	})
-}
-function createfactory() {
-	factoryWindow = new BrowserWindow({width: 1066, height: 640, 'parent': mainWindow, resizable: true, movable: true, frame: false, icon: APP_ICON})
-	factoryWindow.loadURL("file://" + path.join(APP_ROOT, "www/factory.html"))
-	factoryWindow.setMenu(null)
-	protectNavigation(factoryWindow)
-	factoryWindow.on('closed', function () {
-		factoryWindow = null
-	})
-}
 function promptModal(options, callback) {
 	promptOptions = options
+	promptAnswer = null   // si la ventana se cierra sin responder (Alt+F4), no vale la respuesta anterior
 	promptWindow = new BrowserWindow({width:360, height: 135, 'parent': mainWindow, resizable: false, movable: true, frame: false, modal: true})
 	promptWindow.loadURL("file://" + path.join(APP_ROOT, "www/modalVar.html"))
 	promptWindow.on('closed', function () {
@@ -146,11 +119,63 @@ function promptModal(options, callback) {
 		callback(promptAnswer)
 	})
 }
-function open_console(mainWindow = BrowserWindow.getFocusedWindow()) {
-	if (mainWindow) mainWindow.webContents.toggleDevTools()
+// MPR: mientras Otto recibe un programa o se compila (www/js/mpr_subida.js avisa con 'subida-estado'), no se recarga
+// la página ni se abre otro archivo: arduino-cli y avrdude seguirían vivos con el puerto tomado, y una compilación
+// cortada deja el core de Arduino dañado (CORE_DANADO en mpr_subida.js)
+// Estados: 'libre'; 'compilando' = solo la precompilación en segundo plano (el alumno no pidió nada); 'enviando' = el
+// alumno verifica o envía. Con 'compilando', recargar o abrir otro archivo esperan en silencio a que termine, y cerrar
+// oculta la ventana y sale al terminar. Con 'enviando' se avisa o se pregunta.
+var estadoSubida = 'libre'
+var cierreAutorizado = false
+var cerrarAlTerminar = false
+var preguntandoCierre = false
+var alQuedarLibre = null     // recarga o archivo pendiente mientras termina la precompilación
+var TOPE_ESPERA_MS = 90000   // si una compilación se cuelga, no esperar para siempre
+function avisarOcupado(win) {
+	if (!win || win.isDestroyed()) return
+	dialog.showMessageBox(win, {type: 'info', title: 'MPR Blockly', buttons: ['OK'],
+		message: 'Otto todavía está recibiendo un programa o preparándolo.',
+		detail: 'Espera a que termine y vuelve a intentarlo.'}, function () {})
+}
+// Hace la acción ahora, o cuando termine la precompilación; con un envío del alumno en curso, avisa y no hace nada
+function cuandoQuedeLibre(win, accion) {
+	if (estadoSubida == 'enviando') { avisarOcupado(win); return }
+	if (estadoSubida == 'libre') { accion(); return }
+	alQuedarLibre = accion
+	setTimeout(function () { if (alQuedarLibre === accion) { alQuedarLibre = null; accion() } }, TOPE_ESPERA_MS)
+}
+function cerrarCuandoTermine(win) {
+	cerrarAlTerminar = true
+	setTimeout(function () {
+		if (cerrarAlTerminar && win && !win.isDestroyed()) { cerrarAlTerminar = false; cierreAutorizado = true; win.close() }
+	}, TOPE_ESPERA_MS)
+}
+// Cerrar durante un envío pregunta: "cerrar cuando termine" espera y se cierra sola; "cerrar ya" corta solo el envío
+// (avrdude). Una compilación nunca se corta: con la precompilación, la ventana se oculta y la app sale al terminar.
+function preguntarAntesDeCerrar(event) {
+	if (cierreAutorizado || estadoSubida == 'libre') return
+	event.preventDefault()
+	if (preguntandoCierre || !mainWindow) return
+	var win = mainWindow
+	if (estadoSubida == 'compilando') { win.hide(); cerrarCuandoTermine(win); return }
+	preguntandoCierre = true
+	dialog.showMessageBox(win, {type: 'question', title: 'MPR Blockly', buttons: ['Cerrar cuando termine', 'Cerrar ya (corta el envío)', 'Seguir aquí'],
+		defaultId: 2, cancelId: 2, noLink: true,
+		message: 'Otto todavía está recibiendo un programa o preparándolo.',
+		detail: 'Si cierras ya, el envío se corta y habrá que mandarlo otra vez. Una compilación nunca se corta: la app espera a que termine para no dañar el core de Arduino.'},
+	function (i) {
+		preguntandoCierre = false
+		if (i == 2 || !win || win.isDestroyed()) return
+		if (i == 1) win.webContents.send('subida-cortar')
+		if (estadoSubida == 'libre') { cierreAutorizado = true; win.close(); return }
+		win.hide()
+		cerrarCuandoTermine(win)
+	})
 }
 function refresh(mainWindow = BrowserWindow.getFocusedWindow()) {
-	if (mainWindow) mainWindow.webContents.reloadIgnoringCache()
+	if (!mainWindow) return
+	var win = mainWindow
+	cuandoQuedeLibre(win, function () { if (!win.isDestroyed()) win.webContents.reloadIgnoringCache() })
 }
 // MPR: una sola instancia; si ya está abierta, se trae al frente
 var gotLock = app.requestSingleInstanceLock()
@@ -161,9 +186,10 @@ if (!gotLock) {
 		if (mainWindow) {
 			if (mainWindow.isMinimized()) mainWindow.restore()
 			mainWindow.focus()
-			// doble clic en otro .bloc con la app abierta: abrirlo en la ventana actual
+			// doble clic en otro .bloc con la app abierta: abrirlo en la ventana actual (salvo si Otto está recibiendo un programa)
 			var file = fileFromArgv(argv)
-			if (file) mainWindow.loadURL(indexUrlFor(file))
+			var win = mainWindow
+			if (file) cuandoQuedeLibre(win, function () { if (!win.isDestroyed()) win.loadURL(indexUrlFor(file)) })
 		}
 	})
 	app.on('ready',  function () {
@@ -175,9 +201,6 @@ app.on('activate', function () {
 })
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') app.quit()
-})
-ipcMain.on("version", function () {
-	if (UPDATES_ENABLED) autoUpdater.checkForUpdates()
 })
 ipcMain.on("prompt", function () {
 	createTerm()
@@ -194,12 +217,6 @@ ipcMain.on("cerrar-term", function (event) {
 	w.once('closed', function () { setTimeout(function () { responder(true) }, 400) })
 	w.close()
 })
-ipcMain.on("repl", function () {
-	createRepl()
-})
-ipcMain.on("factory", function () {
-	createfactory()
-})
 ipcMain.on("openDialog", function (event, data) {
     event.returnValue = JSON.stringify(promptOptions, null, '')
 })
@@ -214,15 +231,17 @@ ipcMain.on("modalVar", function (event, arg) {
         }
 	)
 })
-ipcMain.on('save-bin', function (event) {
-	dialog.showSaveDialog(mainWindow,{
-		title: 'Exportar binarios',
-		defaultPath: 'MPR_hex',
-		filters: [{ name: 'Binario', extensions: ['hex']}]
-	},
-	function(filename){
-		event.sender.send('saved-bin', filename)
-	})
+// MPR: www/js/mpr_subida.js avisa si hay un envío o una compilación en curso (así no se recarga ni se cierra a medias)
+ipcMain.on('subida-estado', function (event, estado) {
+	estadoSubida = (estado == 'enviando' || estado == 'compilando') ? estado : 'libre'
+	if (estadoSubida != 'libre') return
+	if (cerrarAlTerminar && mainWindow) {
+		cerrarAlTerminar = false
+		cierreAutorizado = true
+		mainWindow.close()
+		return
+	}
+	if (alQuedarLibre) { var accion = alQuedarLibre; alQuedarLibre = null; accion() }
 })
 ipcMain.on('save-ino', function (event) {
 	dialog.showSaveDialog(mainWindow,{
@@ -231,17 +250,7 @@ ipcMain.on('save-ino', function (event) {
 		filters: [{ name: 'Arduino', extensions: ['ino'] }]
 	},
 	function(filename){
-		event.sender.send('saved-ino', filename)
-	})
-})
-ipcMain.on('save-py', function (event) {
-	dialog.showSaveDialog(mainWindow,{
-		title: 'Guardar como .PY',
-		defaultPath: 'MPR_python',
-		filters: [{ name: 'python', extensions: ['py'] }]
-	},
-	function(filename){
-		event.sender.send('saved-py', filename)
+		if (filename) event.sender.send('saved-ino', filename)
 	})
 })
 ipcMain.on('save-bloc', function (event) {
@@ -251,7 +260,7 @@ ipcMain.on('save-bloc', function (event) {
 		filters: [{ name: 'MPR Blockly', extensions: ['bloc'] }]
 	},
 	function(filename){
-		event.sender.send('saved-bloc', filename)
+		if (filename) event.sender.send('saved-bloc', filename)
 	})
 })
 ipcMain.on('save-csv', function (event) {
@@ -261,42 +270,7 @@ ipcMain.on('save-csv', function (event) {
 		filters: [{ name: 'datos', extensions: ['csv'] }]
 	},
 	function(filename){
-		event.sender.send('saved-csv', filename)
+		if (filename) event.sender.send('saved-csv', filename)
 	})
 })
-if (UPDATES_ENABLED) {
-	autoUpdater.on('error', function(error) {
-		dialog.showErrorBox('Error: ', error == null ? "unknown" : (error.stack || error).toString())
-	})
-	autoUpdater.on('update-available', function() {
-		dialog.showMessageBox(mainWindow,{
-			type: 'none',
-			title: 'Actualización',
-			message: "Hay una nueva versión disponible, ¿quieres descargarla e instalarla ahora?",
-			buttons: ['Sí', 'No'],
-			cancelId: 1,
-			noLink: true
-		},
-		function(buttonIndex)  {
-			if (buttonIndex === 0) autoUpdater.downloadUpdate()
-		})
-	})
-	autoUpdater.on('update-not-available', function() {
-		dialog.showMessageBox(mainWindow,{
-			title: 'Actualizado',
-			message: 'Tienes la última versión.'
-		})
-	})
-	autoUpdater.on('update-downloaded', function() {
-		dialog.showMessageBox(mainWindow,{
-			title: 'Actualizado',
-			message: "Descarga terminada, la aplicación se instalará y se reiniciará."
-		}, function() {
-			setImmediate(function(){
-				autoUpdater.quitAndInstall()
-			})
-		})
-	})
-}
-module.exports.open_console = open_console
 module.exports.refresh = refresh

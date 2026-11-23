@@ -76,7 +76,7 @@ void setup() { Otto.init(2, 3, 4, 5, true, 13); Otto.home(); cute.init(13); Seri
 void loop() { Otto.walk(2, 1000, 1); Otto.sing(S_happy); cute.play(S_connection);
   playRtttlBlockingPGM(13, (char*)mel); Serial.println(Otto.getDistance()); }
 """
-REPO_JS = ["electronApp.js", "index.js", "factory.js", "term.js", "repl.js"]
+REPO_JS = ["electronApp.js", "index.js", "factory.js", "term.js"]
 TSA_DEFECTO = "http://timestamp.digicert.com"   # sello de tiempo RFC 3161: sirve con certificados de cualquier emisor
 
 
