@@ -307,8 +307,9 @@ BlocklyDuino.loadConfig = function() {
 		$("#toolboxes").val(BlocklyDuino.selectedToolbox);
 		BlocklyDuino.loadToolboxDefinition(BlocklyDuino.selectedToolbox)
 	} else {
-		var toolbox = window.localStorage.toolbox;
-		BlocklyDuino.selectedToolbox = toolbox;
+		// MPR: solo existe el menú de bloques AVR; un PC que guardó el de otra placa (ESP, micro:bit…) vuelve a él
+		var toolbox = BlocklyDuino.selectedToolbox;
+		window.localStorage.toolbox = toolbox;
 		$("#boards").val(card);
 		$('#arduino_card_mini_picture').attr("src", profile[card]['picture']);
 		if(card=="nanooptiboot"||card=="nano"||card=="nona4809"){

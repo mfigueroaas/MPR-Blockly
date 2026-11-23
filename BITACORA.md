@@ -12,12 +12,23 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 
 ## Cambios
 
+### 2026-11-23 — Limpieza final de la versión 1 (rama `limpieza-v1`)
+- **Pedido:** revisión profunda del proyecto y limpieza para cerrar la v1 sin funciones nuevas: quitar archivos, imágenes, idiomas, librerías y código que no se usan, y corregir fallos, como base limpia para la v2. Decisiones del usuario: borrar también los bloques y ejemplos ocultos y sus librerías; dejar solo el driver CH340; F8 (DevTools) solo en modo monitor; el historial de git se decide al final.
+- **Etapa 1 (archivos sin uso):**
+  - Idiomas: quedan solo `Arduino_es.js`, `Blockly_es.js`, `msg_es.js` y `code.js` (51 archivos menos).
+  - Ejemplos: fuera los 69 ocultos (`"visible": false`) y 4 que no estaban en `examples.json`; quedan los 14 visibles y `mpr_salto.xml` (MPR, aún sin entrada en el menú).
+  - Imágenes sin ninguna referencia: 13 de `www/media` y 11 de `www/examples/media`. `crecer-en-rencaLOGO.svg` se conserva (sin uso aún).
+  - Menús de bloques de otras placas (ESP8266, ESP32, MRTX, MRTnode, micro:bit, megaAVR, SAMD): solo queda `toolbox_arduino_all.xml`. `blocklino.js` usa siempre ese menú aunque un PC tenga guardado otro (si no, daba un 404 al abrir).
+  - Drivers: solo `CH341.zip` (el único que instala el instalador). Fuera FTDI, CP210x, libusb, micro:bit, dpinst y los `.inf` de Arduino.
+  - Otros: `html_old.js` y `ext-searchbox.js` (no se cargaban), íconos sin uso de `build/` y `ottoblockly.nsh`, `.circleci/` y `.github/` (del proyecto original).
+- **Commit:** (ver git log)  **Probado en la app:** pendiente (al final de la limpieza)
+
 ### 2026-11-23 — Grafo de código: `.cbmignore` y notas en CLAUDE.md
 - **Pedido:** indexar el repo con el grafo (codebase-memory-mcp) y dejar el proyecto limpio para trabajar.
 - **Archivos:** `.cbmignore` (nuevo), `CLAUDE.md`, `BITACORA.md`.
 - **Qué se hizo:** `.cbmignore` excluye las librerías Arduino de terceros (salvo `Otto`), `Fotos otto armado/`, `Manuales/`, `versiones/` y `driversUSB/`, que eran ~60 % del grafo. CLAUDE.md aclara que los idiomas de `www/lang` distintos de español son heredados y añade la sección "Grafo de código". No se tocó código de la app.
 - **Notas:** se confirmó el borrado de 2 `.png` de documentación de Firebase (sin uso en MPR); el logo `Logo Crecer en Renca.svg` no se tocó.
-- **Commit:** (sin commit aún)  **Probado en la app:** no aplica
+- **Commit:** `1141974`  **Probado en la app:** no aplica
 
 ### 2026-11-14 — G3: documento de novedades de la versión 1.5.3 (Word, con capturas antes/después)
 - **Pedido:** un documento Word, editable, que explique todas las funciones nuevas, cambios y arreglos desde la versión inicial, con el porqué de cada uno (experiencia de los niños), una captura de pantalla por función y una comparación antes/después.

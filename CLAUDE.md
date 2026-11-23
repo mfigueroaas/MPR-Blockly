@@ -4,8 +4,8 @@ App Electron 4.1.1 (32 bits) de programación por bloques para robots Otto, basa
 OttoDIY/blockly. Ver `LEEME_MPR.md` para el contexto completo.
 
 ## Reglas
-- La app es **solo en español**. Los textos van en `www/lang/Arduino_es.js` y `msg_es.js`.
-  Los demás archivos de `www/lang` (ar, bg, cn, de, en…) son heredados de OttoDIY: no se mantienen ni se editan.
+- La app es **solo en español**. Los textos van en `www/lang/Arduino_es.js` y `msg_es.js` (más `Blockly_es.js`,
+  textos de Blockly, y `code.js`, que los carga). Los demás idiomas se borraron en la limpieza de la v1 (2026-11-23).
 - **No migrar Electron ni serialport**: el código usa la API de Electron 4 (diálogos con
   callback, `remote`, nodeIntegration por defecto) y `serialport` 7 (`sp.list(callback)`,
   `port.comName`). El instalador reutiliza esos binarios del instalador oficial 1.5.0.
