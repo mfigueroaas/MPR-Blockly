@@ -1682,14 +1682,6 @@ Blockly.Arduino['mc005'] = function(block) {
 	var code = "digitalRead(" + value_pin + ") == LOW" ;
 	return [code, Blockly.Arduino.ORDER_ATOMIC];
 };
-Blockly.Python['mc005'] = function(block) {
-	var value_pin = Blockly.Python.valueToCode(block, 'pin', Blockly.Python.ORDER_ATOMIC);
-	var dropdown_state = block.getFieldValue('state') == "HIGH" ? "1" : "0";
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-    Blockly.Python.definitions_["pin_"+value_pin]="BROCHE_"+value_pin+" = Pin("+value_pin+", Pin.IN)";
-	var code = "BROCHE_" + value_pin + ".value() == 0" + dropdown_state ;
-	return [code, Blockly.Python.ORDER_ATOMIC];
-};
 //////////////
 Blockly.Blocks['inter']={init:function() {
     this.appendValueInput("pin")
@@ -1710,14 +1702,6 @@ Blockly.Arduino['inter'] = function(block) {
     Blockly.Arduino.setups_["setup_input_" + value_pin]="pinMode(" + value_pin + ", INPUT_PULLUP);";
 	var code = "digitalRead(" + value_pin + ") == " + dropdown_state ;
 	return [code, Blockly.Arduino.ORDER_ATOMIC];
-};
-Blockly.Python['inter'] = function(block) {
-	var value_pin = Blockly.Python.valueToCode(block, 'pin', Blockly.Python.ORDER_ATOMIC);
-	var dropdown_state = block.getFieldValue('state') == "HIGH" ? "1" : "0";
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-    Blockly.Python.definitions_["pin_"+value_pin]="BROCHE_"+value_pin+" = Pin("+value_pin+", Pin.IN, Pin.PULL_UP)";
-	var code = "BROCHE_" + value_pin + ".value() == " + dropdown_state ;
-	return [code, Blockly.Python.ORDER_ATOMIC];
 };
 //////////////
 Blockly.Blocks["grove_ldr"]={init:function(){
@@ -1740,11 +1724,6 @@ Blockly.Arduino["grove_ldr"]=function(block){
     var code="analogRead(" + dropdown_pin + ")/7.9";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
 };
-Blockly.Python["grove_ldr"]=function(block){
-	Blockly.Python.imports_["adc"]="from machine import ADC";
-	Blockly.Python.definitions_["pin_a0"]="LDR = ADC(0)";
-    return ["LDR.read()/7.9", Blockly.Python.ORDER_ATOMIC]
-};
 //////////////
 Blockly.Blocks["inout_bp"]={init:function(){
         this.appendValueInput("PIN", "Number").appendField(new Blockly.FieldImage('media/button.png', 33, 33, "*"))
@@ -1759,13 +1738,6 @@ Blockly.Arduino["inout_bp"]=function(block){
     Blockly.Arduino.setups_["setup_input_" + dropdown_pin]="pinMode(" + dropdown_pin + ", INPUT_PULLUP);";
     var code="digitalRead(" + dropdown_pin + ") == LOW";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
-};
-Blockly.Python["inout_bp"]=function(block){
-    var dropdown_pin=Blockly.Python.valueToCode(block, "PIN", Blockly.Python.ORDER_ATOMIC);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-    Blockly.Python.definitions_["pin_"+dropdown_pin]="BP_"+dropdown_pin+" = Pin("+dropdown_pin+", Pin.IN, Pin.PULL_UP)";
-    var code="BP_" + dropdown_pin + ".value() == 0";
-    return [code, Blockly.Python.ORDER_ATOMIC]
 };
 
 //////////////
@@ -1782,13 +1754,6 @@ Blockly.Arduino["suiveur_ligne"]=function(block){
     Blockly.Arduino.setups_["setup_input_" + dropdown_pin]="pinMode(" + dropdown_pin + ", INPUT);";
     var code="digitalRead(" + dropdown_pin + ") == HIGH";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
-};
-Blockly.Python["suiveur_ligne"]=function(block){
-    var dropdown_pin=Blockly.Python.valueToCode(block, "PIN", Blockly.Python.ORDER_ATOMIC);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-    Blockly.Python.definitions_["pin_"+dropdown_pin]="follower_"+dropdown_pin+" = Pin("+dropdown_pin+", Pin.IN)";
-    var code="follower_" + dropdown_pin + ".value() == 1";
-    return [code, Blockly.Python.ORDER_ATOMIC]
 };
 //////////////
 Blockly.Blocks["light_sensor"]={init:function(){
@@ -1811,11 +1776,6 @@ Blockly.Arduino["light_sensor"]=function(block){
     var code="analogRead(" + dropdown_pin + ")/4";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
 };
-Blockly.Python["light_sensor"]=function(block){
-	Blockly.Python.imports_["adc"]="from machine import ADC";
-	Blockly.Python.definitions_["pin_a0"]="LDR = ADC(0)";
-    return ["LDR.read()/4", Blockly.Python.ORDER_ATOMIC]
-};
 //////////////
 Blockly.Blocks["potentiometre"]={init:function(){
 	var card=window.localStorage.card;
@@ -1836,11 +1796,6 @@ Blockly.Arduino["potentiometre"]=function(block){
     var dropdown_pin=block.getFieldValue("broche");
     var code="analogRead(" + dropdown_pin + ")/4";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
-};
-Blockly.Python["potentiometre"]=function(block){
-	Blockly.Python.imports_["adc"]="from machine import ADC";
-	Blockly.Python.definitions_["pin_a0"]="Pot = ADC(0)";
-    return ["Pot.read()/4", Blockly.Python.ORDER_ATOMIC]
 };
 //////////////
 Blockly.Blocks["lm35"]={init:function(){
@@ -1864,11 +1819,6 @@ Blockly.Arduino["lm35"]=function(block){
     var code="analogRead(" + pin + ")/11";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
 };
-Blockly.Python["lm35"]=function(block){
-	Blockly.Python.imports_["adc"]="from machine import ADC";
-	Blockly.Python.definitions_["pin_a0"]="LM35 = ADC(0)";
-    return ["LM35.read()/11", Blockly.Python.ORDER_ATOMIC]
-};
 //////////////
 Blockly.Blocks['block_pir']={init:function(){
     this.appendValueInput("NAME")
@@ -1887,13 +1837,6 @@ Blockly.Arduino['block_pir']=function(block){
     var code='digitalRead('+value_v1+')';
     return [code, Blockly.Arduino.ORDER_ATOMIC] ;
 };
-Blockly.Python['block_pir']=function(block){
-    var dropdown_pin=Blockly.Python.valueToCode(block, 'NAME', Blockly.Python.ORDER_ASSIGNMENT);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-	Blockly.Python.definitions_["pin_"+dropdown_pin]="Present_"+dropdown_pin+" = Pin("+dropdown_pin+", Pin.IN)";
-    var code="Present_" + dropdown_pin + ".value()";
-    return [code, Blockly.Python.ORDER_ATOMIC]
-};
 //////////////
 Blockly.Blocks['block_feu']={init:function(){
     this.appendValueInput("FEU")
@@ -1910,13 +1853,6 @@ Blockly.Arduino['block_feu']=function(block){
     Blockly.Arduino.setups_["setup_output_" + value_v1]='pinMode('+value_v1+', INPUT);' ;
     var code='digitalRead('+value_v1+')';
     return [code, Blockly.Arduino.ORDER_ATOMIC] ;
-};
-Blockly.Python['block_feu']=function(block){
-    var dropdown_pin=Blockly.Python.valueToCode(block, 'FEU', Blockly.Python.ORDER_ASSIGNMENT);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-	Blockly.Python.definitions_["pin_"+dropdown_pin]="Fire_"+dropdown_pin+" = Pin("+dropdown_pin+", Pin.IN)";
-    var code="Fire_" + dropdown_pin + ".value()";
-    return [code, Blockly.Python.ORDER_ATOMIC]
 };
 //////////////
 Blockly.Blocks['block_anticollision']={init:function(){
@@ -1936,13 +1872,6 @@ Blockly.Arduino['block_anticollision']=function(block){
     var code='digitalRead('+value_v1+')';
     return [code, Blockly.Arduino.ORDER_ATOMIC] ;
 };
-Blockly.Python['block_anticollision']=function(block){
-    var dropdown_pin=Blockly.Python.valueToCode(block, 'COLLISION', Blockly.Python.ORDER_ASSIGNMENT);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-	Blockly.Python.definitions_["pin_"+dropdown_pin]="Touch_"+dropdown_pin+" = Pin("+dropdown_pin+", Pin.IN)";
-    var code="Touch_" + dropdown_pin + ".value()";
-    return [code, Blockly.Python.ORDER_ATOMIC]
-};
 //////////////
 Blockly.Blocks['block_sensitif']={init:function(){
     this.appendValueInput("SENSITIF")
@@ -1959,13 +1888,6 @@ Blockly.Arduino['block_sensitif']=function(block){
     Blockly.Arduino.setups_["setup_output_" + value_v1]='pinMode('+value_v1+', INPUT);' ;
     var code='digitalRead('+value_v1+')';
     return [code, Blockly.Arduino.ORDER_ATOMIC] ;
-};
-Blockly.Python['block_sensitif']=function(block){
-    var dropdown_pin=Blockly.Python.valueToCode(block, 'SENSITIF', Blockly.Python.ORDER_ASSIGNMENT);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-	Blockly.Python.definitions_["pin_"+dropdown_pin]="sense_"+dropdown_pin+" = Pin("+dropdown_pin+", Pin.IN)";
-    var code="sense_" + dropdown_pin + ".value()";
-    return [code, Blockly.Python.ORDER_ATOMIC]
 };
 
 //////////////
@@ -1989,11 +1911,6 @@ Blockly.Arduino["cap615"]=function(block){
     var code="(1023-analogRead(" + dropdown_pin + "))/8";
 	return [code, Blockly.Arduino.ORDER_ATOMIC]
 };
-Blockly.Python["cap615"]=function(block){
-	Blockly.Python.imports_["adc"]="from machine import ADC";
-	Blockly.Python.definitions_["pin_a0"]="humidity = ADC(0)";
-    return ["(1023-humidity.read())/8", Blockly.Python.ORDER_ATOMIC]
-};
 //////////////
 Blockly.Blocks["cap661"]={init:function(){
 	var card=window.localStorage.card;
@@ -2012,7 +1929,6 @@ Blockly.Arduino["cap661"]=function(block){
     var code="tick_codeuse";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
 };
-Blockly.Python["cap661"]=function(){return''};
 //////////////
 Blockly.Blocks["BME280"]={init:function(){
     this.appendDummyInput()
@@ -2032,13 +1948,6 @@ Blockly.Arduino["BME280"]=function(block){
     var code="bme.readFloatPressure()";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
 };
-Blockly.Python["BME280"]=function(block){
-    Blockly.Python.imports_["bme280"]='import bme280';
-    Blockly.Python.imports_["pin"]='from machine import Pin';
-    Blockly.Python.imports_["i2c"]='from machine import I2C';
-	Blockly.Python.definitions_["bme280"]="i2c = I2C(scl=Pin(5), sda=Pin(4))\nbme = bme280.BME280(i2c=i2c)";
-    return ''
-};
 //////////////
 Blockly.Blocks["BME280_pressure"]={init:function(){
     this.appendDummyInput().appendField(new Blockly.FieldImage('media/pressure.png', 23, 23, "*")).appendField(Blockly.Msg.bme280_pressure);
@@ -2050,9 +1959,6 @@ Blockly.Blocks["BME280_pressure"]={init:function(){
 Blockly.Arduino["BME280_pressure"]=function(block){
     var code="bme.readFloatPressure()";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
-};
-Blockly.Python["BME280_pressure"]=function(block){
-    return ["bme.pressure()", Blockly.Python.ORDER_ATOMIC]
 };
 //////////////
 Blockly.Blocks["VL53L0X"]={init:function(){
@@ -2072,12 +1978,6 @@ Blockly.Arduino["VL53L0X"]=function(block){
     var code='';
     return code;
 };
-Blockly.Python["VL53L0X"]=function(block){
-    Blockly.Python.imports_["VL53L0X"]='import VL53L0X';
-	Blockly.Python.imports_["i2c"]='from machine import I2C';
-	Blockly.Python.definitions_["VL53L0X"]="i2c = I2C(scl=Pin(5), sda=Pin(4))\ntof = VL53L0X.VL53L0X(i2c)";
-    return ""
-};
 //////////////
 Blockly.Blocks["VL53L0X_distance"]={init:function(){
     this.appendDummyInput().appendField(new Blockly.FieldImage('media/laser.png', 15, 15, "*")).appendField(Blockly.Msg.VL53L0X_distance);
@@ -2089,9 +1989,6 @@ Blockly.Blocks["VL53L0X_distance"]={init:function(){
 Blockly.Arduino["VL53L0X_distance"]=function(block){
     var code="cpt.readRangeContinuousMillimeters()";
     return [code, Blockly.Arduino.ORDER_ATOMIC]
-};
-Blockly.Python["VL53L0X_distance"]=function(block){
-    return ["tof.read()", Blockly.Python.ORDER_ATOMIC]
 };
 
 ////////// CCS811 Sensor ////////////

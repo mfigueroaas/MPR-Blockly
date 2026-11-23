@@ -86,15 +86,6 @@ Blockly.Arduino["play"]=function(block){
     return "tone( buzzer," + value_note + "," + value_tempo + ");\n delay(" + value_tempo + ");\n"
 };
 
-Blockly.Python["play"]=function(block){
-    var value_pin=block.getFieldValue("PIN");
-    var value_note=block.getFieldValue("note");
-    var value_tempo=block.getFieldValue("tempo");
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-	Blockly.Python.imports_["pwm"]="from machine import PWM";
-	Blockly.Python.imports_["time"]="import time";
-	return "Play_"+value_pin+" = PWM(Pin("+value_pin+"), freq=" + value_note + ")\ntime.sleep(" + value_tempo + ")\nPlay_" + value_pin + ".deinit()\n"
-};
 //////////////
 Blockly.Blocks["tone"]={init:function(){
         this.setColour("#FF63BB");
@@ -112,15 +103,6 @@ Blockly.Arduino["tone"]=function(block){
     var value_tps=Blockly.Arduino.valueToCode(block, "TPS", Blockly.Arduino.ORDER_ATOMIC);
     return "tone( buzzer," + value_num + "," + value_tps + ");\ndelay(" + value_tps + ");\n"
 };
-Blockly.Python["tone"]=function(block){
-    var value_pin=block.getFieldValue("PIN");
-    var value_num=Blockly.Python.valueToCode(block, "NUM", Blockly.Python.ORDER_ATOMIC);
-    var value_tps=Blockly.Python.valueToCode(block, "TPS", Blockly.Python.ORDER_ATOMIC);
-	Blockly.Python.imports_["pin"]="from machine import Pin";
-	Blockly.Python.imports_["pwm"]="from machine import PWM";
-    Blockly.Python.imports_["time"]="import time";
-    return "Buzzer_"+dropdown_pin+" = PWM(Pin("+dropdown_pin+"), freq=" + value_num + ")\ntime.sleep(" + value_tps + ")\nBuzzer_"+dropdown_pin+".deinit()\n"
-};
 //////////////
 Blockly.Blocks["beep"]={init:function(){
   var card=window.localStorage.card;
@@ -135,11 +117,6 @@ Blockly.Arduino["beep"]=function(block){
     Blockly.Arduino.setups_["setup_output" + value_pin]="pinMode(" + value_pin + ", OUTPUT);";
     return "tone(" + value_pin + ",440,1000);\ndelay(1000);\n"
 };
-Blockly.Python["beep"]=function(block){
-    var value_pin=block.getFieldValue("PIN");
-    Blockly.Python.setups_["setup_output" + value_pin]="pinMode(" + value_pin + ", OUTPUT);";
-    return "tone(" + value_pin + ",440,1000);\ndelay(1000);\n"
-};
 //////////////
 Blockly.Blocks["notone"]={init:function(){
         this.setColour("#FF63BB");
@@ -152,11 +129,6 @@ Blockly.Blocks["notone"]={init:function(){
 };
 Blockly.Arduino["notone"]=function(block){
     return "noTone( buzzer" + ");\n"
-};
-Blockly.Python["notone"]=function(block){
-    var value_pin=block.getFieldValue("PIN");
-    Blockly.Python.setups_["setup_output" + value_pin]="pinMode(" + value_pin + ", OUTPUT);";
-    return "noTone(" + value_pin + ");\n"
 };
 
 Blockly.Blocks['cute_play'] = {init: function() {
@@ -212,23 +184,6 @@ if (autoplay){
 };
 return ""
 };
-Blockly.Python["lp2i_mp3_init"]=function(block){
-var autoplay=block.getFieldValue('play') == 'TRUE';
-var vol=Blockly.Python.valueToCode(block, "Volume", Blockly.Python.ORDER_ATOMIC);
-var volume=parseInt(vol);
-Blockly.Python.imports_["kt403a"]="from kt403A import KT403A";
-if (volume>48){
-    var volume_hex="0x30";
-}else{
-    var volume_hex="0x"+volume.toString(16);
-}
-if (autoplay){
-    Blockly.Python.definitions_["setup_mp3"]="mp3 = KT403A(1, 3, 4)\nmp3.SetVolume(" + volume_hex + ")\nmp3.EnableLoopAll()";
-}else{
-    Blockly.Python.definitions_["setup_mp3"]="mp3 = KT403A(1, 3, 4)\nmp3.SetVolume(" + volume_hex + ")";
-};
-return ""
-};
 //////////////
 Blockly.Blocks["lp2i_mp3_play_track"]={init:function(){
     this.appendValueInput("num", "Number")
@@ -244,10 +199,6 @@ Blockly.Arduino["lp2i_mp3_play_track"]=function(block){
 	var piste=Blockly.Arduino.valueToCode(block, "num", Blockly.Arduino.ORDER_ATOMIC);
     return "exe_cmd(0x03,0,"+piste+");\n"
 };
-Blockly.Python["lp2i_mp3_play_track"]=function(block){
-	var piste=Blockly.Python.valueToCode(block, "num", Blockly.Python.ORDER_ATOMIC);
-    return "mp3.PlaySpecific("+piste+")\n"
-};
 //////////////
 Blockly.Blocks["lp2i_mp3_play"]={init:function(){
     this.appendDummyInput()
@@ -261,9 +212,6 @@ Blockly.Blocks["lp2i_mp3_play"]={init:function(){
 };
 Blockly.Arduino["lp2i_mp3_play"]=function(block){
     return "exe_cmd(0x0D,0,1);\n"
-};
-Blockly.Python["lp2i_mp3_play"]=function(block){
-    return "mp3.Play()\n"
 };
 
 Blockly.Blocks["lp2i_mp3_volume"]={init:function(){
@@ -287,16 +235,6 @@ Blockly.Arduino["lp2i_mp3_volume"]=function(block){
 	}
 	return "exe_cmd(0x06,0," + volume_hex + ");\n"
 };
-Blockly.Python["lp2i_mp3_volume"]=function(block){
-    var vol=Blockly.Python.valueToCode(block, "Volume", Blockly.Python.ORDER_ATOMIC);
-	var volume=parseInt(vol);
-	if (volume>48){
-		var volume_hex="0x30";
-	}else{
-		var volume_hex="0x"+volume.toString(16);
-	}
-	return "mp3.SetVolume(" + volume_hex + ")\n"
-};
 //////////////
 Blockly.Blocks["lp2i_mp3_next"]={init:function(){
         this.appendDummyInput()
@@ -310,9 +248,6 @@ Blockly.Blocks["lp2i_mp3_next"]={init:function(){
 };
 Blockly.Arduino["lp2i_mp3_next"]=function(block){
     return "exe_cmd(0x01,0,1);\n"
-};
-Blockly.Python["lp2i_mp3_next"]=function(block){
-    return "mp3.PlayNext()\n"
 };
 //////////////
 Blockly.Blocks["lp2i_mp3_prev"]={init:function(){
@@ -328,9 +263,6 @@ Blockly.Blocks["lp2i_mp3_prev"]={init:function(){
 Blockly.Arduino["lp2i_mp3_prev"]=function(block){
     return "exe_cmd(0x02,0,1);\n"
 };
-Blockly.Python["lp2i_mp3_prev"]=function(block){
-    return "mp3.PlayPrevious()\n"
-};
 //////////////
 Blockly.Blocks["lp2i_mp3_pause"]={init:function(){
         this.appendDummyInput()
@@ -344,9 +276,6 @@ Blockly.Blocks["lp2i_mp3_pause"]={init:function(){
 };
 Blockly.Arduino["lp2i_mp3_pause"]=function(block){
     return "exe_cmd(0x0E,0,0);\n"
-};
-Blockly.Python["lp2i_mp3_pause"]=function(block){
-    return "mp3.Pause()\n"
 };
 
 

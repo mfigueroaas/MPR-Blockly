@@ -39,6 +39,22 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
   - Cuadro de variables: cerrarlo con Alt+F4 ya no reutiliza la respuesta anterior.
   - Monitor Serie (`term.js`): tildes y ñ partidas entre paquetes ya no salen rotas (`StringDecoder`); cambiar la velocidad reconecta cuando el puerto terminó de cerrarse (antes podía dar "Access denied"); error al enviar texto avisado.
   - `tools/probar.py` ya no copia `repl.js`.
+- **Etapa 4 (interfaz):**
+  - Bloques: de 56 archivos de `blocs&generateurs` quedan 12 (`blockly_blocs`, `arduino_blocs`, `arduino_generateurs_cpp`, `blockly_generateurs_cpp`, `audio`, `sensors`, `text`, `SerialUSB`, `RTTTL`, `ottoesp`, `mpr_canciones`, `mpr_monitor_bloques`). Fuera los de ESP/IoT, pantallas, sensores ocultos, `otto.js` (Otto Quad/Ninja, cuyas claves chocaban con `ottoesp.js`) y los generadores Python (también dentro de `audio.js` y `sensors.js`), más `generate_python.js`, `python.js`, `hexlify.js` e `intel-hex.browser.js`.
+  - Menú (`toolbox_arduino_all.xml`): solo las 9 categorías visibles y la del modo monitor, sin bloques comentados `OCULTO`, sin niveles 2/3 ni sensores extra. El menú se ve igual.
+  - `typing.js`: la línea 95 lanzaba `TypeError` al abrir (bloque `digital_read` inexistente), así que de ahí en adelante nunca corrió. Se quitó esa parte y lo demás va con guarda: la consola queda sin errores y el C++ no cambia.
+  - `boards.js`: solo Nano y Nano Old; fuera 88 imágenes sin uso (fotos de otras placas: 6,5 MB). Se restauraron los 3 cursores `hand*.cur`, que Blockly carga por su cuenta.
+  - `blocklino.js`: sin niveles, modal de configuración, idioma, `#btn_bin`/`#btn_factory`, cambio de menú por placa ni Python. Placa guardada inválida validada con `window.profile` (antes un selector sin escapar), respaldo de la mesa con `try/catch`, nombre de proyecto sin la última extensión (`lastIndexOf`).
+  - `index.html`: sin scripts borrados, selector de idioma, casilla de actualizaciones, `#card`, `#usb` y 5 modales de conexión que nada abría; fuera `www/examples/media` (solo la usaban esos modales).
+  - `mpr_mascota.js`: si Otto 3D falla al crearse, pasa a 2D en vez de quedar "cargando" para siempre (eso bloqueaba la precompilación y el recorrido).
+  - `generate_cpp.js`: `redPin`, `greenPin` y `bluePin` como palabras reservadas.
+  - `index.js`: si no se puede guardar el `.bloc` o el `.ino` (carpeta sin permiso, pendrive quitado), avisa en vez de fallar en silencio.
+  - Ejemplos "Cute sounds" y "Simple melody": usaban el pin `D5` (de ESP8266) y **no compilaban en el Nano** desde antes; ahora usan el 13, el del buzzer de Otto.
+- **Probado en la app:** sí, en la copia de prueba `C:\mprbp` (runtime sin `VkLayer_*` y con 3 idiomas, y compilador recortado con las 4 librerías), comparando con `main` antes de la limpieza por DevTools:
+  - Menú con las mismas 9 categorías y los mismos bloques; todos los bloques del menú se crean y generan código.
+  - Los 14 ejemplos visibles generan **el mismo C++** que antes (salvo los 2 corregidos) y **los 14 compilan** para Nano.
+  - Consola sin errores al abrir (antes: `typing.js:95`). Otto 3D funciona. Abrir un archivo con un bloque borrado avisa y deja la mesa como estaba.
+  - Falta probar con el robot: enviar un programa, F5 y cerrar durante un envío, Monitor Serie y F8.
 - **Commit:** (ver git log)  **Probado en la app:** pendiente (al final de la limpieza)
 
 ### 2026-11-23 — Grafo de código: `.cbmignore` y notas en CLAUDE.md

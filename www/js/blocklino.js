@@ -2,8 +2,6 @@
 
 var BlocklyDuino = {};
 BlocklyDuino.selectedToolbox = "toolbox_arduino_all";
-// MPR: poner en true para mostrar la categoría "Sensores extra" (botón, DHT, joystick, etc.)
-BlocklyDuino.mostrarSensoresExtra = false;
 BlocklyDuino.selectedCard = "nanooptiboot";
 BlocklyDuino.content = "on";
 BlocklyDuino.workspace = null;
@@ -52,42 +50,6 @@ BlocklyDuino.vigilarArchivosSoltados = function() {
 };
 BlocklyDuino.loadFile = function() {
 	var urlFile = BlocklyDuino.getStringParamFromUrl('url', '');
-	if (urlFile.endsWith(".py")) {
-		$.get(urlFile, function(data) {
-			$('#codeORblock').bootstrapToggle("off");
-			$('a[href="#content_code"]').tab('show');
-			$('#btn_print').addClass("hidden");
-			$('#btn_preview').addClass("hidden");
-			$('#btn_verify').removeClass("hidden");
-			$('#btn_search').removeClass("hidden");
-			window.localStorage.content="off";
-			editor.session.setMode("ace/mode/python");
-			editor.setOptions({
-				enableBasicAutocompletion: true,
-				enableSnippets: true,
-				enableLiveAutocompletion: true
-			});
-			editor.setValue(data,1)
-		}, 'text')
-	}
-	if (urlFile.endsWith(".ino")) {
-		$.get(urlFile, function(data) {
-			$('#codeORblock').bootstrapToggle("off");
-			$('a[href="#content_code"]').tab('show');
-			$('#btn_print').addClass("hidden");
-			$('#btn_preview').addClass("hidden");
-			$('#btn_verify').removeClass("hidden");
-			$('#btn_search').removeClass("hidden");
-			window.localStorage.content="off";
-			editor.session.setMode("ace/mode/c_cpp");
-			editor.setOptions({
-				enableBasicAutocompletion: true,
-				enableSnippets: true,
-				enableLiveAutocompletion: true
-			});
-			editor.setValue(data,1)
-		}, 'text')
-	}
 	// MPR: después de cargar el archivo (ejemplo o .bloc abierto con doble clic) se quita ?url= de la dirección.
 	// Antes F5 volvía a cargar el archivo original y se perdía lo hecho después; ahora F5 recupera el respaldo
 	// (loadOnceBlocks) como siempre. Si el archivo no se puede abrir, se recupera el trabajo anterior (PLAN_PULIDO B1).
@@ -101,8 +63,9 @@ BlocklyDuino.loadFile = function() {
 				BlocklyDuino.loadBlocks();
 			}
 		});
-	} else if (!urlFile) {
-		BlocklyDuino.loadBlocks()
+	} else {
+		// MPR: los .ino y .py ya no se abren (no hay editor de código): se carga la mesa de siempre
+		BlocklyDuino.loadBlocks();
 	}
 };
 // MPR: quita ?url= de la dirección sin recargar, conservando los demás parámetros (PLAN_PULIDO B1).
@@ -134,28 +97,22 @@ BlocklyDuino.save_com = function() {
 	window.localStorage.com = com;
 };
 BlocklyDuino.renderArduinoCodePreview = function() {
-	var prog = window.localStorage.prog;
-	if (prog != "python") {
-		// MPR: si un bloque no sabe generar su código (por ejemplo uno antiguo de un archivo), antes la vista previa
-		// se quedaba con el programa anterior y Verificar/Subir lo mandaban sin avisar. Ahora el programa lleva un
-		// #error que el compilador muestra, con el texto del bloque (PLAN_PULIDO A5).
-		var codigo;
-		try {
-			codigo = Blockly.Arduino.workspaceToCode(BlocklyDuino.workspace);
-		} catch (e) {
-			var malo = BlocklyDuino.workspace.getAllBlocks().filter(function(b) {
-				return !b.disabled && typeof Blockly.Arduino[b.type] != 'function';
-			})[0];
-			var limpiar = function(s) { return String(s).replace(/["\\\r\n]/g, ' ').slice(0, 80); };
-			codigo = '#error "' + (malo ? 'El bloque ' + limpiar(malo.toString()) + ' no funciona en el robot: quítalo de la mesa'
-				: 'No se pudo armar el programa: ' + limpiar(e && e.message || e)) + '"\n';
-		}
-		$('#pre_previewArduino').text(codigo);
-		$('#pre_previewArduino').html(prettyPrintOne($('#pre_previewArduino').html(), 'cpp'));
-	} else {
-		$('#pre_previewArduino').text(Blockly.Python.workspaceToCode(BlocklyDuino.workspace));
-		$('#pre_previewArduino').html(prettyPrintOne($('#pre_previewArduino').html(), 'py'));
+	// MPR: si un bloque no sabe generar su código (por ejemplo uno antiguo de un archivo), antes la vista previa
+	// se quedaba con el programa anterior y Verificar/Subir lo mandaban sin avisar. Ahora el programa lleva un
+	// #error que el compilador muestra, con el texto del bloque (PLAN_PULIDO A5).
+	var codigo;
+	try {
+		codigo = Blockly.Arduino.workspaceToCode(BlocklyDuino.workspace);
+	} catch (e) {
+		var malo = BlocklyDuino.workspace.getAllBlocks().filter(function(b) {
+			return !b.disabled && typeof Blockly.Arduino[b.type] != 'function';
+		})[0];
+		var limpiar = function(s) { return String(s).replace(/["\\\r\n]/g, ' ').slice(0, 80); };
+		codigo = '#error "' + (malo ? 'El bloque ' + limpiar(malo.toString()) + ' no funciona en el robot: quítalo de la mesa'
+			: 'No se pudo armar el programa: ' + limpiar(e && e.message || e)) + '"\n';
 	}
+	$('#pre_previewArduino').text(codigo);
+	$('#pre_previewArduino').html(prettyPrintOne($('#pre_previewArduino').html(), 'cpp'));
 };
 BlocklyDuino.getStringParamFromUrl = function(name, defaultValue) {
   var val = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
@@ -272,151 +229,46 @@ BlocklyDuino.abrirArchivoLocal = function(archivo) {
 	reader.onloadend = function(event) {
 		if (event.target.readyState != 2) return;
 		if (BlocklyDuino.cargarXmlEnMesa(event.target.result)) {
-			document.getElementById('title-project-name').value = archivo.name.substring(0, archivo.name.indexOf('.'));
+			var nombre = archivo.name, punto = nombre.lastIndexOf('.');
+				document.getElementById('title-project-name').value = punto > 0 ? nombre.substring(0, punto) : nombre;
 		}
 	};
 	reader.readAsText(archivo);
 };
 BlocklyDuino.backupBlocks = function() {
-  if (typeof Blockly != 'undefined' && window.localStorage) {
-    var xml = Blockly.Xml.workspaceToDom(BlocklyDuino.workspace);
-    var text = Blockly.Xml.domToText(xml);
-    window.localStorage.loadOnceBlocks = text;
-  }
+	try {
+		if (typeof Blockly != 'undefined' && window.localStorage) {
+			var xml = Blockly.Xml.workspaceToDom(BlocklyDuino.workspace);
+			var text = Blockly.Xml.domToText(xml);
+			window.localStorage.loadOnceBlocks = text;
+		}
+	} catch (e) { console.log(e); }   // localStorage lleno o bloqueado: que la app siga igual
 };
 BlocklyDuino.loadConfig = function() {
 	var card = window.localStorage.card;
-	// MPR: si quedó guardada una placa que ya no está en el menú (solo AVR), volver a la predeterminada
-	if (card !== undefined && $("#boards option[value='" + card + "']").length == 0) {
+	// MPR: si quedó guardada una placa que ya no está en el menú (solo Nano y Nano optiboot, js/boards.js), volver a la
+	// predeterminada. Se busca en el perfil (no en el selector), así un valor raro guardado no rompe la selección.
+	if (card !== undefined && !window.profile.hasOwnProperty(card)) {
 		window.localStorage.removeItem('card');
 		card = undefined;
 	}
-	var content=window.localStorage.content;
-	var prog = window.localStorage.prog;
-	if (card===undefined) {
-		window.localStorage.card = BlocklyDuino.selectedCard;
-		window.localStorage.prog = profile[BlocklyDuino.selectedCard].prog;
-		window.localStorage.toolbox = BlocklyDuino.selectedToolbox;
-		$("#boards").val(BlocklyDuino.selectedCard);
-		$('#arduino_card_mini_picture').attr("src", profile[BlocklyDuino.selectedCard]['picture']);
-		if(BlocklyDuino.selectedCard=="nanooptiboot"||BlocklyDuino.selectedCard=="nano"||BlocklyDuino.selectedCard=="nona4809"){
-			$("#warning").show();
-		}else{
-			$("#warning").hide();
-		}
-		$("#toolboxes").val(BlocklyDuino.selectedToolbox);
-		BlocklyDuino.loadToolboxDefinition(BlocklyDuino.selectedToolbox)
-	} else {
-		// MPR: solo existe el menú de bloques AVR; un PC que guardó el de otra placa (ESP, micro:bit…) vuelve a él
-		var toolbox = BlocklyDuino.selectedToolbox;
-		window.localStorage.toolbox = toolbox;
-		$("#boards").val(card);
-		$('#arduino_card_mini_picture').attr("src", profile[card]['picture']);
-		if(card=="nanooptiboot"||card=="nano"||card=="nona4809"){
-			$("#warning").show();
-		}else{
-			$("#warning").hide();
-		}
-		$("#toolboxes").val(toolbox);
-		BlocklyDuino.loadToolboxDefinition(toolbox)
-	}
+	if (card === undefined) card = BlocklyDuino.selectedCard;
+	window.localStorage.card = card;
+	window.localStorage.prog = profile[card].prog;
+	window.localStorage.toolbox = BlocklyDuino.selectedToolbox;
+	$("#boards").val(card);
+	BlocklyDuino.loadToolboxDefinition(BlocklyDuino.selectedToolbox);
 	// MPR: siempre parte en modo bloques. El texto del editor de codigo no se guarda: si la app quedaba en modo codigo,
 	// al abrirla mostraba los bloques pero la flecha mandaba el editor vacio ("#enter your code here") y fallaba.
-	if (content===undefined || content=="off") {
-		content = BlocklyDuino.content;
-		window.localStorage.content = BlocklyDuino.content;
-		$('#codeORblock').bootstrapToggle(BlocklyDuino.content);
-		$('#btn_verify').addClass("hidden");
-		$('#btn_search').addClass("hidden")
-	} else {
-		$('#codeORblock').bootstrapToggle(content);
-		if (content=="off") {
-			$('a[href="#content_code"]').tab('show');
-			$('#btn_verify').removeClass("hidden");
-			$('#btn_search').removeClass("hidden")
-		}
-		$('#btn_verify').addClass("hidden");
-		$('#btn_search').addClass("hidden")
-	}
-	if (prog == "python") {
-		$('#btn_bin').addClass("hidden")
-	}
+	window.localStorage.content = BlocklyDuino.content;
+	$('#btn_verify').addClass("hidden");
 };
 BlocklyDuino.change_card = function() {
 	BlocklyDuino.backupBlocks();
-	var card = window.localStorage.card;
-	var toolbox = window.localStorage.toolbox;
 	$("#boards").blur();
-	var new_card = $("#boards").val();
-	var new_prog = window.profile[new_card].prog;
-	if (window.profile[new_card].cpu != window.profile[card].cpu) {
-		if (window.confirm(MSG['arduino_card'] + window.profile[new_card].description + ' ?')){
-			$('#arduino_card_mini_picture').attr("src", profile[new_card]['picture']);
-			if (new_prog != "python") {
-				$('#btn_preview').attr('title', MSG['btn_preview_ino']);
-				$('#btn_saveino').attr('title', MSG['btn_save_ino']);
-				$('#btn_bin').removeClass("hidden");
-
-				window.localStorage.prog = new_prog;
-				var new_toolbox = "toolbox_arduino_all"; //by default
-				var mystartfile;
-					mystartfile= '<xml xmlns="http://www.w3.org/1999/xhtml">';
-					mystartfile +=  '<block type="base_setup_loop" x="-4" y="48"></block>';
-					mystartfile += '</xml>';
-
-				if (window.profile[new_card].cpu == "esp8266")
-				  new_toolbox = "toolbox_arduino_all-esp8266"
-				else if (window.profile[new_card].cpu == "esp32")
-					new_toolbox = "toolbox_arduino_all-esp32"
-				else if (window.profile[new_card].cpu == "atmega328p-x")
-					new_toolbox = "toolbox_arduino_all-mrtx"
-				else if (window.profile[new_card].cpu == "mrtnode-esp32")
-					new_toolbox = "toolbox_arduino_all-mrtnode"
-
-
-				window.localStorage.toolbox = new_toolbox;
-				BlocklyDuino.workspace.clear();
-
-				// If CPU has changed and any of the 2 CPUs is an esp (32 or 8266) we need to load blocks for the new board
-				if ((window.profile[new_card].cpu != window.profile[card].cpu) /*&& ((window.profile[new_card].cpu.startsWith("esp")) || (window.profile[card].cpu.startsWith("esp")) ) */  )
-					BlocklyDuino.loadBlocks(mystartfile);
-			    else
-					BlocklyDuino.loadBlocks();
-
-				BlocklyDuino.loadToolboxDefinition(new_toolbox);
-				Blockly.getMainWorkspace().updateToolbox(BlocklyDuino.buildToolbox());
-				if (window.localStorage.level==1)
-				  $("#btn_level1").trigger("click");
-			     else
-					 if (	window.localStorage.level==2)
-				  $("#btn_level2").trigger("click");
-			     else
-				  $("#btn_level3").trigger("click");
-
-
-				BlocklyDuino.workspace.render()
-			} else {
-				$('#btn_preview').attr('title', MSG['btn_preview_py']);
-				$('#btn_saveino').attr('title', MSG['btn_save_py']);
-				$('#btn_bin').addClass("hidden");
-				if ( window.profile[new_card].cpu == "cortexM0" ) {
-					var new_toolbox = "toolbox_microbit";
-				} else {
-					var new_toolbox = "toolbox_lycee";
-				}
-				window.localStorage.prog = new_prog;
-				window.localStorage.toolbox = new_toolbox;
-				BlocklyDuino.workspace.clear();
-				BlocklyDuino.loadToolboxDefinition(new_toolbox);
-				Blockly.getMainWorkspace().updateToolbox(BlocklyDuino.buildToolbox());
-				BlocklyDuino.workspace.render()
-			}
-		} else {
-			$("#boards").val(card);
-			return
-		}
-	}
-	window.localStorage.card = new_card
+	// Nano y Nano optiboot son el mismo CPU (atmega328p): cambiar de una a otra solo cambia la carga (upload_arg),
+	// que mpr_subida.js toma del perfil al subir. No hace falta reiniciar la mesa.
+	window.localStorage.card = $("#boards").val();
 };
 BlocklyDuino.discard = function() {
   var count = BlocklyDuino.workspace.getAllBlocks().length;
@@ -427,79 +279,21 @@ BlocklyDuino.discard = function() {
   }
 };
 BlocklyDuino.Undo = function() {
-	if (localStorage.getItem("content") == "on") {
-		Blockly.mainWorkspace.undo(0)
-	} else {
-		editor.undo()
-	}
+	Blockly.mainWorkspace.undo(0);
 };
 BlocklyDuino.Redo = function() {
-	if (localStorage.getItem("content") == "on") {
-		Blockly.mainWorkspace.undo(1)
-	} else {
-		editor.redo()
-	}
-};
-BlocklyDuino.search = function() {
-	editor.execCommand("find")
+	Blockly.mainWorkspace.undo(1);
 };
 BlocklyDuino.bindFunctions = function() {
-	$('.modal-child').on('show.bs.modal', function () {
-		var modalParent = $(this).attr('data-modal-parent');
-		$(modalParent).css('opacity', 0)
-	});
-	$('.modal-child').on('hidden.bs.modal', function () {
-		var modalParent = $(this).attr('data-modal-parent');
-		$(modalParent).css('opacity', 1)
-	});
 	$('#btn_new').on("click", BlocklyDuino.discard);
 	$('#btn_undo').on("click", BlocklyDuino.Undo);
 	$('#btn_redo').on("click", BlocklyDuino.Redo);
-	$('#btn_print').on("click", BlocklyDuino.workspace_capture);
-	$('#btn_search').on("click", BlocklyDuino.search);
 	$('#boards').on("focus", function() {
 		BlocklyDuino.selectedCard = $(this).val()
 	});
 	$('#btn_preview').on("click", function() {
 		$("#toggle").toggle("slide")
 	});
-	$('#codeORblock').on("change", function() {
-		if (window.localStorage.prog!="python") {
-			editor.session.setMode("ace/mode/c_cpp");
-			editor.setOptions({
-				enableBasicAutocompletion: true,
-				enableSnippets: true,
-				enableLiveAutocompletion: true
-			});
-		} else {
-			editor.session.setMode("ace/mode/python");
-			editor.setOptions({
-				enableBasicAutocompletion: true,
-				enableSnippets: true,
-				enableLiveAutocompletion: true
-			});
-		}
-		if (window.localStorage.content=="on") {
-			editor.setValue($('#pre_previewArduino').text(),1);
-			$('a[href="#content_code"]').tab('show');
-			$('#btn_print').addClass("hidden");
-			$('#btn_preview').addClass("hidden");
-			$('#btn_verify').removeClass("hidden");
-			$('#btn_search').removeClass("hidden");
-			window.localStorage.content="off"
-		} else {
-			$('a[href="#content_blocks"]').tab('show');
-			$('#btn_print').removeClass("hidden");
-			$('#btn_preview').removeClass("hidden");
-			$('#btn_verify').addClass("hidden");
-			$('#btn_search').addClass("hidden");
-			window.localStorage.content="on"
-		}
-	});
-/* 	Keep code preview window visible when clicked to allow selection
-	$('#pre_previewArduino').on("click", function() {
-		$("#toggle").toggle("slide");
-	}); */
 	$('#btn_verify').mouseover(function() {
 		document.getElementById("survol").textContent = "Verificando Código";
 	}).mouseout(function() {
@@ -510,125 +304,29 @@ BlocklyDuino.bindFunctions = function() {
 	}).mouseout(function() {
 		document.getElementById("survol").textContent = "";
 	});
-	$('#btn_bin').mouseover(function() {
-		document.getElementById("survol").textContent = "Exportando como Binario .hex";
-	}).mouseout(function() {
-		document.getElementById("survol").textContent = "";
-	});
-	$('#toolboxes').on("focus", function() {
-		BlocklyDuino.selectedToolbox = $(this).val();
-	});
-	$('#toolboxes').on("change", BlocklyDuino.changeToolboxDefinition);
-	$('#configModal').on('hidden.bs.modal', function(e) {
-		BlocklyDuino.loadToolboxDefinition(BlocklyDuino.selectedToolbox);
-	});
 	$('#load').on("change", BlocklyDuino.load);
 	$('#btn_fakeload').on("click", function() {
 		$('#load').click()
 	});
-	$('#btn_config').on("click", BlocklyDuino.openConfigToolbox);
-	$('#btn_level1').on("click", BlocklyDuino.buildToolboxLevel1);
-	$('#btn_level2').on("click", BlocklyDuino.buildToolboxLevel2);
-	$('#btn_level3').on("click", BlocklyDuino.buildToolboxLevel3);
-
-	$('#select_all').on("click", BlocklyDuino.checkAll);
-	$('#btn_valid_config').on("click", BlocklyDuino.changeToolbox);
 	$('#btn_example').on("click", BlocklyDuino.buildExamples);
 	if(typeof process === 'undefined') {
-		$('#btn_factory').on("click", function() {
-			window.open("factory.html","_blank", null);
-		});
 		$('#btn_saveXML').on("click", BlocklyDuino.saveXmlFile);
-		$('#btn_saveino').on("click", function () {
-			if (window.localStorage.prog == "arduino") {
-				BlocklyDuino.saveino()
-			} else {
-				BlocklyDuino.savepy()
-			}
-		});
+		$('#btn_saveino').on("click", BlocklyDuino.saveino);
 	}
-};
-BlocklyDuino.checkAll = function() {
-    if(this.checked) {
-        $('#modal-body-config input:checkbox[id^=checkbox_]').each(function() {
-            this.checked = true;
-        });
-    }
-      else {
-      $('#modal-body-config input:checkbox[id^=checkbox_]').each(function() {
-            this.checked = false;
-        });
-    }
-};
-BlocklyDuino.openConfigToolbox = function() {
-	var modalbody = $("#modal-body-config");
-	var loadIds = window.localStorage.toolboxids;
-	if (loadIds === undefined || loadIds === "") {
-		if ($('#defaultCategories1').length) {
-			loadIds = $('#defaultCategories1').html();
-		} else {
-			loadIds = '';
-		}
-	}
-	modalbody.empty();
-	var i=0, n;
-	var ligne = "";
-	$("#toolbox").children("category").each(function() {
-		n = loadIds.search($(this).attr("id"));
-		if (n >= 0) {
-			ligne = '<input type="checkbox" checked="checked" name="checkbox_' +i+ '" id="checkbox_' +$(this).attr("id")+ '"/> ' +Blockly.Msg[$(this).attr("id")]+ '<br/>';
-		} else {
-			ligne = '<input type="checkbox" name="checkbox_' +i+ '" id="checkbox_' +$(this).attr("id")+ '"/> ' +Blockly.Msg[$(this).attr("id")]+ '<br/>';
-		}
-		i++;
-		modalbody.append(ligne);
-     });
-};
-BlocklyDuino.changeToolbox = function() {
-	BlocklyDuino.backupBlocks();
-	var toolboxIds = [];
-	window.localStorage.lang = $('#languageMenu').val();
-	$('#modal-body-config input:checkbox[id^=checkbox_]').each(function() {
-		if (this.checked == true) {
-			var xmlid = this.id;
-			toolboxIds.push(xmlid.replace("checkbox_", ""))
-		}
-	});
-	window.localStorage.toolboxids = toolboxIds;
-	Blockly.getMainWorkspace().updateToolbox(BlocklyDuino.buildToolbox());
-	BlocklyDuino.workspace.render();
-	$('#configModal').modal('hide')
-	window.location.reload();
 };
 
-BlocklyDuino.changelanguage = function() {
-	window.localStorage.lang = $('#languageMenu').val();
-	window.location.reload();
-};
 
 
 
 
 BlocklyDuino.buildToolbox = function() {
-	var loadIds = window.localStorage.toolboxids;
-	if (loadIds === undefined || loadIds === "") {
-		if ($('#defaultCategories1').length) {
-			loadIds = $('#defaultCategories1').html();
-		} else {
-			loadIds = '';
-		}
-	}
+	// MPR: el menú son las categorías de defaultCategories1 (toolbox/toolbox_arduino_all.xml), en ese orden.
+	var lista = $('#defaultCategories1').length ? $('#defaultCategories1').html() : '';
 	var xmlValue = '<xml id="toolbox">';
-	var xmlids = loadIds.split(",");
+	var xmlids = lista.split(",");
 	for (var i = 0; i < xmlids.length; i++) {
-		// MPR: la categoría del modo monitor nunca sale de la lista guardada (toolboxids): solo se agrega abajo
-		if (xmlids[i] == 'CAT_MPR_MONITOR') continue;
-		if ($('#'+xmlids[i]).length) {
+		if (xmlids[i] && $('#'+xmlids[i]).length) {
 			xmlValue += $('#'+xmlids[i])[0].outerHTML;
-		}
-		// MPR: bloques de sensores adicionales, ocultos salvo que mostrarSensoresExtra sea true
-		if (xmlids[i] == 'CAT_ultrason' && BlocklyDuino.mostrarSensoresExtra && $('#CAT_SENSORES_EXTRA').length) {
-			xmlValue += $('#CAT_SENSORES_EXTRA')[0].outerHTML;
 		}
 	}
 	// MPR: categoría "🛠️ Monitor", al final del menú, solo con el modo monitor activo (Ctrl + Mayús + M, js/mpr_monitor.js).
@@ -646,71 +344,8 @@ BlocklyDuino.modoMonitor = function() {
 };
 
 
-BlocklyDuino.buildToolboxLevel1 = function() {
-	var loadIds = [];
-
-	if ($('#defaultCategories1').length) {
-			loadIds = $('#defaultCategories1').html();
-	}
-	window.localStorage.toolboxids=loadIds;
-	window.localStorage.level=1;
-
-	var xmlValue = '<xml id="toolbox">';
-	var xmlids = loadIds.split(",");
-	for (var i = 0; i < xmlids.length; i++) {
-		if ($('#'+xmlids[i]).length) {
-			xmlValue += $('#'+xmlids[i])[0].outerHTML;
-		}
-	}
-	xmlValue += '</xml>';
-	Blockly.getMainWorkspace().updateToolbox(xmlValue);
-
-};
-
-BlocklyDuino.buildToolboxLevel2 = function() {
-	var loadIds = [];
-
-	if ($('#defaultCategories2').length) {
-			loadIds = $('#defaultCategories2').html();
-	}
-	window.localStorage.toolboxids=loadIds;
-	window.localStorage.level=2;
 
 
-	var xmlValue = '<xml id="toolbox">';
-	var xmlids = loadIds.split(",");
-	for (var i = 0; i < xmlids.length; i++) {
-		if ($('#'+xmlids[i]).length) {
-			xmlValue += $('#'+xmlids[i])[0].outerHTML;
-		}
-	}
-	xmlValue += '</xml>';
-	Blockly.getMainWorkspace().updateToolbox(xmlValue);
-
-};
-
-BlocklyDuino.buildToolboxLevel3 = function() {
-	var loadIds = [];
-
-	if ($('#defaultCategories3').length) {
-			loadIds = $('#defaultCategories3').html();
-	}
-
-	window.localStorage.toolboxids=loadIds;
-	window.localStorage.level=3;
-
-	var xmlValue = '<xml id="toolbox">';
-	var xmlids = loadIds.split(",");
-	for (var i = 0; i < xmlids.length; i++) {
-		if ($('#'+xmlids[i]).length) {
-			xmlValue += $('#'+xmlids[i])[0].outerHTML;
-		}
-	}
-	xmlValue += '</xml>';
-	Blockly.getMainWorkspace().updateToolbox(xmlValue);
-
-
-};
 
 
 
@@ -733,10 +368,6 @@ BlocklyDuino.loadToolboxDefinition = function(toolboxFile) {
 	}).fail(function(data) {
 		$("#toolbox").remove()
 	})
-};
-BlocklyDuino.changeToolboxDefinition =  function() {
-	BlocklyDuino.loadToolboxDefinition($("#toolboxes").val());
-	BlocklyDuino.openConfigToolbox();
 };
 BlocklyDuino.buildExamples = function() {
 	$.ajax({
@@ -778,148 +409,27 @@ Blockly.Variables.flyoutCategory = function(workspace) {
 	});
 	xmlList.push(button);
 	if (variableList.length > 0) {
-		if (window.localStorage.prog!="python") {
-			if (Blockly.Blocks['variables_set_init']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'variables_set_init');
-				block.setAttribute('gap', 8);
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			if (Blockly.Blocks['variables_set']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'variables_set');
-				block.setAttribute('gap', 8);
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			if (Blockly.Blocks['math_change']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'math_change');
-				block.setAttribute('gap', 8);
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			if (Blockly.Blocks['variables_const']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'variables_const');
-				block.setAttribute('gap', 8);
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			if (Blockly.Blocks['base_define_const']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'base_define_const');
-				if (Blockly.Blocks['variables_get']) {
-					block.setAttribute('gap', 16);
-				}
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			for (var i = 0; i < variableList.length; i++) {
-			  if (Blockly.Blocks['variables_get']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'variables_get');
-				if (Blockly.Blocks['variables_set']) {
-				  block.setAttribute('gap', 8);
-				}
-				var field = goog.dom.createDom('field', null, variableList[i]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			  }
-			}
-		} else {
-			if (Blockly.Blocks['variables_set']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'variables_set');
-				block.setAttribute('gap', 8);
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			if (Blockly.Blocks['math_change']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'math_change');
-				block.setAttribute('gap', 8);
-				var field = goog.dom.createDom('field', null, variableList[0]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			}
-			for (var i = 0; i < variableList.length; i++) {
-			  if (Blockly.Blocks['variables_get']) {
-				var block = goog.dom.createDom('block');
-				block.setAttribute('type', 'variables_get');
-				if (Blockly.Blocks['variables_set']) {
-				  block.setAttribute('gap', 8);
-				}
-				var field = goog.dom.createDom('field', null, variableList[i]);
-				field.setAttribute('name', 'VAR');
-				block.appendChild(field);
-				xmlList.push(block);
-			  }
-			}
+		// gap 0 = sin atributo gap (igual que antes)
+		var bloque = function(tipo, nombre, gap) {
+			var block = goog.dom.createDom('block');
+			block.setAttribute('type', tipo);
+			if (gap) block.setAttribute('gap', gap);
+			var field = goog.dom.createDom('field', null, nombre);
+			field.setAttribute('name', 'VAR');
+			block.appendChild(field);
+			xmlList.push(block);
+		};
+		var B = Blockly.Blocks;
+		if (B['variables_set_init']) bloque('variables_set_init', variableList[0], 8);
+		if (B['variables_set']) bloque('variables_set', variableList[0], 8);
+		if (B['math_change']) bloque('math_change', variableList[0], 8);
+		if (B['variables_const']) bloque('variables_const', variableList[0], 8);
+		if (B['base_define_const']) bloque('base_define_const', variableList[0], B['variables_get'] ? 16 : 0);
+		for (var i = 0; i < variableList.length; i++) {
+			if (B['variables_get']) bloque('variables_get', variableList[i], B['variables_set'] ? 8 : 0);
 		}
 	}
-  return xmlList;
-};
-BlocklyDuino.workspace_capture = function() {
-	var ws = BlocklyDuino.workspace.svgBlockCanvas_.cloneNode(true);
-	ws.removeAttribute("width");
-	ws.removeAttribute("height");
-	ws.removeAttribute("transform");
-	var styleElem = document.createElementNS("http://www.w3.org/2000/svg", "style");
-	styleElem.textContent = Blockly.Css.CONTENT.join('') ;
-	ws.insertBefore(styleElem, ws.firstChild);
-	var bbox = BlocklyDuino.workspace.svgBlockCanvas_.getBBox();
-	var canvas = document.createElement( "canvas" );
-	canvas.width = Math.ceil(bbox.width+10);
-	canvas.height = Math.ceil(bbox.height+10);
-	var ctx = canvas.getContext( "2d" );
-	var xml = new XMLSerializer().serializeToString(ws);
-	xml = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="'+bbox.width+'" height="'+bbox.height+'" viewBox="' + bbox.x + ' ' + bbox.y + ' '  + bbox.width + ' ' + bbox.height + '"><rect width="100%" height="100%" fill="white"></rect>'+xml+'</svg>';
-	var img = new Image();
-	img.setAttribute( "src", 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml))));
-	img.onload = function() {
-		ctx.drawImage( img, 5, 5 );
-		var canvasdata = canvas.toDataURL("image/png",1);
-		var datenow = Date.now();
-		var a = document.createElement("a");
-		a.download = "capture"+datenow+".png";
-		a.href = canvasdata;
-		document.body.appendChild(a);
-		a.click();
-	}
-};
-BlocklyDuino.cardPicture_change = function() {
-//	if($("#pinout").val()=="nanooptiboot"||$("#pinout").val()=="nano"||$("#pinout").val()=="nona4809"){
-//		$("#warning").show();
-//	}else{
-//		$("#warning").hide();
-//	}
-	if ($("#pinout").val()) {
-		$('#arduino_card_mini_picture').attr("src", profile[$("#pinout").val()]['picture'])
-	} else {
-		$('#arduino_card_mini_picture').attr("src", "")
-	}
-
-	if($("#pinout").val()=="nano")
-		document.getElementById('infoboard').innerHTML=MSG[$("#pinout").val()];
-	else
-		document.getElementById('infoboard').innerHTML="";
-
+	return xmlList;
 };
 BlocklyDuino.saveino = function() {
     var code = $('#pre_previewArduino').text();
@@ -935,75 +445,23 @@ BlocklyDuino.saveino = function() {
 	element.click();
 	document.body.removeChild(element);
 };
-BlocklyDuino.savepy = function() {
-    var code = $('#pre_previewArduino').text();
-	var datenow = Date.now();
+BlocklyDuino.saveXmlFile = function () {
+	var xml = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+	var toolbox = window.localStorage.toolbox;
+	if (toolbox) {
+		var newel = document.createElement("toolbox");
+		newel.appendChild(document.createTextNode(toolbox));
+		xml.insertBefore(newel, xml.childNodes[0]);
+	}
+	var data = Blockly.Xml.domToPrettyText(xml);
+	document.getElementById("title-project-name").value === '' ? document.getElementById("title-project-name").value = "Ottocode" : null;
 	var projectname = document.getElementById("title-project-name").value;
-	var projectname = document.getElementById("title-project-name").value;
-		var filename = projectname+".py";
- 	var element = document.createElement('a');
-	element.setAttribute('href', 'data:text/ino;charset=utf-8,' + encodeURIComponent(code));
+	var filename = projectname+".bloc";
+	var element = document.createElement('a');
+	element.setAttribute('href', 'data:text/bloc;charset=utf-8,' + encodeURIComponent(data));
 	element.setAttribute('download', filename);
 	element.style.display = 'none';
 	document.body.appendChild(element);
 	element.click();
-	document.body.removeChild(element);
-};
-BlocklyDuino.saveXmlFile = function () {
-	if (window.localStorage.content=="on") {
-		var xml = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
-		var toolbox = window.localStorage.toolbox;
-		if (!toolbox) {
-			toolbox = $("#toolboxes").val();
-		}
-		if (toolbox) {
-			var newel = document.createElement("toolbox");
-			newel.appendChild(document.createTextNode(toolbox));
-			xml.insertBefore(newel, xml.childNodes[0]);
-		}
-		var toolboxids = window.localStorage.toolboxids;
-		if (toolboxids === undefined || toolboxids === "") {
-			if ($('#defaultCategories1').length) {
-				toolboxids = $('#defaultCategories1').html();
-			}
-		}
-		var data = Blockly.Xml.domToPrettyText(xml);
-		var datenow = Date.now();
-		document.getElementById("title-project-name").value === '' ? document.getElementById("title-project-name").value = "Ottocode" : null;
-		var projectname = document.getElementById("title-project-name").value;
-		var filename = projectname+".bloc";
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:text/bloc;charset=utf-8,' + encodeURIComponent(data));
-		element.setAttribute('download', filename);
-		element.style.display = 'none';
-		document.body.appendChild(element);
-		element.click();
-		document.body.removeChild(element)
-	} else if (window.localStorage.prog=="arduino"){
-		var code = editor.getValue();
-		var datenow = Date.now();
-		document.getElementById("title-project-name").value === '' ? document.getElementById("title-project-name").value = "Ottocode" : null;
-		var projectname = document.getElementById("title-project-name").value;
-		var filename = projectname+".ino";
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:text/ino;charset=utf-8,' + encodeURIComponent(code));
-		element.setAttribute('download', filename);
-		element.style.display = 'none';
-		document.body.appendChild(element);
-		element.click();
-		document.body.removeChild(element);
-	} else {
-		var code = editor.getValue();
-		var datenow = Date.now();
-		document.getElementById("title-project-name").value === '' ? document.getElementById("title-project-name").value = "Ottocode" : null;
-		var projectname = document.getElementById("title-project-name").value;
-		var filename = projectname+".py";
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:py/ino;charset=utf-8,' + encodeURIComponent(code));
-		element.setAttribute('download', filename);
-		element.style.display = 'none';
-		document.body.appendChild(element);
-		element.click();
-		document.body.removeChild(element);
-	}
+	document.body.removeChild(element)
 };

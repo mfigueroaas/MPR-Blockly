@@ -14,6 +14,13 @@ if (fs.existsSync(path.join(mpr_app_root, 'compilation', 'arduino'))) {
 
 var arduino_basepath = process.platform == 'win32' ? './compilation/arduino' : path.join(__dirname, '../../compilation/arduino')
 
+// MPR: si no se pudo guardar (carpeta sin permiso, pendrive quitado, disco lleno), decirlo en vez de fallar en silencio
+function avisarNoGuardado(err) {
+	console.log(err)
+	window.require('electron').remote.dialog.showErrorBox('No se pudo guardar el archivo',
+		'Prueba guardarlo en otra carpeta, por ejemplo Documentos.\n\n(' + err.message + ')')
+}
+
 window.addEventListener('load', function load(event) {
 	var quitDiv = '<button type="button" class="close" data-dismiss="modal" aria-label="Close">&#215;</button>'
 	var portserie = document.getElementById('portserie')
@@ -110,7 +117,7 @@ window.addEventListener('load', function load(event) {
 			return
 		} else {
 			fs.writeFile(path, code, function(err){
-				if (err) return console.log(err)
+				if (err) avisarNoGuardado(err)
 			})
 		}
 	})
@@ -119,18 +126,13 @@ window.addEventListener('load', function load(event) {
 			return
 		} else {
 			var xml = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)
-			var toolbox = localStorage.getItem("toolbox")
-			if (!toolbox) {
-				toolbox = $("#toolboxes").val()
-			}
-			if (toolbox) {
-				var newel = document.createElement("toolbox")
-				newel.appendChild(document.createTextNode(toolbox))
-				xml.insertBefore(newel, xml.childNodes[0])
-			}
+			var toolbox = localStorage.getItem("toolbox") || "toolbox_arduino_all"
+			var newel = document.createElement("toolbox")
+			newel.appendChild(document.createTextNode(toolbox))
+			xml.insertBefore(newel, xml.childNodes[0])
 			var code = Blockly.Xml.domToPrettyText(xml)
 			fs.writeFile(path, code, function(err){
-				if (err) return console.log(err)
+				if (err) avisarNoGuardado(err)
 			})
 		}
 	})

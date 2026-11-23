@@ -1,162 +1,97 @@
-// logic 
-Blockly.Blocks.inout_onoff.getBlockType = function() {
+// Tipos de bloque para la comprobación de tipos del generador C++ (Blockly.Types, js/type.js y compañía).
+// Solo se asigna a los bloques que existen; si uno no está cargado, su línea se omite sin lanzar error.
+// Las líneas de digital_read en adelante se quitaron: ese bloque no existe, así que el archivo lanzaba
+// TypeError en esa línea y nunca se ejecutaban. El código C++ generado no cambia.
+// logic
+if (Blockly.Blocks.inout_onoff) Blockly.Blocks.inout_onoff.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-Blockly.Blocks.controls_if.getBlockType = function() {
+if (Blockly.Blocks.controls_if) Blockly.Blocks.controls_if.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
- Blockly.Blocks.controls_switch.getVars = function() {
+if (Blockly.Blocks.controls_switch) Blockly.Blocks.controls_switch.getVars = function() {
 	return [this.getFieldValue('SWVAR')];
 };
-Blockly.Blocks.logic_compare.getBlockType = function() {
+if (Blockly.Blocks.logic_compare) Blockly.Blocks.logic_compare.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-Blockly.Blocks.logic_operation.getBlockType = function() {
+if (Blockly.Blocks.logic_operation) Blockly.Blocks.logic_operation.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-Blockly.Blocks.logic_negate.getBlockType = function() {
+if (Blockly.Blocks.logic_negate) Blockly.Blocks.logic_negate.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-Blockly.Blocks.logic_null.getBlockType = function() {
+if (Blockly.Blocks.logic_null) Blockly.Blocks.logic_null.getBlockType = function() {
 	return Blockly.Types.NULL;
 };
-// loop 
-Blockly.Blocks.controls_for.getVars = function() {
+// loop
+if (Blockly.Blocks.controls_for) Blockly.Blocks.controls_for.getVars = function() {
 	return [this.getFieldValue('VAR')];
 };
-Blockly.Blocks.controls_repeat_ext.getBlockType = function() {
-	return Blockly.Types.NUMBER;	
+if (Blockly.Blocks.controls_repeat_ext) Blockly.Blocks.controls_repeat_ext.getBlockType = function() {
+	return Blockly.Types.NUMBER;
 };
-Blockly.Blocks.controls_whileUntil.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;	
-};
-Blockly.Blocks.controls_flow_statements.getVars = function() {
+if (Blockly.Blocks.controls_whileUntil) Blockly.Blocks.controls_whileUntil.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-// math 
-Blockly.Blocks.math_number.getBlockType = function() {
-   var numString = this.getFieldValue('NUM');
-   return Blockly.Types.identifyNumber(numString);
-};
-Blockly.Blocks.inout_angle_maths.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.math_arithmetic.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.intervalle.getBlockType = function() {
+if (Blockly.Blocks.controls_flow_statements) Blockly.Blocks.controls_flow_statements.getVars = function() {
 	return Blockly.Types.BOOLEAN;
 };
-Blockly.Blocks.math_single.getBlockType = function() {
-	return Blockly.Types.DECIMAL;
+// math
+if (Blockly.Blocks.math_number) Blockly.Blocks.math_number.getBlockType = function() {
+	var numString = this.getFieldValue('NUM');
+	return Blockly.Types.identifyNumber(numString);
 };
-Blockly.Blocks.math_trig.getBlockType = function() {
-	return Blockly.Types.DECIMAL;
+if (Blockly.Blocks.inout_angle_maths) Blockly.Blocks.inout_angle_maths.getBlockType = function() {
+	return Blockly.Types.NUMBER;
 };
-Blockly.Blocks.math_constant.getBlockType = function() {
-	return Blockly.Types.DECIMAL;
+if (Blockly.Blocks.math_arithmetic) Blockly.Blocks.math_arithmetic.getBlockType = function() {
+	return Blockly.Types.NUMBER;
 };
-Blockly.Blocks.math_number_property.getBlockType = function() {
+if (Blockly.Blocks.intervalle) Blockly.Blocks.intervalle.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-Blockly.Blocks.math_round.getBlockType = function() {
+if (Blockly.Blocks.math_single) Blockly.Blocks.math_single.getBlockType = function() {
 	return Blockly.Types.DECIMAL;
 };
-Blockly.Blocks.math_modulo.getBlockType = function() {
+if (Blockly.Blocks.math_trig) Blockly.Blocks.math_trig.getBlockType = function() {
+	return Blockly.Types.DECIMAL;
+};
+if (Blockly.Blocks.math_constant) Blockly.Blocks.math_constant.getBlockType = function() {
+	return Blockly.Types.DECIMAL;
+};
+if (Blockly.Blocks.math_number_property) Blockly.Blocks.math_number_property.getBlockType = function() {
+	return Blockly.Types.BOOLEAN;
+};
+if (Blockly.Blocks.math_round) Blockly.Blocks.math_round.getBlockType = function() {
+	return Blockly.Types.DECIMAL;
+};
+if (Blockly.Blocks.math_modulo) Blockly.Blocks.math_modulo.getBlockType = function() {
 	return Blockly.Types.NUMBER;
 };
-Blockly.Blocks.math_random_int.getBlockType = function() {
+if (Blockly.Blocks.math_random_int) Blockly.Blocks.math_random_int.getBlockType = function() {
 	return Blockly.Types.NUMBER;
 };
-// text 
-Blockly.Blocks.text.getBlockType = function() {
+// text
+if (Blockly.Blocks.text) Blockly.Blocks.text.getBlockType = function() {
 	return Blockly.Types.TEXT;
 };
-Blockly.Blocks.text_char.getBlockType = function() {
+if (Blockly.Blocks.text_char) Blockly.Blocks.text_char.getBlockType = function() {
 	return Blockly.Types.TEXT;
 };
-Blockly.Blocks.text_join.getBlockType = function() {
+if (Blockly.Blocks.text_join) Blockly.Blocks.text_join.getBlockType = function() {
 	return Blockly.Types.TEXT;
 };
-Blockly.Blocks.text_length.getBlockType = function() {
+if (Blockly.Blocks.text_length) Blockly.Blocks.text_length.getBlockType = function() {
 	return Blockly.Types.NUMBER;
 };
-Blockly.Blocks.text_isEmpty.getBlockType = function() {
+if (Blockly.Blocks.text_isEmpty) Blockly.Blocks.text_isEmpty.getBlockType = function() {
 	return Blockly.Types.BOOLEAN;
 };
-// arduino_time 
-Blockly.Blocks.millis.getBlockType = function() {
+// arduino_time
+if (Blockly.Blocks.millis) Blockly.Blocks.millis.getBlockType = function() {
 	return Blockly.Types.LARGE_NUMBER;
 };
-Blockly.Blocks.base_delay.getBlockType = function() {
+if (Blockly.Blocks.base_delay) Blockly.Blocks.base_delay.getBlockType = function() {
 	return Blockly.Types.NUMBER;
-};
-// arduino_in 
-Blockly.Blocks.digital_read.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.inout_analog_read.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-// arduino_out 
-Blockly.Blocks.inout_digital_write.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.inout_analog_write.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-// DEL 
-Blockly.Blocks.inout_buildin_led.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.blink.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.digital_write.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.bargraphe.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-// matrice 
-Blockly.Blocks.matrice8x8_init.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.matrice8x8_symbole.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.matrice8x8_aff.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.matrice8x8_del.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-// arduino_serial 
-Blockly.Blocks.serial_read.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.serial_available.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
-};
-Blockly.Blocks.serial_write.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.serial_init.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.serial_line.getBlockType = function() {
-	return Blockly.Types.TEXT;
-};
-// arduino_softserial 
-Blockly.Blocks.soft_init.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.soft_read.getBlockType = function() {
-	return Blockly.Types.TEXT;
-};
-Blockly.Blocks.soft_write.getBlockType = function() {
-	return Blockly.Types.NUMBER;
-};
-Blockly.Blocks.soft_available.getBlockType = function() {
-	return Blockly.Types.BOOLEAN;
 };

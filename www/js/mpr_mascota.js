@@ -167,7 +167,13 @@ MPRMascota.iniciar3D = function() {
 	var canvas = document.getElementById('mpr_masc_canvas');
 	function aplicar() {
 		MPROtto3D.economia = !!MPRMascota.software;   // sin aceleración gráfica: menos cuadros por segundo y sin suavizado de bordes
-		MPRMascota.modo3d = MPROtto3D.iniciar(canvas, MPRMascota.colores);
+		try {
+			MPRMascota.modo3d = MPROtto3D.iniciar(canvas, MPRMascota.colores);
+		} catch (e) {
+			// si el 3D lanza error, cargando3D quedaba en true y bloqueaba la precompilación y el recorrido: respaldo 2D
+			console.log('[Otto 3D] no se pudo iniciar: ' + e);
+			MPRMascota.modo3d = false;
+		}
 		if (!MPRMascota.modo3d) MPRMascota.respaldo2D();
 		else {
 			MPRMascota.planificar(20000 + Math.random() * 20000);
