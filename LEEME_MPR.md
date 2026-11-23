@@ -71,7 +71,7 @@ arduino-cli y el core AVR; lo más simple es probar con el instalador.
 | Ejemplos | `www/examples/` + `www/examples/examples.json` |
 | Categorías por nivel | `www/toolbox/toolbox_arduino_all.xml` |
 | Librería del robot | `compilation/arduino/userlibs/libraries/Otto/` |
-| Movimiento (limitador de servos) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h` (hoy 3, desde la librería nueva de nov‑2026: 1 grado por orden; no cambiar sin que lo pidan). Ver `ANALISIS_SERVOS.md` |
+| Movimiento (limitador de servos) | `OTTO_DIFF_LIMIT_DEFAULT` en `Otto.h` (hoy 3, desde la librería nueva de nov‑2026: 1 grado por orden; no cambiar sin que lo pidan). Ver `docs/ANALISIS_SERVOS.md` |
 | Proceso principal Electron | `electronApp.js` |
 | Compilar / subir / puertos COM | `index.js` |
 | Instalador | `build/installer.nsi`, `tools/build_installer.py` |

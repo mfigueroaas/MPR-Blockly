@@ -25,3 +25,7 @@ __pycache__/
 # MPR: miniaturas de Windows y versiones/parches locales (no van al repositorio)
 Thumbs.db
 /versiones/
+
+# Fotos y manuales de trabajo (solo locales)
+/Fotos otto armado/
+/Manuales/

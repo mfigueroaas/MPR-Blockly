@@ -1151,6 +1151,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** guía técnica legible (arquitectura, carpetas, flujo de trabajo, módulos MPR, comparación de C++, atajos, recetas). Antes de publicar se reescribió el historial para quitar las líneas `Co-Authored-By` y `Claude-Session` de los commits (árbol idéntico; respaldo en un bundle local fuera del repositorio) y se hizo push forzado a `main`. Repositorio pasado a público.
 - **Commit:** (ver git log)  **Probado en la app:** no aplica (documentación)
 
+### 2026-11-23 — Limpieza de archivos del repositorio
+- **Pedido:** sacar del repositorio las fotos del Otto armado y los manuales, y limpiar los documentos de casos ya realizados.
+- **Archivos:** `Fotos otto armado/` y `Manuales/` (fuera de git, siguen en el PC y quedan en `.gitignore`); `Novedades_MPR_Blockly_1.5.3.docx`, `index.html` de la raíz (redirección a Otto Blockly) y `www/README.md` (créditos de la base) borrados; `PLAN_PULIDO.md`, `ANALISIS_SERVOS.md` y `Codigos_de_error_MPR_Blockly.docx` movidos a `docs/`; `README.md` nuevo, del proyecto MPR; referencias actualizadas en `DOCUMENTACION_TECNICA.md` y `LEEME_MPR.md`.
+- **Notas:** el historial de git conserva los archivos borrados. Nada del instalador ni de `probar.py` los usaba.
+- **Commit:** (ver git log)  **Probado en la app:** no aplica
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
