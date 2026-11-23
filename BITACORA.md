@@ -1126,6 +1126,12 @@ primero `CLAUDE.md` (reglas) y `LEEME_MPR.md` (contexto), y luego esta bitácora
 - **Qué se hizo:** el `.nsi` ya borraba `resources`, `www`, `compilation\arduino\packages` y `userlibs` antes de copiar. Se agregó el borrado de `compilation\python`, `locales`, `VkLayer_*.dll` y `VkICD_mock_icd.dll`, que la limpieza v1 ya no lleva y quedaban en instalaciones previas.
 - **Commit:** (ver git log)  **Probado en la app:** no; falta generar el instalador e instalarlo sobre una versión anterior.
 
+### 2026-11-23 — Limpieza menor y versión 1.6.0
+- **Pedido:** punto 4 de `PENDIENTES_LIMPIEZA_V1.md` y preparar el instalador.
+- **Archivos:** `www/lang/msg_es.js`, `www/js/mode-python.js` y `www/js/snippets/python.js` (borrados), `package.json` (1.5.3 → 1.6.0).
+- **Qué se hizo:** fuera `btn_factory`, `configModalLabel`, `cardLabel` y `aboutcardLabel` (sin uso en HTML ni JS); fuera el modo Python de Ace (nada lo carga). Se descargó `ottoblockly.Setup.1.5.0.exe` con el SHA-256 esperado. No se tocaron generadores ni bloques.
+- **Commit:** (ver git log)  **Probado en la app:** no; `node --check` bien.
+
 ## Plantilla para nuevas entradas
 ```
 ### AAAA-MM-DD — Título corto
